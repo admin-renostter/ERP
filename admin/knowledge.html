@@ -1,0 +1,544 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Base de Conhecimento — Renostter CRM</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="../css/global.css" />
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    <style>
+        .kb-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 24px;
+        }
+
+        .kb-sidebar {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            height: fit-content;
+        }
+
+        .category-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .category-item {
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            transition: 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .category-item:hover {
+            background: var(--bg-inset);
+            color: var(--blue);
+        }
+
+        .category-item.active {
+            background: var(--blue-dim);
+            color: var(--blue);
+            font-weight: 600;
+        }
+
+        .article-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .article-card:hover {
+            border-color: var(--blue);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .article-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .article-meta {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            display: flex;
+            gap: 12px;
+        }
+
+        .article-excerpt {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .article-tags {
+            display: flex;
+            gap: 6px;
+            margin-top: 12px;
+        }
+
+        .tag {
+            background: var(--bg-inset);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        /* Modal Styles */
+        .article-full {
+            max-width: 800px;
+        }
+
+        .article-content {
+            font-size: 0.95rem;
+            line-height: 1.8;
+            color: var(--text-primary);
+        }
+
+        .article-content h3 {
+            margin-top: 24px;
+            margin-bottom: 12px;
+        }
+
+        .article-content p {
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <img src="../assets/logo-crm.png" alt="Renostter CRM" style="max-height:52px;object-fit:contain">
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section-label">Principal</div>
+                <a class="nav-item" href="dashboard.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7" />
+                        <rect x="14" y="3" width="7" height="7" />
+                        <rect x="14" y="14" width="7" height="7" />
+                        <rect x="3" y="14" width="7" height="7" />
+                    </svg><span>Dashboard</span></a>
+                <a class="nav-item" href="financeiro.html">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="1" x2="12" y2="23"></line>
+                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                    </svg>
+                    <span>Financeiro</span>
+                </a>
+                <a class="nav-item" href="cobrancas.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg><span>Cobranças</span></a>
+                <div class="nav-section-label">Gestão</div>
+                <a class="nav-item" href="projects.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path
+                            d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                    </svg><span>Dashboard PM</span></a>
+                <a class="nav-item" href="leads.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.39a2 2 0 0 1 1.98-2.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span>Leads</span></a>
+                <a class="nav-item active" href="knowledge.html"><svg width="16" height="16" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                    </svg><span>Base de Conhecimento</span></a>
+                <!-- Rest of sidebar -->
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-card" onclick="auth.logout()">
+                    <div class="user-avatar" id="sidebarAvatar">A</div>
+                    <div class="user-info"><strong id="sidebarUserName">Admin</strong><span
+                            id="sidebarUserRole">Administrador</span></div>
+                </div>
+            </div>
+        </aside>
+
+        <div class="main-content">
+            <div class="topbar">
+                <div class="topbar-left">
+                    <button class="hamburger btn btn-ghost btn-icon" id="hamburger"><svg width="18" height="18"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="3" y1="6" x2="21" y2="6" />
+                            <line x1="3" y1="12" x2="21" y2="12" />
+                            <line x1="3" y1="18" x2="21" y2="18" />
+                        </svg></button>
+                    <span class="page-title">Base de Conhecimento</span>
+                </div>
+                <div class="topbar-right" id="topbarRightActions"></div>
+            </div>
+
+            <div class="page-body">
+                <div class="dashboard-controls" style="margin-bottom:24px">
+                    <div class="search-box" style="flex:1">
+                        <input type="text" id="kbSearch" placeholder="Pesquisar soluções, erros, manuais..."
+                            oninput="renderKB()">
+                    </div>
+                </div>
+
+                <div class="kb-grid">
+                    <div class="kb-sidebar">
+                        <h4 style="margin-bottom:12px;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em">
+                            Categorias</h4>
+                        <ul class="category-list" id="categoryList">
+                            <li class="category-item active" onclick="setCategory(null)">Tudo</li>
+                        </ul>
+                    </div>
+                    <div id="articleList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: View Article -->
+    <div class="modal-overlay" id="modalViewArticle">
+        <div class="modal article-full">
+            <div class="modal-header">
+                <span class="modal-title" id="artHeader">Artigo</span>
+                <button class="modal-close" onclick="closeModal('modalViewArticle')">✕</button>
+            </div>
+            <div class="modal-body">
+                <h1 id="artTitle" style="margin-bottom:8px"></h1>
+                <div class="article-meta" id="artMeta"></div>
+                <hr style="border:0;border-top:1px solid var(--border);margin:20px 0">
+                <div class="article-content" id="artContent"></div>
+                <div class="article-tags" id="artTags" style="margin-top:30px"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('modalViewArticle')">Fechar</button>
+                <button class="btn btn-primary" onclick="editArticle()">Editar Artigo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Create Article -->
+    <div class="modal-overlay" id="modalCreateArticle">
+        <div class="modal article-full">
+            <div class="modal-header">
+                <span class="modal-title">Novo Artigo</span>
+                <button class="modal-close" onclick="closeModal('modalCreateArticle')">✕</button>
+            </div>
+            <div class="modal-body" style="display:flex;flex-direction:column;gap:16px;">
+                <div>
+                    <label class="form-label">Título <span style="color:var(--danger)">*</span></label>
+                    <input type="text" id="addArtTitle" class="form-input" placeholder="Digite o título do artigo">
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                    <div>
+                        <label class="form-label">Categoria <span style="color:var(--danger)">*</span></label>
+                        <input type="text" id="addArtCat" class="form-input" list="catList"
+                            placeholder="Selecione ou digite nova...">
+                        <datalist id="catList"></datalist>
+                    </div>
+                    <div>
+                        <label class="form-label">Data de Publicação</label>
+                        <input type="date" id="addArtData" class="form-input">
+                    </div>
+                </div>
+                <div>
+                    <label class="form-label">Resumo (opcional)</label>
+                    <textarea id="addArtSummary" class="form-input" rows="2"
+                        placeholder="Breve descrição exibida no card externo..."></textarea>
+                </div>
+                <div>
+                    <label class="form-label"
+                        style="display:flex; justify-content:space-between; align-items:flex-end;">
+                        <span>Conteúdo <span style="color:var(--danger)">*</span></span>
+                        <button class="btn btn-ghost btn-sm" onclick="triggerQuillImage()"
+                            style="color:var(--blue); padding:4px 8px;">📷 Anexar Foto (Evidência)</button>
+                    </label>
+                    <div id="editor-container"
+                        style="height: 300px; background: var(--bg-surface); color: var(--text-primary); border-radius:var(--radius-sm)">
+                    </div>
+                </div>
+                <div>
+                    <label class="form-label">Tags (Opcional, separadas por vírgula)</label>
+                    <input type="text" id="addArtTags" class="form-input"
+                        placeholder="Ex: hardware, rede, ar-condicionado">
+                </div>
+                <div>
+                    <label class="form-label" style="margin-bottom:8px">Status</label>
+                    <div style="display:flex;gap:16px">
+                        <label style="display:flex;align-items:center;gap:6px;font-size:0.9rem"><input type="radio"
+                                name="artStatus" value="publicado" checked> Publicar Agora</label>
+                        <label style="display:flex;align-items:center;gap:6px;font-size:0.9rem"><input type="radio"
+                                name="artStatus" value="rascunho"> Salvar como Rascunho</label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('modalCreateArticle')">Cancelar</button>
+                <button class="btn btn-primary" onclick="saveArticle()">Salvar Artigo</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script src="../js/storage.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/approval-banner.js"></script>
+    <script src="../js/utils.js"></script>
+    <script>
+        const session = auth.protect(['admin', 'superadmin', 'tecnico']);
+        if (!session) throw new Error('Access denied');
+
+        let currentCategory = null;
+        let selectedArticleId = null;
+
+        function setCategory(cat) {
+            currentCategory = cat;
+            renderKB();
+        }
+
+        function renderKB() {
+            const articles = db.get('knowledge_base');
+            const query = document.getElementById('kbSearch').value.toLowerCase();
+            const container = document.getElementById('articleList');
+            const catList = document.getElementById('categoryList');
+
+            // Categorias
+            const cats = [...new Set(articles.map(a => a.category))];
+            catList.innerHTML = `<li class="category-item ${!currentCategory ? 'active' : ''}" onclick="setCategory(null)">Tudo</li>` +
+                cats.map(c => `<li class="category-item ${currentCategory === c ? 'active' : ''}" onclick="setCategory('${c}')">${esc(c)}</li>`).join('');
+
+            const filtered = articles.filter(a => {
+                if (a.deletedAt) return false;
+                if (a.status === 'rascunho' && !['admin', 'superadmin'].includes(session.role)) return false;
+
+                const matchesSearch = a.title.toLowerCase().includes(query) || a.content.toLowerCase().includes(query) || (a.tags || []).some(t => t.toLowerCase().includes(query));
+                const matchesCat = !currentCategory || a.category === currentCategory;
+                return matchesSearch && matchesCat;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="empty-state"><h4>Nenhum artigo encontrado.</h4></div>';
+                return;
+            }
+
+            container.innerHTML = filtered.map(a => `
+                <div class="article-card" onclick="viewArticle('${a.id}')">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+                        <div class="article-title" style="margin-bottom:0;display:flex;align-items:center;gap:8px">
+                            ${esc(a.title)}
+                            ${a.status === 'rascunho' ? '<span class="tag" style="background:var(--warning-dim);color:var(--warning);padding:3px 6px;line-height:1">Rascunho</span>' : ''}
+                        </div>
+                        ${['admin', 'superadmin'].includes(session.role) ? `
+                            <button class="btn btn-ghost btn-sm btn-icon" title="Excluir artigo" onclick="event.stopPropagation(); confirmDeleteArticle('${a.id}')" style="color:var(--danger);padding:4px;height:auto;min-height:0">
+                                <span style="font-size:.9rem">🗑ï¸</span>
+                            </button>
+                        ` : ''}
+                    </div>
+                    <div class="article-meta">
+                        <span>📁 ${esc(a.category)}</span>
+                        <span>📅 ${new Date(a.createdAt).toLocaleDateString()}</span>
+                        <span>👤 ${esc(db.find('users', a.authorId)?.name || 'Desconhecido')}</span>
+                    </div>
+                    <div class="article-excerpt">${esc((a.summary || a.content.replace(/<[^>]*>?/gm, '').substring(0, 150)))}...</div>
+                    <div class="article-tags">
+                        ${(a.tags || []).map(t => `<span class="tag">#${esc(t)}</span>`).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function viewArticle(id) {
+            selectedArticleId = id;
+            const a = db.find('knowledge_base', id);
+            if (!a) return;
+
+            document.getElementById('artHeader').textContent = a.category;
+            document.getElementById('artTitle').textContent = a.title;
+            document.getElementById('artMeta').innerHTML = `Publicado em ${new Date(a.createdAt).toLocaleString()} por ${esc(db.find('users', a.authorId)?.name || 'Desconhecido')}`;
+
+            // Permite injeção de texto com parágrafo e tags oriundas do Quill Rich Text vs semente limpa antiga ('<br>')
+            const richHTML = a.content.includes('<p>') ? a.content : a.content.replace(/\n/g, '<br>');
+            document.getElementById('artContent').innerHTML = richHTML;
+
+            document.getElementById('artTags').innerHTML = (a.tags || []).map(t => `<span class="tag">#${esc(t)}</span>`).join('');
+
+            openModal('modalViewArticle');
+        }
+
+        let quill;
+        function initQuill() {
+            if (!quill) {
+                quill = new Quill('#editor-container', {
+                    theme: 'snow',
+                    modules: {
+                        toolbar: [
+                            ['bold', 'italic', 'underline', 'strike'],
+                            ['blockquote', 'code-block'],
+                            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                            [{ 'header': [1, 2, 3, false] }],
+                            [{ 'color': [] }, { 'background': [] }],
+                            ['link', 'image'],
+                            ['clean']
+                        ]
+                    }
+                });
+            }
+        }
+
+        function openCreateArticle() {
+            // Carrega Datalist
+            const articles = db.get('knowledge_base');
+            const cats = [...new Set(articles.map(a => a.category))].filter(Boolean);
+            document.getElementById('catList').innerHTML = cats.map(c => `<option value="${esc(c)}">`).join('');
+
+            // Limpa form globalmente
+            document.getElementById('addArtTitle').value = '';
+            document.getElementById('addArtCat').value = '';
+            document.getElementById('addArtSummary').value = '';
+            document.getElementById('addArtTags').value = '';
+            document.getElementById('addArtData').value = new Date().toISOString().split('T')[0];
+            document.querySelector('input[name="artStatus"][value="publicado"]').checked = true;
+
+            initQuill();
+            quill.root.innerHTML = '';
+
+            openModal('modalCreateArticle');
+        }
+
+        function triggerQuillImage() {
+            const input = document.createElement('input');
+            input.setAttribute('type', 'file');
+            input.setAttribute('accept', 'image/*');
+            input.click();
+
+            input.onchange = () => {
+                const file = input.files[0];
+                if (/^image\//.test(file.type)) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const range = quill.getSelection(true);
+                        quill.insertEmbed(range.index, 'image', e.target.result);
+                        quill.setSelection(range.index + 1);
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    toast('Erro', 'Por favor, selecione apenas arquivos de imagem.', 'error');
+                }
+            };
+        }
+
+        function editArticle() {
+            if (!selectedArticleId) return;
+            const a = db.find('knowledge_base', selectedArticleId);
+            if (!a) return;
+
+            // Fecha modal de visualização
+            closeModal('modalViewArticle');
+
+            // Carrega Datalist
+            const articles = db.get('knowledge_base');
+            const cats = [...new Set(articles.map(x => x.category))].filter(Boolean);
+            document.getElementById('catList').innerHTML = cats.map(c => `<option value="${esc(c)}">`).join('');
+
+            // Preenche Formulário
+            document.getElementById('addArtTitle').value = a.title || '';
+            document.getElementById('addArtCat').value = a.category || '';
+            document.getElementById('addArtSummary').value = a.summary || '';
+            document.getElementById('addArtTags').value = (a.tags || []).join(', ');
+            document.getElementById('addArtData').value = a.createdAt ? a.createdAt.split('T')[0] : '';
+
+            if (a.status === 'rascunho') {
+                document.querySelector('input[name="artStatus"][value="rascunho"]').checked = true;
+            } else {
+                document.querySelector('input[name="artStatus"][value="publicado"]').checked = true;
+            }
+
+            initQuill();
+            // Permite injeção de texto com parágrafo e tags oriundas do Quill Rich Text
+            const richHTML = a.content.includes('<p>') ? a.content : a.content.replace(/\n/g, '<br>');
+            quill.root.innerHTML = richHTML;
+
+            openModal('modalCreateArticle');
+        }
+
+        function saveArticle() {
+            const title = document.getElementById('addArtTitle').value.trim();
+            const category = document.getElementById('addArtCat').value.trim();
+            const summary = document.getElementById('addArtSummary').value.trim();
+            const tagsInput = document.getElementById('addArtTags').value.trim();
+            const pubDate = document.getElementById('addArtData').value;
+            const status = document.querySelector('input[name="artStatus"]:checked').value;
+
+            const content = quill.root.innerHTML;
+            const textContent = quill.getText().trim();
+
+            if (!title || !category || !textContent) {
+                return toast('Erro de Validação', 'Preencha Título, Categoria e redija o Conteúdo.', 'error');
+            }
+
+            const tags = tagsInput ? tagsInput.split(',').map(t => t.trim()).filter(Boolean) : [];
+
+            const payload = {
+                title, category, summary, content, tags, status,
+                authorId: session.userId,
+                updatedAt: new Date().toISOString()
+            };
+
+            if (selectedArticleId) {
+                db.update('knowledge_base', selectedArticleId, payload);
+                logAudit('article_updated', `Artigo '${title}' (ID: ${selectedArticleId}) atualizado por ${session.name}.`);
+                toast('Artigo Atualizado', `As evidências e dados do artigo foram salvos com sucesso.`, 'success');
+            } else {
+                payload.createdAt = pubDate ? new Date(pubDate).toISOString() : new Date().toISOString();
+                const a = db.insert('knowledge_base', payload);
+                logAudit('article_created', `Artigo '${title}' (ID: ${a.id}) criado por ${session.name}.`);
+                toast('Novo Artigo Salvo', `O arquivo "${title}" foi arquivado e indexado com sucesso.`, 'success');
+            }
+
+            // Reseta a variável let para a próxima operação
+            selectedArticleId = null;
+
+            closeModal('modalCreateArticle');
+            renderKB();
+        }
+
+        function confirmDeleteArticle(id) {
+            const a = db.find('knowledge_base', id);
+            if (!a) return;
+            if (!confirm(`Deseja realmente excluir o artigo '${a.title}'? Esta ação não pode ser desfeita.`)) return;
+
+            db.update('knowledge_base', id, { deletedAt: new Date().toISOString() });
+
+            logAudit('article_deleted', `Artigo '${a.title}' (ID: ${id}) excluído por ${session.name}.`);
+
+            toast('Sucesso', 'Artigo excluído com sucesso.', 'success');
+            renderKB();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initSidebar();
+            if (['admin', 'superadmin', 'tecnico'].includes(session.role)) {
+                document.getElementById('topbarRightActions').innerHTML = `<button class="btn btn-primary" onclick="openCreateArticle()">+ Novo Artigo</button>`;
+            }
+            renderKB();
+        });
+    </script>
+</body>
+
+</html>
+```

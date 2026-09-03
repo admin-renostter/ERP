@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="robots" content="noindex, nofollow"/>
+<title>Guia de Uso — Estoque (Inventory) | Renostter CRM</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+:root { --bg-base:#0d1117; --bg-card:#161b22; --bg-surface:#1c2129; --bg-hover:#21262d; --border:#30363d; --border-soft:rgba(255,255,255,0.06); --text-primary:#e6edf3; --text-secondary:#8b949e; --text-muted:#6b7280; --blue:#00AEEF; --blue-dim:rgba(0,174,239,0.12); --green:#22c55e; --green-dim:rgba(34,197,94,0.12); --orange:#f59e0b; --orange-dim:rgba(245,158,11,0.12); --red:#ef4444; --red-dim:rgba(239,68,68,0.12); --purple:#8b5cf6; --purple-dim:rgba(139,92,246,0.12); --teal:#14b8a6; --teal-dim:rgba(20,184,166,0.12); --shadow-md:0 4px 16px rgba(0,0,0,0.3); }
+* { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-behavior:smooth; }
+body { font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif; background:var(--bg-base); color:var(--text-primary); line-height:1.65; font-size:15px; }
+code, .mono { font-family:'JetBrains Mono',Consolas,monospace; font-size:.88em; }
+.hero { background:linear-gradient(135deg,#0d1117 0%,#0a1a2e 50%,#0d1117 100%); border-bottom:1px solid var(--border); padding:60px 40px 50px; position:relative; overflow:hidden; }
+.hero::before { content:''; position:absolute; top:-50%; right:-10%; width:600px; height:600px; background:radial-gradient(circle,var(--teal-dim) 0%,transparent 60%); pointer-events:none; }
+.hero-inner { max-width:1280px; margin:0 auto; position:relative; z-index:1; }
+.hero-breadcrumb { display:inline-flex; align-items:center; gap:8px; padding:6px 14px; background:var(--bg-card); border:1px solid var(--border); border-radius:50px; font-size:.75rem; color:var(--text-secondary); margin-bottom:24px; }
+.hero-breadcrumb .dot { width:6px; height:6px; border-radius:50%; background:var(--green); box-shadow:0 0 8px var(--green); }
+.hero h1 { font-size:2.6rem; font-weight:800; margin-bottom:14px; background:linear-gradient(90deg,#fff 0%,var(--teal) 100%); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; letter-spacing:-.02em; }
+.hero .subtitle { color:var(--text-secondary); font-size:1.1rem; max-width:720px; margin-bottom:28px; }
+.hero-meta { display:flex; gap:14px; flex-wrap:wrap; }
+.meta-chip { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; font-size:.8rem; color:var(--text-secondary); }
+.meta-chip strong { color:var(--text-primary); font-weight:600; }
+.meta-chip .icon { font-size:1rem; }
+.layout { max-width:1280px; margin:0 auto; padding:40px; display:grid; grid-template-columns:240px 1fr; gap:50px; }
+@media (max-width:900px) { .layout { grid-template-columns:1fr; padding:24px; } .toc { position:static !important; } }
+.toc { position:sticky; top:24px; align-self:start; max-height:calc(100vh - 48px); overflow-y:auto; padding-right:12px; }
+.toc-title { font-size:.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.08em; margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--border-soft); }
+.toc ul { list-style:none; }
+.toc li { margin-bottom:2px; }
+.toc a { display:block; padding:6px 10px; color:var(--text-secondary); text-decoration:none; font-size:.83rem; border-radius:6px; border-left:2px solid transparent; transition:all .15s; }
+.toc a:hover { color:var(--text-primary); background:var(--bg-card); }
+.toc a.active { color:var(--teal); border-left-color:var(--teal); background:var(--teal-dim); }
+.toc .sub { padding-left:24px; font-size:.78rem; }
+.content { min-width:0; }
+h2 { font-size:1.75rem; font-weight:700; margin:56px 0 20px; padding-bottom:12px; border-bottom:1px solid var(--border); letter-spacing:-.01em; scroll-margin-top:24px; }
+h2:first-of-type { margin-top:0; }
+h2 .num { display:inline-block; width:36px; height:36px; line-height:36px; text-align:center; background:var(--teal-dim); color:var(--teal); border-radius:8px; font-size:1.1rem; font-weight:800; margin-right:12px; vertical-align:middle; }
+h3 { font-size:1.2rem; font-weight:700; margin:32px 0 12px; color:var(--text-primary); }
+h4 { font-size:1rem; font-weight:700; margin:20px 0 8px; color:var(--text-primary); }
+p { margin-bottom:14px; color:var(--text-secondary); }
+strong { color:var(--text-primary); font-weight:600; }
+ul, ol { margin:0 0 14px 24px; color:var(--text-secondary); }
+li { margin-bottom:4px; }
+hr { border:none; border-top:1px solid var(--border-soft); margin:40px 0; }
+.callout { display:flex; gap:14px; padding:16px 18px; background:var(--bg-card); border:1px solid var(--border); border-left:4px solid var(--blue); border-radius:8px; margin:18px 0; }
+.callout-icon { font-size:1.3rem; flex-shrink:0; line-height:1; padding-top:2px; }
+.callout-body { flex:1; }
+.callout-title { font-weight:700; color:var(--text-primary); margin-bottom:4px; font-size:.92rem; }
+.callout-body p:last-child { margin-bottom:0; font-size:.92rem; }
+.callout.tip { border-left-color:var(--green); background:linear-gradient(90deg,var(--green-dim),var(--bg-card) 30%); }
+.callout.warn { border-left-color:var(--orange); background:linear-gradient(90deg,var(--orange-dim),var(--bg-card) 30%); }
+.callout.danger { border-left-color:var(--red); background:linear-gradient(90deg,var(--red-dim),var(--bg-card) 30%); }
+.callout.info { border-left-color:var(--blue); }
+pre { background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:14px 16px; overflow-x:auto; font-size:.85rem; line-height:1.55; margin:12px 0; }
+pre code { color:var(--text-primary); }
+.kw { color:#ff7b72; } .fn { color:#d2a8ff; } .st { color:#a5d6ff; } .nm { color:#79c0ff; } .cm { color:var(--text-muted); font-style:italic; }
+.table-wrap { border:1px solid var(--border); border-radius:8px; overflow:hidden; margin:14px 0; }
+table { width:100%; border-collapse:collapse; font-size:.88rem; }
+thead { background:var(--bg-surface); }
+th { text-align:left; padding:10px 14px; font-weight:700; font-size:.72rem; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.05em; border-bottom:1px solid var(--border); }
+td { padding:10px 14px; border-bottom:1px solid var(--border-soft); color:var(--text-primary); vertical-align:top; }
+tbody tr:last-child td { border-bottom:none; }
+tbody tr:hover { background:var(--bg-hover); }
+td code { background:var(--bg-surface); padding:2px 6px; border-radius:4px; font-size:.82rem; color:var(--text-primary); }
+.shot { margin:18px 0; border:1px solid var(--border); border-radius:10px; overflow:hidden; background:var(--bg-card); box-shadow:var(--shadow-md); }
+.shot img { display:block; width:100%; height:auto; }
+.shot-caption { padding:10px 16px; background:var(--bg-surface); border-top:1px solid var(--border-soft); font-size:.82rem; color:var(--text-secondary); display:flex; align-items:center; gap:8px; }
+.shot-caption strong { color:var(--text-primary); }
+kbd { display:inline-block; padding:2px 6px; background:var(--bg-surface); border:1px solid var(--border); border-bottom-width:2px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:.78rem; color:var(--text-primary); font-weight:600; }
+.steps { counter-reset:step; list-style:none; margin:18px 0; padding:0; }
+.steps > li { counter-increment:step; position:relative; padding-left:48px; margin-bottom:20px; min-height:36px; }
+.steps > li::before { content:counter(step); position:absolute; left:0; top:0; width:32px; height:32px; background:var(--teal); color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.9rem; }
+.badge-i { display:inline-block; padding:2px 8px; background:var(--blue-dim); color:var(--blue); border-radius:4px; font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.03em; vertical-align:middle; }
+.badge-g { background:var(--green-dim); color:var(--green); }
+.badge-o { background:var(--orange-dim); color:var(--orange); }
+.badge-r { background:var(--red-dim); color:var(--red); }
+footer { margin-top:60px; padding:32px 40px; border-top:1px solid var(--border); background:var(--bg-card); text-align:center; color:var(--text-muted); font-size:.85rem; }
+footer .row { display:flex; justify-content:space-between; align-items:center; max-width:1280px; margin:0 auto; flex-wrap:wrap; gap:12px; }
+footer a { color:var(--teal); text-decoration:none; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="hero-breadcrumb"><span class="dot"></span><span>Renostter CRM · Documentação</span></div>
+    <h1>Guia de Uso — Estoque (Inventory)</h1>
+    <p class="subtitle">Catálogo de peças e equipamentos HVAC, controle de estoque, alertas de baixo estoque, precificação e importação em massa.</p>
+    <div class="hero-meta">
+      <div class="meta-chip"><span class="icon">📦</span> <strong>Módulo:</strong> Estoque / Inventory</div>
+      <div class="meta-chip"><span class="icon">✅</span> <strong>Status:</strong> 100% operacional</div>
+      <div class="meta-chip"><span class="icon">📅</span> <strong>Versão:</strong> 1.0 (Jul/2026)</div>
+      <div class="meta-chip"><span class="icon">🗃️</span> <strong>Storage:</strong> localStorage (cliente) + SQLite (servidor)</div>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="toc" id="toc">
+    <div class="toc-title">Sumário</div>
+    <ul>
+      <li><a href="#visao-geral">1. Visão geral</a></li>
+      <li><a href="#conceitos">2. Conceitos-chave</a></li>
+      <li><a href="#acesso">3. Acesso rápido</a></li>
+      <li><a href="#lista">4. Lista de itens</a></li>
+      <li><a href="#cadastrar">5. Cadastrar item</a></li>
+      <li><a href="#movimentacao">6. Movimentação de estoque</a></li>
+      <li><a href="#alertas">7. Alertas de baixo estoque</a></li>
+      <li><a href="#categorias">8. Categorias</a></li>
+      <li><a href="#importar">9. Importação em massa</a></li>
+      <li><a href="#precos">10. Precificação &amp; margem</a></li>
+      <li><a href="#praticas">11. Boas práticas</a></li>
+      <li><a href="#api">12. API reference</a></li>
+    </ul>
+  </nav>
+
+  <main class="content">
+
+    <h2 id="visao-geral"><span class="num">1</span>Visão geral</h2>
+    <p>O módulo de <strong>Estoque</strong> gerencia o catálogo de peças e equipamentos HVAC. Cada item tem SKU, categoria, preço de custo, preço de venda, quantidade atual, localização e fornecedor. O sistema dispara alertas de baixo estoque e alimenta o BOM das cotações.</p>
+
+    <h3>Por que existe</h3>
+    <p>Antes deste módulo, controle de peças era em planilha + olhômetro do técnico. Problemas:</p>
+    <ul>
+      <li>Técnico ia ao local sem saber se tinha peça → tinha que voltar e remarcar visita</li>
+      <li>Estoque crítico (zero ou baixo) só era percebido quando faltava</li>
+      <li>Compra de peças sem histórico de consumo → sobrava de um item, faltava de outro</li>
+      <li>BOM de cotação era inventado (não puxava do estoque real)</li>
+    </ul>
+    <p>O módulo resolve com: catálogo único, alertas de reordenamento, integração com módulo de Cotação (BOM automático), e importação em massa para cadastro inicial.</p>
+
+    <h3>Quem usa</h3>
+    <ul>
+      <li><strong>Almoxarife / Estoquista</strong> — cadastra itens, controla entrada/saída</li>
+      <li><strong>Técnico de campo</strong> — consulta disponibilidade de peças antes de ir ao local</li>
+      <li><strong>Comprador</strong> — recebe alertas de reordenamento</li>
+      <li><strong>Gerente</strong> — KPIs de valor em estoque, margem média, baixo estoque</li>
+    </ul>
+
+    <h2 id="conceitos"><span class="num">2</span>Conceitos-chave</h2>
+
+    <h3>2.1 Tipos de item</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Tipo</th><th>Categoria</th><th>Exemplos</th><th>Aparece no BOM?</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Equipamento</strong></td><td><code>equipamento</code></td><td>Split, VRF, Chiller, Self-contained</td><td>Sim (1 unidade por cotação)</td></tr>
+          <tr><td><strong>Material de instalação</strong></td><td><code>tubulacao</code>, <code>cabo</code>, <code>suporte</code>, <code>dreno</code>, <code>isolamento</code>, <code>fixacao</code></td><td>Tubo de cobre, cabo PP, suporte</td><td>Sim (qty variável)</td></tr>
+          <tr><td><strong>Refrigerante</strong></td><td><code>refrigerante</code></td><td>Gás R-410A 2kg / 5kg</td><td>Sim (carga)</td></tr>
+          <tr><td><strong>Elétrica</strong></td><td><code>eletrica</code></td><td>Disjuntor, contactor</td><td>Sim</td></tr>
+          <tr><td><strong>Conexão</strong></td><td><code>conexao</code></td><td>Porcas, anilhas, curvas</td><td>Sim (kit x2)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>2.2 Campos principais de um item</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Campo</th><th>Obrigatório</th><th>Descrição</th></tr></thead>
+        <tbody>
+          <tr><td><code>sku</code></td><td>sim</td><td>Código único do item (ex: <code>AC-LG-30K</code>, <code>TB-CU-5-8</code>)</td></tr>
+          <tr><td><code>nome</code></td><td>sim</td><td>Descrição legível (ex: "Split Hi-Wall LG Dual Inverter 30.000 BTU")</td></tr>
+          <tr><td><code>categoria</code></td><td>sim</td><td>Classificação (equipamento, tubulacao, cabo, etc.)</td></tr>
+          <tr><td><code>subcategoria</code></td><td>não</td><td>Sub-classificação (split, VRF, cobre, PP, etc.)</td></tr>
+          <tr><td><code>marca</code> / <code>modelo</code></td><td>não (obrig. p/ equipamento)</td><td>Para equipamentos</td></tr>
+          <tr><td><code>potencia_btu</code></td><td>não (obrig. p/ equipamento)</td><td>Capacidade em BTU/h</td></tr>
+          <tr><td><code>refrigerante</code></td><td>não</td><td>R-410A, R-32, etc.</td></tr>
+          <tr><td><code>preco_custo</code></td><td>sim</td><td>Quanto você paga (compra)</td></tr>
+          <tr><td><code>preco_venda</code></td><td>sim</td><td>Quanto você cobra (BOM da cotação)</td></tr>
+          <tr><td><code>estoque_atual</code></td><td>sim</td><td>Quantidade em mãos</td></tr>
+          <tr><td><code>estoque_minimo</code></td><td>não</td><td>Trigger do alerta de baixo estoque (padrão: 5)</td></tr>
+          <tr><td><code>localizacao</code></td><td>não</td><td>Depósito A1, Prateleira 3, etc.</td></tr>
+          <tr><td><code>fornecedor</code></td><td>não</td><td>Nome do distribuidor</td></tr>
+          <tr><td><code>ativo</code></td><td>sim</td><td>1 = visível, 0 = arquivado</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="acesso"><span class="num">3</span>Acesso rápido</h2>
+    <ol>
+      <li><strong>Sidebar</strong> → menu <em>Operacional</em> → <em>Estoque</em></li>
+      <li><strong>URL direta</strong>: <code>http://localhost:3000/crm/admin/inventory.html</code></li>
+      <li><strong>PWA técnico</strong> tem uma versão simplificada para consulta em campo</li>
+    </ol>
+
+    <div class="shot">
+      <img src="assets/guia-estoque-1-lista.png" alt="Lista de estoque"/>
+      <div class="shot-caption"><strong>Figura 1.</strong> Tela principal do Estoque — tabela de SKUs com colunas ordenáveis, busca, filtros por categoria e indicadores de estoque.</div>
+    </div>
+
+    <h2 id="lista"><span class="num">4</span>Lista de itens</h2>
+    <p>A lista é o centro operacional. Mostra todos os SKUs ativos com colunas ordenáveis (clique no header):</p>
+    <ul>
+      <li><strong>SKU</strong> — código único</li>
+      <li><strong>Nome</strong> — descrição</li>
+      <li><strong>Categoria</strong> — classificado por cor</li>
+      <li><strong>Marca/Modelo</strong> — quando aplicável</li>
+      <li><strong>BTU</strong> — apenas equipamentos</li>
+      <li><strong>Qtd</strong> — estoque atual (com cor: verde &gt; 10, amarelo 5-10, vermelho &lt; 5)</li>
+      <li><strong>Custo / Venda</strong> — preço compra / venda</li>
+      <li><strong>Margem</strong> — % calculado</li>
+      <li><strong>Localização</strong> — Depósito X</li>
+    </ul>
+
+    <h3>Indicadores visuais de estoque</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Cor</th><th>Quando</th><th>Ação</th></tr></thead>
+        <tbody>
+          <tr><td><span style="color:var(--green)">Verde</span></td><td>Estoque &gt; 10 unidades</td><td>Nenhuma, ok</td></tr>
+          <tr><td><span style="color:var(--orange)">Amarelo</span></td><td>Estoque entre 5 e 10</td><td>Considerar reordenamento</td></tr>
+          <tr><td><span style="color:var(--red)">Vermelho</span></td><td>Estoque &lt; 5 (ou abaixo do mínimo)</td><td>Comprar URGENTE</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="cadastrar"><span class="num">5</span>Cadastrar um item</h2>
+    <ol class="steps">
+      <li>Clique <kbd>+ Novo Item</kbd></li>
+      <li>Preencha o <strong>SKU</strong> (siga padrão da sua empresa, ex: <code>CATEGORIA-MARCA-POTENCIA</code>)</li>
+      <li>Escolha a <strong>categoria</strong> (define comportamento no BOM)</li>
+      <li>Preencha <strong>nome</strong> descritivo</li>
+      <li>Para equipamentos: marca, modelo, BTU, refrigerante</li>
+      <li>Preencha <strong>preço custo</strong> e <strong>preço venda</strong> (margem calculada automaticamente)</li>
+      <li>Defina <strong>estoque atual</strong> e <strong>mínimo</strong> (alerta)</li>
+      <li>Indique <strong>localização</strong> (Depósito X, Prateleira Y)</li>
+      <li>Salve</li>
+    </ol>
+
+    <div class="callout tip">
+      <div class="callout-icon">💡</div>
+      <div class="callout-body">
+        <div class="callout-title">Dica — padronize o SKU</div>
+        <p>Use um padrão consistente, ex: <code>AC-LG-30K</code> (categoria-marca-potência), <code>TB-CU-5-8</code> (categoria-material-bitola). Facilita busca, importação e identificação rápida.</p>
+      </div>
+    </div>
+
+    <h2 id="movimentacao"><span class="num">6</span>Movimentação de estoque</h2>
+    <p>Toda saída de peça (uso em campo) ou entrada (compra recebida) é registrada no sistema para manter o <code>estoque_atual</code> correto.</p>
+
+    <h3>Tipos de movimentação</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Tipo</th><th>Quando</th><th>Estoque</th></tr></thead>
+        <tbody>
+          <tr><td><span class="badge-i badge-g">Entrada</span></td><td>Recebimento de compra, devolução de cliente</td><td>+</td></tr>
+          <tr><td><span class="badge-i badge-r">Saída</span></td><td>Uso em campo, venda avulsa</td><td>-</td></tr>
+          <tr><td><span class="badge-i badge-o">Ajuste</span></td><td>Inventário, correção de erro</td><td>+/-</td></tr>
+          <tr><td><span class="badge-i">Transferência</span></td><td>Mover entre depósitos</td><td>0 (apenas localização)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Como registrar</h3>
+    <ol class="steps">
+      <li>Na lista, clique no item</li>
+      <li>Abra a aba <strong>Movimentações</strong></li>
+      <li>Clique <kbd>+ Nova Movimentação</kbd></li>
+      <li>Selecione o tipo (entrada/saída/ajuste)</li>
+      <li>Informe a quantidade e o motivo (ex: "Usado na OS #00012")</li>
+      <li>Salve — o <code>estoque_atual</code> é recalculado automaticamente</li>
+    </ol>
+
+    <div class="callout warn">
+      <div class="callout-icon">⚠</div>
+      <div class="callout-body">
+        <div class="callout-title">Saída automática via OS</div>
+        <p>Quando o técnico finaliza um chamado e marca as peças usadas, o sistema <strong>debita automaticamente</strong> do estoque (integração com módulo Chamados). Você não precisa lançar saída manual nesse caso.</p>
+      </div>
+    </div>
+
+    <h2 id="alertas"><span class="num">7</span>Alertas de baixo estoque</h2>
+    <p>Quando o <code>estoque_atual</code> cai abaixo do <code>estoque_minimo</code> (padrão 5), o item:</p>
+    <ul>
+      <li>Fica com <strong>badge vermelho</strong> na lista</li>
+      <li>Aparece no <strong>card "Estoque Crítico"</strong> da dashboard do comprador</li>
+      <li>Dispara <strong>notificação por e-mail</strong> (se configurado)</li>
+      <li>É contado no KPI <strong>"Baixo Estoque"</strong> do BI</li>
+    </ul>
+
+    <h3>Política recomendada de mínimo</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Categoria</th><th>Mínimo recomendado</th><th>Por quê</th></tr></thead>
+        <tbody>
+          <tr><td>Equipamentos</td><td>2-3 unidades</td><td>Alta margem, baixa rotatividade (cada venda é R$ mil)</td></tr>
+          <tr><td>Tubos / Cabos</td><td>15-20 unidades</td><td>Alta rotatividade, baixo custo, ocupa espaço</td></tr>
+          <tr><td>Disjuntores / Conexões</td><td>20-30 unidades</td><td>Consumo recorrente, deve ter sempre</td></tr>
+          <tr><td>Gás refrigerante</td><td>5-8 unidades</td><td>Essencial, prazo de compra longo</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="categorias"><span class="num">8</span>Categorias</h2>
+    <p>As categorias definem como o item aparece no BOM de cotação. O sistema vem com 7 categorias padrão (equipamento, tubulacao, cabo, suporte, dreno, isolamento, fixacao, refrigerante, eletrica, conexao). Você pode adicionar customizadas.</p>
+
+    <h3>Como criar uma categoria</h3>
+    <ol class="steps">
+      <li>No menu lateral, clique <kbd>Categorias</kbd></li>
+      <li>Preencha o nome (ex: "Filtro de Ar")</li>
+      <li>Escolha uma cor para identificação visual</li>
+      <li>Defina se entra no BOM automático (recomendado)</li>
+      <li>Salve</li>
+    </ol>
+
+    <h2 id="importar"><span class="num">9</span>Importação em massa</h2>
+    <p>Para popular o estoque inicial (centenas de SKUs), use o importador CSV.</p>
+
+    <h3>Formato do CSV</h3>
+    <pre><code>sku,nome,categoria,marca,modelo,potencia_btu,preco_custo,preco_venda,estoque_atual,localizacao
+AC-LG-09K,"Split LG 9.000 BTU",equipamento,LG,Dual Inverter,9000,1400,2199,12,Depósito A1
+TB-CU-1-4,"Tubo Cobre 1/4 15m",tubulacao,,,,,180,320,50,Depósito D1
+DS-30A,"Disjuntor 30A Mono",eletrica,,,,,35,70,50,Depósito F1</code></pre>
+
+    <h3>Como importar</h3>
+    <ol class="steps">
+      <li>No menu, clique <kbd>Importar CSV</kbd></li>
+      <li>Selecione o arquivo</li>
+      <li>Escolha se quer <strong>somar</strong> ao estoque existente ou <strong>substituir</strong></li>
+      <li>Clique <kbd>Importar</kbd></li>
+      <li>Veja o relatório: quantos importados, quantos erros, quantos atualizados</li>
+    </ol>
+
+    <div class="callout info">
+      <div class="callout-icon">ℹ️</div>
+      <div class="callout-body">
+        <div class="callout-title">Como popular o estoque inicial</div>
+        <p>Para criar 24 itens de exemplo (8 equipamentos + 16 materiais HVAC), rode:</p>
+        <pre style="background:var(--bg-base);padding:8px 12px;margin:8px 0 0"><code style="font-size:.85rem;color:var(--text-primary)">node seed-inventory.cjs</code></pre>
+        <p>Esse script é idempotente (pode rodar várias vezes sem duplicar).</p>
+      </div>
+    </div>
+
+    <h2 id="precos"><span class="num">10</span>Precificação &amp; margem</h2>
+    <p>Cada item tem <code>preco_custo</code> (quanto você paga) e <code>preco_venda</code> (quanto vai no BOM da cotação). A <strong>margem</strong> é calculada automaticamente.</p>
+
+    <pre><code>Margem (%) = ((preco_venda - preco_custo) / preco_custo) × 100</code></pre>
+
+    <h3>Benchmarks de margem por tipo</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Tipo</th><th>Margem saudável</th><th>Motivo</th></tr></thead>
+        <tbody>
+          <tr><td>Equipamento</td><td>30-50%</td><td>Alto valor agregado, marca, garantia</td></tr>
+          <tr><td>Tubos / Cabos</td><td>60-80%</td><td>Commodity, fácil comparação, markup alto cobre logística</td></tr>
+          <tr><td>Refrigerante</td><td>50-70%</td><td>Essencial, sem substituto</td></tr>
+          <tr><td>Acessórios</td><td>100-200%</td><td>Conexões, abraçadeiras, etc.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="praticas"><span class="num">11</span>Boas práticas</h2>
+
+    <h3>✅ Faça</h3>
+    <ul>
+      <li><strong>Mantenha estoque mínimo realista</strong> — analise consumo histórico dos últimos 6 meses</li>
+      <li><strong>Padronize SKUs</strong> — facilita busca e importação</li>
+      <li><strong>Faça inventário trimestral</strong> — compare físico × sistema, ajuste as diferenças</li>
+      <li><strong>Use localizações claras</strong> — "Depósito A1 / Prateleira 3 / Caixa 12"</li>
+      <li><strong>Revise margem por categoria</strong> a cada 6 meses (custo muda!)</li>
+    </ul>
+
+    <h3>❌ Evite</h3>
+    <ul>
+      <li><strong>Não ignore alertas de baixo estoque</strong> — perder venda por falta de peça = prejuízo garantido</li>
+      <li><strong>Não cadastre item com mesmo SKU duas vezes</strong> — sistema soma no estoque, mas pode confundir</li>
+      <li><strong>Não delete itens com histórico</strong> — marque como <code>ativo = 0</code> (arquivado)</li>
+    </ul>
+
+    <h2 id="api"><span class="num">12</span>API reference</h2>
+
+    <h3>GET /api/inventory</h3>
+    <p>Lista itens do estoque com filtros: <code>categoria</code>, <code>ativo</code>, <code>search</code>, <code>low_stock</code> (true = só baixo estoque).</p>
+    <pre><code>GET /api/inventory?ativo=1&amp;categoria=equipamento
+GET /api/inventory?low_stock=true</code></pre>
+
+    <h3>GET /api/inventory/:id</h3>
+    <p>Detalhe de um item + histórico de movimentações.</p>
+
+    <h3>POST /api/inventory</h3>
+    <p>Cria novo item.</p>
+    <pre><code>POST /api/inventory
+{
+  <span class="st">"sku"</span>: <span class="st">"AC-SAM-18K"</span>,
+  <span class="st">"nome"</span>: <span class="st">"Samsung Wind-Free 18.000 BTU"</span>,
+  <span class="st">"categoria"</span>: <span class="st">"equipamento"</span>,
+  <span class="st">"marca"</span>: <span class="st">"Samsung"</span>,
+  <span class="st">"modelo"</span>: <span class="st">"Wind-Free"</span>,
+  <span class="st">"potencia_btu"</span>: <span class="nm">18000</span>,
+  <span class="st">"refrigerante"</span>: <span class="st">"R-410A"</span>,
+  <span class="st">"preco_custo"</span>: <span class="nm">2700</span>,
+  <span class="st">"preco_venda"</span>: <span class="nm">4299</span>,
+  <span class="st">"estoque_atual"</span>: <span class="nm">6</span>,
+  <span class="st">"localizacao"</span>: <span class="st">"Depósito A2"</span>
+}</code></pre>
+
+    <h3>PUT /api/inventory/:id</h3>
+    <p>Atualiza dados do item.</p>
+
+    <h3>POST /api/inventory/:id/movimentar</h3>
+    <p>Registra movimentação (entrada/saída/ajuste).</p>
+    <pre><code>POST /api/inventory/:id/movimentar
+{
+  <span class="st">"tipo"</span>: <span class="st">"saida"</span>,
+  <span class="st">"quantidade"</span>: <span class="nm">1</span>,
+  <span class="st">"motivo"</span>: <span class="st">"OS #00012"</span>
+}</code></pre>
+
+    <h3>POST /api/inventory/importar</h3>
+    <p>Importa lista de itens em massa (CSV ou JSON).</p>
+    <pre><code>POST /api/inventory/importar
+{
+  <span class="st">"modo"</span>: <span class="st">"somar"</span>,
+  <span class="st">"itens"</span>: [
+    {<span class="st">"sku"</span>: <span class="st">"AC-LG-09K"</span>, <span class="st">"quantidade"</span>: <span class="nm">5</span>},
+    {<span class="st">"sku"</span>: <span class="st">"DS-30A"</span>, <span class="st">"quantidade"</span>: <span class="nm">30</span>}
+  ]
+}</code></pre>
+
+    <h3>GET /api/inventory/stats</h3>
+    <p>KPIs agregados (alimenta o BI): <code>totalItens</code>, <code>valorCusto</code>, <code>valorVenda</code>, <code>baixoEstoque</code>, <code>totalEquipamentos</code>, <code>valorEquipamentos</code>.</p>
+
+    <hr>
+
+    <div class="callout tip">
+      <div class="callout-icon">📚</div>
+      <div class="callout-body">
+        <div class="callout-title">Guias relacionados</div>
+        <p>• <a href="README.md" style="color:var(--teal)">README geral</a> · <a href="guia-cotacao.html" style="color:var(--teal)">Cotação</a> (consome estoque via BOM)<br>
+        • <a href="guia-chamados.html" style="color:var(--teal)">Chamados</a> (saída automática ao fechar OS)</p>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<footer>
+  <div class="row">
+    <div>Renostter Climatização &amp; Manutenção HVAC · contato@renostter.com.br · (11) 9999-9999</div>
+    <div>v1.0 · 22/07/2026 · <a href="README.md">Índice</a> · <a href="guia-cotacao.html">Cotação</a> · <a href="guia-bi.html">BI</a></div>
+  </div>
+</footer>
+
+<script>
+const tocLinks = document.querySelectorAll('.toc a');
+const sections = Array.from(tocLinks).map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    const id = '#' + entry.target.id;
+    const link = document.querySelector('.toc a[href="' + id + '"]');
+    if (link && entry.isIntersecting) {
+      tocLinks.forEach(l => l.classList.remove('active'));
+      link.classList.add('active');
+    }
+  });
+}, { rootMargin: '-20% 0px -70% 0px' });
+sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>

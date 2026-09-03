@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Renostter CRM — Login</title>
+    <meta name="description" content="Portal de gestão de contratos e suporte Renostter Climatização" />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="css/global.css" />
+    <link rel="stylesheet" href="css/login.css" />
+</head>
+
+<body>
+
+    <div class="login-page">
+        <!-- LEFT: Hero -->
+        <div class="login-hero">
+            <div class="hero-brand">
+                <div class="brand-expanded">
+                    <img src="assets/logo-crm.png" alt="Renostter Climatização" class="logo-expanded">
+                </div>
+            </div>
+
+            <div class="hero-content">
+                <h1>Gestão <span>inteligente</span> de contratos e suporte</h1>
+                <p>Centralize clientes, contratos e chamados em uma plataforma única. Controle SLAs, gere relatórios e
+                    melhore o relacionamento com seus clientes.</p>
+                <div class="hero-features">
+                    <div class="hero-feature">
+                        <div class="feature-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                <circle cx="9" cy="7" r="4" />
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                            </svg>
+                        </div>
+                        <div class="feature-text">
+                            <strong>Gestão completa de clientes</strong>
+                            <span>Cadastro, histórico e contratos vinculados</span>
+                        </div>
+                    </div>
+                    <div class="hero-feature">
+                        <div class="feature-icon" style="color:var(--orange)">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <circle cx="12" cy="12" r="10" />
+                                <polyline points="12 6 12 12 16 14" />
+                            </svg>
+                        </div>
+                        <div class="feature-text">
+                            <strong>SLA automático por contrato</strong>
+                            <span>Alertas de prazo e monitoramento em tempo real</span>
+                        </div>
+                    </div>
+                    <div class="hero-feature">
+                        <div class="feature-icon" style="color:var(--success)">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                            </svg>
+                        </div>
+                        <div class="feature-text">
+                            <strong>Dashboards e relatórios</strong>
+                            <span>KPIs, CSAT e performance da equipe</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-footer">
+                © 2026 Renostter Climatização · LGPD Compliant
+            </div>
+        </div>
+
+        <!-- RIGHT: Login Form -->
+        <div class="login-form-panel">
+            <div class="login-box">
+
+                <!-- STEP 1: Portal selection + credentials -->
+                <div id="step1">
+                    <h2>Bem-vindo de volta 👋</h2>
+                    <p>Selecione seu portal e faça login para continuar.</p>
+
+                    <div class="portal-tabs">
+                        <button class="portal-tab active" data-role="admin" onclick="selectPortal('admin',this)">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                            </svg>
+                            Admin
+                        </button>
+                        <button class="portal-tab" data-role="tecnico" onclick="selectPortal('tecnico',this)">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path
+                                    d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+                            </svg>
+                            Técnico
+                        </button>
+                        <button class="portal-tab" data-role="cliente" onclick="selectPortal('cliente',this)">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                <circle cx="12" cy="7" r="4" />
+                            </svg>
+                            Cliente
+                        </button>
+                    </div>
+
+                    <div class="login-form">
+                        <div class="input-group">
+                            <label>E-mail</label>
+                            <div class="input-wrap">
+                                <div class="input-icon">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <path
+                                            d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                                        <polyline points="22,6 12,13 2,6" />
+                                    </svg>
+                                </div>
+                                <input type="email" id="loginEmail" placeholder="seu@email.com" autocomplete="email" />
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label>Senha</label>
+                            <div class="input-wrap">
+                                <div class="input-icon">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                    </svg>
+                                </div>
+                                <input type="password" id="loginPassword" placeholder="••••••••"
+                                    autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()" />
+                            </div>
+                        </div>
+
+                        <div class="login-error" id="loginError">E-mail ou senha incorretos. Verifique e tente
+                            novamente.</div>
+
+                        <button class="btn-login" onclick="doLogin()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+                                <polyline points="10 17 15 12 10 7" />
+                                <line x1="15" y1="12" x2="3" y2="12" />
+                            </svg>
+                            Entrar
+                        </button>
+
+                        <a href="forgot-password.html"
+                            style="display:block;text-align:center;margin-top:12px;font-size:0.82rem;color:var(--text-secondary);text-decoration:none;transition:color 0.2s"
+                            onmouseover="this.style.color='var(--blue)'"
+                            onmouseout="this.style.color='var(--text-secondary)'">
+                            🔑 Esqueci minha senha
+                        </a>
+                    </div>
+
+                    <div class="demo-creds" id="demoCreds" style="display:none">
+                        <p>🔑 Credenciais de demonstração</p>
+                        <div class="demo-cred">
+                            <span>Super Admin</span>
+                            <code>administrator@renostter.com</code>
+                            <button class="copy-btn-demo"
+                                onclick="fillCreds('administrator@renostter.com','Renostter@','admin')">Usar</button>
+                        </div>
+                        <div class="demo-cred">
+                            <span>Admin</span>
+                            <code>admin@renostter.com</code>
+                            <button class="copy-btn-demo"
+                                onclick="fillCreds('admin@renostter.com','admin123','admin')">Usar</button>
+                        </div>
+                        <div class="demo-cred">
+                            <span>Técnico</span>
+                            <code>tecnico@renostter.com</code>
+                            <button class="copy-btn-demo"
+                                onclick="fillCreds('tecnico@renostter.com','tech123','tecnico')">Usar</button>
+                        </div>
+                        <div class="demo-cred">
+                            <span>Cliente</span>
+                            <code>joao@techcorp.com</code>
+                            <button class="copy-btn-demo"
+                                onclick="fillCreds('joao@techcorp.com','client123','cliente')">Usar</button>
+                        </div>
+                    </div>
+                    <button onclick="toggleDemo()"
+                        style="background:none;border:none;color:var(--text-muted);font-size:0.75rem;cursor:pointer;margin-top:4px;width:100%;text-align:center"
+                        id="demoToggle">
+                        ▼ Mostrar credenciais de demo
+                    </button>
+                </div>
+
+                <!-- STEP 2: 2FA -->
+                <div id="step2" style="display:none">
+                    <h2>Verificação em 2 etapas 🔐</h2>
+                    <p>Para segurança da conta de administrador, insira o código abaixo.</p>
+
+                    <div class="twofa-box">
+                        <p style="font-size:0.82rem;color:#8B949E;margin-bottom:8px">Código de verificação (simulado):
+                        </p>
+                        <div class="twofa-code-display" id="twofaDisplay">------</div>
+                        <p style="font-size:0.78rem;color:#8B949E;margin-bottom:16px">Digite o código acima no campo:
+                        </p>
+
+                        <div class="login-form">
+                            <div class="input-group">
+                                <label>Código de 6 dígitos</label>
+                                <div class="input-wrap">
+                                    <div class="input-icon">🔢</div>
+                                    <input type="text" id="twofaInput" class="twofa-input" maxlength="6"
+                                        placeholder="000000" oninput="this.value=this.value.replace(/\D/g,'')"
+                                        onkeydown="if(event.key==='Enter')verify2FA()" />
+                                </div>
+                            </div>
+                            <div class="login-error" id="twofaError">Código inválido. Tente novamente.</div>
+                            <button class="btn-login" onclick="verify2FA()">
+                                ✓ Verificar e Entrar
+                            </button>
+                            <button
+                                style="background:none;border:none;color:#8B949E;font-size:0.82rem;cursor:pointer;margin-top:4px"
+                                onclick="back2FA()">← Voltar</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script src="js/storage.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/utils.js"></script>
+    <script>
+        // Redirect if already logged in
+        const existing = auth.current();
+        if (existing) redirectToDashboard(existing.role);
+
+        let pendingUser = null;
+        let selectedRole = 'admin';
+
+        function selectPortal(role, btn) {
+            selectedRole = role;
+            document.querySelectorAll('.portal-tab').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const hints = { admin: 'admin@renostter.com', tecnico: 'tecnico@renostter.com', cliente: 'joao@techcorp.com' };
+            document.getElementById('loginEmail').placeholder = hints[role];
+        }
+
+        function fillCreds(email, pass, role) {
+            document.getElementById('loginEmail').value = email;
+            document.getElementById('loginPassword').value = pass;
+            // Select the right tab
+            document.querySelectorAll('.portal-tab').forEach(b => {
+                if (b.dataset.role === role) { selectPortal(role, b); b.classList.add('active'); }
+                else b.classList.remove('active');
+            });
+            selectedRole = role;
+        }
+
+        function doLogin() {
+            const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+            const pass = document.getElementById('loginPassword').value.trim(); // trim to catch copy-paste spaces
+            const errEl = document.getElementById('loginError');
+            errEl.classList.remove('visible');
+
+            if (!email || !pass) {
+                errEl.textContent = 'Preencha e-mail e senha.';
+                errEl.classList.add('visible');
+                return;
+            }
+
+            const user = db.get('users').find(u => u.email === email && u.password === pass);
+            if (!user) {
+                errEl.textContent = 'E-mail ou senha incorretos.';
+                errEl.classList.add('visible');
+                return;
+            }
+
+            // Block deactivated accounts
+            if (user.deactivated) {
+                errEl.textContent = 'Conta desativada. Entre em contato com o administrador.';
+                errEl.classList.add('visible');
+                return;
+            }
+
+            // 2FA required for admin and superadmin
+            if (user.twofa && (user.role === 'admin' || user.role === 'superadmin')) {
+                pendingUser = user;
+                const code = twoFA.generate();
+                document.getElementById('twofaDisplay').textContent = code;
+                document.getElementById('step1').style.display = 'none';
+                document.getElementById('step2').style.display = 'block';
+                document.getElementById('twofaInput').value = '';
+                document.getElementById('twofaError').classList.remove('visible');
+                document.getElementById('twofaInput').focus();
+                return;
+            }
+
+            auth.login(email, pass);
+            redirectToDashboard(user.role);
+        }
+
+        function verify2FA() {
+            const input = document.getElementById('twofaInput').value.trim();
+            const errEl = document.getElementById('twofaError');
+            errEl.classList.remove('visible');
+
+            if (!input || input.length !== 6) {
+                errEl.textContent = 'Digite o código de 6 dígitos.';
+                errEl.classList.add('visible');
+                return;
+            }
+
+            if (!twoFA.verify(input)) {
+                errEl.textContent = 'Código inválido. Tente novamente.';
+                errEl.classList.add('visible');
+                return;
+            }
+
+            // Success — create full session including isSuperAdmin flag
+            const s = {
+                userId: pendingUser.id,
+                role: pendingUser.role,
+                name: pendingUser.name,
+                clientId: pendingUser.clientId || null,
+                isSuperAdmin: pendingUser.role === 'superadmin',
+            };
+            sessionStorage.setItem('rcrm_session', JSON.stringify(s));
+            redirectToDashboard(pendingUser.role);
+        }
+
+        function back2FA() {
+            document.getElementById('step2').style.display = 'none';
+            document.getElementById('step1').style.display = 'block';
+            pendingUser = null;
+        }
+
+        function toggleDemo() {
+            const box = document.getElementById('demoCreds');
+            const btn = document.getElementById('demoToggle');
+            const visible = box.style.display !== 'none';
+            box.style.display = visible ? 'none' : 'block';
+            btn.textContent = visible ? '▼ Mostrar credenciais de demo' : '▲ Ocultar demo';
+        }
+    </script>
+</body>
+
+</html>

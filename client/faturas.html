@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Minhas Faturas — Renostter CRM</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../css/global.css" />
+    <link rel="stylesheet" href="../css/dashboard.css" />
+    <style>
+        .fatura-grid { display:grid; gap:16px; }
+        .fatura-card { background:var(--bg-surface); border:1px solid var(--border-color); border-radius:var(--radius-lg); padding:20px; transition:border-color .2s, transform .15s; }
+        .fatura-card:hover { border-color:var(--blue); transform:translateY(-2px); }
+        .fatura-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+        .fatura-valor { font-size:1.4rem; font-weight:800; }
+        .fatura-valor.paid { color:var(--green); }
+        .fatura-body { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px; font-size:.85rem; }
+        .fatura-label { color:var(--text-secondary); font-size:.75rem; font-weight:600; text-transform:uppercase; }
+        .fatura-actions { display:flex; gap:8px; flex-wrap:wrap; border-top:1px solid var(--border-color); padding-top:14px; }
+        .status-badge { padding:3px 10px; border-radius:50px; font-size:.72rem; font-weight:700; text-transform:uppercase; }
+        .status-PENDING,.status-OPEN { background:rgba(0,174,239,.12); color:#00AEEF; }
+        .status-PAID { background:rgba(46,204,113,.12); color:#2ECC71; }
+        .status-OVERDUE { background:rgba(239,68,68,.12); color:#EF4444; }
+        .status-CANCELLED { background:rgba(107,114,128,.15); color:#6B7280; }
+        .digitavel-box { background:var(--bg-hover); border:1px solid var(--border-color); border-radius:var(--radius); padding:10px; font-family:'Courier New',monospace; font-size:.8rem; color:var(--blue); letter-spacing:.5px; word-break:break-all; cursor:pointer; text-align:center; transition:background .2s; }
+        .digitavel-box:hover { background:rgba(0,174,239,.08); }
+        .empty-faturas { text-align:center; padding:60px 20px; }
+        .empty-faturas h3 { font-size:1.2rem; margin:12px 0 6px; }
+        .empty-faturas p { color:var(--text-secondary); font-size:.9rem; }
+        .summary-bar { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:20px; }
+        .summary-item { background:var(--bg-surface); border:1px solid var(--border-color); border-radius:var(--radius); padding:16px; text-align:center; }
+        .summary-item .sv { font-size:1.3rem; font-weight:800; }
+        .summary-item .sl { font-size:.72rem; color:var(--text-secondary); font-weight:600; text-transform:uppercase; margin-top:4px; }
+        @media (max-width:640px) { .summary-bar { grid-template-columns:1fr; } .fatura-body { grid-template-columns:1fr; } }
+    </style>
+</head>
+
+<body>
+    <div class="app-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo"><img src="../assets/logo-crm.png" alt="Renostter CRM"></div>
+            <nav class="sidebar-nav">
+                <div class="nav-section-label">Minha Área</div>
+                <a class="nav-item" href="dashboard.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span>Início</span></a>
+                <a class="nav-item" href="tickets.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><span>Meus Chamados</span><span class="nav-badge notif-badge" style="display:none">0</span></a>
+                <a class="nav-item" href="contracts.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>Meus Contratos</span></a>
+                <a class="nav-item active" href="faturas.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg><span>Minhas Faturas</span></a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-card" onclick="auth.logout()">
+                    <div class="user-avatar" id="sidebarAvatar">C</div>
+                    <div class="user-info"><strong id="sidebarUserName">Cliente</strong><span id="sidebarUserRole">Cliente</span></div>
+                </div>
+            </div>
+        </aside>
+
+        <div class="main-content">
+            <div class="topbar">
+                <div class="topbar-left">
+                    <button class="hamburger btn btn-ghost btn-icon" id="hamburger"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+                    <span class="page-title">Minhas Faturas</span>
+                </div>
+            </div>
+
+            <div class="page-body">
+                <!-- Resumo -->
+                <div class="summary-bar" id="summaryBar">
+                    <div class="summary-item"><div class="sv" id="sumTotal" style="color:var(--blue)">—</div><div class="sl">Total em aberto</div></div>
+                    <div class="summary-item"><div class="sv" id="sumPago" style="color:var(--green)">—</div><div class="sl">Total pago</div></div>
+                    <div class="summary-item"><div class="sv" id="sumQtd">—</div><div class="sl">Faturas</div></div>
+                </div>
+
+                <!-- Cards -->
+                <div class="fatura-grid" id="faturaGrid"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastContainer" class="toast-container"></div>
+    <script src="../js/storage.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/cora_integration.js"></script>
+    <script>
+        const session = auth.protect(['cliente']);
+        const clientId = session.clientId;
+
+        const fmtVal = v => (v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        const fmtDate = d => d ? new Date(d).toLocaleDateString('pt-BR') : '—';
+
+        (async function init() {
+            loadAll();
+        })();
+
+        async function loadAll() {
+            try {
+                // 1. Carregar Cobranças (Billed)
+                const resC = await fetch(`${CORA_API_URL}/api/cobrancas?clientId=${clientId}`);
+                const dataC = await resC.json();
+                const cobrancas = dataC.success ? dataC.data : [];
+
+                // 2. Carregar Propostas (Pending Invoices)
+                const resF = await CoraIntegration.listarFaturas({ clientId });
+                const faturas = resF.success ? resF.data : [];
+
+                renderFaturas(cobrancas, faturas);
+            } catch (e) {
+                console.error('[Faturas]', e);
+                document.getElementById('faturaGrid').innerHTML = '<div class="empty-faturas"><div style="font-size:2.5rem">📡</div><h3>Erro de conexão</h3><p>Não foi possível carregar suas faturas. Tente novamente.</p></div>';
+            }
+        }
+
+        function renderFaturas(cobrancas, faturas) {
+            const aberto = cobrancas.filter(f => ['PENDING', 'OPEN', 'OVERDUE'].includes(f.status));
+            const pago = cobrancas.filter(f => f.status === 'PAID');
+
+            document.getElementById('sumTotal').textContent = fmtVal(aberto.reduce((s, f) => s + (f.valor || 0), 0));
+            document.getElementById('sumPago').textContent = fmtVal(pago.reduce((s, f) => s + (f.valor || 0), 0));
+            document.getElementById('sumQtd').textContent = cobrancas.length + faturas.length;
+
+            let html = '';
+
+            // ── Section: Propostas Pendentes ──
+            const pendentes = faturas.filter(f => f.status === 'AUTORIZACAO_PENDENTE');
+            if (pendentes.length > 0) {
+                html += `<h3 style="grid-column: 1/-1; margin: 10px 0 5px; font-size: 1.1rem; border-left: 4px solid var(--blue); padding-left: 12px;">Aprovações Pendentes</h3>`;
+                html += pendentes.map(f => `
+                    <div class="fatura-card" style="border-color: var(--blue-dim); background: linear-gradient(to bottom, var(--bg-surface), rgba(0,174,239,0.02))">
+                        <div class="fatura-header">
+                            <div class="fatura-valor">${fmtVal(f.valor_total)}</div>
+                            <span class="status-badge status-PENDING">Aguardando Sua Aprovação</span>
+                        </div>
+                        <div class="fatura-body">
+                            <div><div class="fatura-label">Nº Proposta</div><div>${f.numero}</div></div>
+                            <div><div class="fatura-label">Chamado</div><div>#${f.ticket_num || f.ticket_id}</div></div>
+                            <div style="grid-column: span 2; margin-top: 8px">
+                                <div class="fatura-label">Serviços / Peças</div>
+                                <div style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.4">
+                                    ${(f.itens || []).map(i => `• ${i.quantidade}x ${i.descricao}`).join('<br>') || 'Apenas Mão de obra'}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="fatura-actions">
+                            <button class="btn btn-primary btn-sm" onclick="aprovarFatura('${f.id}')">✅ Aprovar e Gerar Boleto</button>
+                            <button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="reprovarFatura('${f.id}')">✕ Reprovar</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // ── Section: Cobranças e Faturas ──
+            if (cobrancas.length > 0 || faturas.length > pendentes.length) {
+                html += `<h3 style="grid-column: 1/-1; margin: 25px 0 5px; font-size: 1.1rem; color: var(--text-secondary)">Histórico de Cobranças</h3>`;
+                
+                // Unir outras faturas (reprovadas, etc) se houver
+                const outrasFaturas = faturas.filter(f => f.status !== 'AUTORIZACAO_PENDENTE');
+                
+                const sortedCobrancas = [...aberto.sort((a, b) => new Date(a.data_vencimento) - new Date(b.data_vencimento)), ...pago.sort((a, b) => new Date(b.data_pagamento || b.updated_at) - new Date(a.data_pagamento || a.updated_at))];
+                
+                html += sortedCobrancas.map(f => {
+                    const isOverdue = f.status === 'OVERDUE' || (f.status === 'PENDING' && new Date(f.data_vencimento) < new Date());
+                    const statusLabel = { PENDING: 'Aguardando', OPEN: 'Aberto', PAID: 'Pago', OVERDUE: 'Vencido', CANCELLED: 'Cancelado' };
+                    const realStatus = isOverdue && f.status !== 'PAID' ? 'OVERDUE' : f.status;
+
+                    return `<div class="fatura-card">
+                        <div class="fatura-header">
+                            <div class="fatura-valor ${f.status === 'PAID' ? 'paid' : ''}">${fmtVal(f.valor)}</div>
+                            <span class="status-badge status-${realStatus}">${statusLabel[realStatus] || f.status}</span>
+                        </div>
+                        <div class="fatura-body">
+                            <div><div class="fatura-label">Vencimento</div><div>${fmtDate(f.data_vencimento)}</div></div>
+                            <div><div class="fatura-label">Referência</div><div>#${f.fatura_numero || f.contract_id || 'Serviço'}</div></div>
+                        </div>
+                        ${f.linha_digitavel ? `<div class="digitavel-box" onclick="copiar('${f.linha_digitavel}')" title="Clique para copiar">${f.linha_digitavel}</div>` : ''}
+                        <div class="fatura-actions">
+                            ${f.pdf_url ? `<a class="btn btn-primary btn-sm" href="${f.pdf_url}" target="_blank">📄 Baixar Boleto</a>` : ''}
+                            ${f.linha_digitavel ? `<button class="btn btn-ghost btn-sm" onclick="copiar('${f.linha_digitavel}')">📋 Copiar Código</button>` : ''}
+                        </div>
+                    </div>`;
+                }).join('');
+
+                html += outrasFaturas.map(f => `
+                    <div class="fatura-card" style="opacity: 0.7">
+                        <div class="fatura-header">
+                            <div class="fatura-valor">${fmtVal(f.valor_total)}</div>
+                            <span class="status-badge" style="background: #eee; color: #666">${f.status === 'REJEITADO' ? 'REPROVADA' : f.status}</span>
+                        </div>
+                        <div class="fatura-body">
+                            <div><div class="fatura-label">Data</div><div>${fmtDate(f.created_at)}</div></div>
+                            <div><div class="fatura-label">Nº</div><div>${f.numero}</div></div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            if (!cobrancas.length && !faturas.length) {
+                html = '<div class="empty-faturas"><div style="font-size:2.5rem">🎉</div><h3>Nenhuma fatura pendente!</h3><p>Você está em dia com seus pagamentos.</p></div>';
+            }
+
+            document.getElementById('faturaGrid').innerHTML = html;
+        }
+
+        async function aprovarFatura(id) {
+            if (!confirm('Deseja aprovar esta fatura? O boleto será gerado automaticamente para o seu e-mail.')) return;
+            try {
+                const res = await CoraIntegration.aprovarFatura(id);
+                if (res.success) {
+                    toast('Sucesso!', 'Fatura aprovada. O boleto está disponível no histórico.', 'success');
+                    loadAll();
+                }
+            } catch (e) {
+                toast('Erro', e.message, 'error');
+            }
+        }
+
+        async function reprovarFatura(id) {
+            const justificativa = prompt('Por favor, informe o motivo da reprovação:');
+            if (justificativa === null) return;
+            if (!justificativa.trim()) return toast('Erro', 'Justificativa obrigatória para reprovar.', 'warning');
+
+            try {
+                const res = await CoraIntegration.reprovarFatura(id, justificativa);
+                if (res.success) {
+                    toast('Fatura Reprovada', 'Sua resposta foi enviada à equipe técnica.', 'success');
+                    loadAll();
+                }
+            } catch (e) {
+                toast('Erro', e.message, 'error');
+            }
+        }
+
+        function copiar(text) {
+            navigator.clipboard.writeText(text);
+            toast('Copiado!', 'Código copiado para a área de transferência.', 'success');
+        }
+
+        initSidebar();
+    </script>
+</body>
+
+</html>

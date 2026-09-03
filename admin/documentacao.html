@@ -1,0 +1,525 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Documentação — Renostter CRM</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../css/global.css" />
+    <link rel="stylesheet" href="../css/dashboard.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        /* ── Report Grid ── */
+        .report-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        @media (max-width: 900px) {
+            .report-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .chart-card { min-height: 0; }
+        .chart-wrap { height: 220px; position: relative; }
+
+        /* ── Pending list rows ── */
+        .pending-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.85rem;
+        }
+        .pending-row:last-child { border-bottom: none; }
+
+        /* ── Filter bar (mantém padrão dos demais admin/*) ── */
+        .doc-filters {
+            padding: 0 20px 20px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-layout">
+
+        <!-- ─────────────── SIDEBAR ─────────────── -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <img src="../assets/logo-crm.png" alt="Renostter CRM" style="max-height:52px;object-fit:contain">
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section-label">Relatórios &amp; Analytics</div>
+                <a class="nav-item" href="dashboard.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span>Dashboard</span></a>
+                <a class="nav-item" href="reports.html?tab=kpi"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg><span>KPIs</span></a>
+                <a class="nav-item" href="reports.html?tab=tech-perf"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg><span>Desempenho Técnicos</span></a>
+                <a class="nav-item" href="reports.html?tab=clients"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg><span>Clientes</span></a>
+                <a class="nav-item" href="reports.html?tab=transfers"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg><span>Transferências</span></a>
+                <a class="nav-item active" href="documentacao.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg><span>Documentação</span></a>
+                <a class="nav-item" href="reports.html?tab=inventory"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg><span>Estoque</span></a>
+
+                <div class="nav-section-label" style="margin-top:16px">GESTãO</div>
+                <a class="nav-item" href="projects.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg><span>Dashboard PM</span></a>
+                <a class="nav-item" href="financeiro.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg><span>Financeiro</span></a>
+                <a class="nav-item" href="cobrancas.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg><span>Cobranças</span></a>
+                <a class="nav-item" href="knowledge.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span>Base de Conhecimento</span></a>
+                <a class="nav-item" href="clients.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Clientes</span></a>
+                <a class="nav-item" href="leads.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.39a2 2 0 0 1 1.98-2.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span>Leads</span></a>
+                <a class="nav-item" href="contracts.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>Contratos</span></a>
+                <a class="nav-item" href="tickets.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><span>Chamados</span></a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-card" onclick="auth.logout()">
+                    <div class="user-avatar" id="sidebarAvatar">A</div>
+                    <div class="user-info"><strong id="sidebarUserName">Admin</strong><span id="sidebarUserRole">Administrador Master</span></div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ─────────────── MAIN ─────────────── -->
+        <div class="main-content">
+
+            <div class="topbar">
+                <div class="topbar-left">
+                    <button class="hamburger btn btn-ghost btn-icon" id="hamburger"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></svg></button>
+                    <span class="page-title">Relatórios &amp; Analytics — Documentação</span>
+                </div>
+                <div class="topbar-right">
+                    <button class="btn btn-ghost btn-sm" onclick="exportDocHistory()">📥 Exportar CSV</button>
+                </div>
+            </div>
+
+            <div class="page-body">
+
+                <!-- ── KPIs ── -->
+                <div class="kpi-grid" id="docKpis" style="margin-bottom:24px"></div>
+
+                <!-- ── Grid: gráfico + clientes sem documento ── -->
+                <div class="report-grid">
+                    <div class="card chart-card">
+                        <div class="card-header">
+                            <span class="card-title">📈 Uploads por Mês</span>
+                        </div>
+                        <div class="chart-wrap"><canvas id="chartDocUploads"></canvas></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">⚠ï¸ Clientes Ativos sem Documento</span>
+                            <span id="docPendingCount" style="font-size:0.78rem;color:var(--text-muted)"></span>
+                        </div>
+                        <div style="padding:0 20px;max-height:220px;overflow-y:auto" id="docPendingList"></div>
+                    </div>
+                </div>
+
+                <!-- ── Histórico e Central de Arquivos ── -->
+                <div class="card" style="margin-top:24px">
+                    <div class="card-header" style="flex-wrap:wrap;padding-bottom:16px">
+                        <span class="card-title">📋 Histórico e Central de Arquivos</span>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap">
+                            <button class="btn btn-primary btn-sm" onclick="openUploadDocModal()">➕ Adicionar Documento</button>
+                            <a href="clients.html" class="btn btn-ghost btn-sm">👥 CLIENTES</a>
+                            <button class="btn btn-ghost btn-sm" onclick="exportDocHistory()">📥 CSV</button>
+                        </div>
+                    </div>
+
+                    <div class="doc-filters">
+                        <div style="flex:1;min-width:200px">
+                            <label style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:6px">Busca Livre</label>
+                            <input type="text" class="form-input" id="docSearch" placeholder="Nome ou Descrição..." onkeyup="loadDocs()" style="width:100%;height:36px">
+                        </div>
+                        <div>
+                            <label style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:6px">Cliente</label>
+                            <select class="filter-select" id="docClientFilter" onchange="loadDocs()" style="min-width:160px;height:36px">
+                                <option value="">Todos os clientes</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:6px">Categoria</label>
+                            <select class="filter-select" id="docCatFilter" onchange="loadDocs()" style="min-width:140px;height:36px">
+                                <option value="">Todas</option>
+                                <option value="contrato">Contrato</option>
+                                <option value="aditivo">Aditivo</option>
+                                <option value="projeto">Projeto Técnico</option>
+                                <option value="termo_aceite">Termo de Aceite</option>
+                                <option value="diversos">Diversos</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:6px">Período (Início - Fim)</label>
+                            <div style="display:flex;gap:6px">
+                                <input type="date" class="form-input" id="docStart" onchange="loadDocs()" style="height:36px">
+                                <input type="date" class="form-input" id="docEnd" onchange="loadDocs()" style="height:36px">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-wrapper">
+                        <table class="mobile-stacked-table">
+                            <thead>
+                                <tr>
+                                    <th>Arquivo</th>
+                                    <th>Cód. Cliente</th>
+                                    <th>Categoria</th>
+                                    <th>Tamanho</th>
+                                    <th>Enviado por</th>
+                                    <th>Data / Hora</th>
+                                    <th style="width:100px;text-align:right">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="docHistoryTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─────────────── MODAL: Adicionar Documento ─────────────── -->
+    <div id="modalUploadDoc" class="modal-overlay">
+        <div class="modal" style="max-width:500px">
+            <div class="modal-header">
+                <h2 class="modal-title">➕ Adicionar Novo Documento</h2>
+                <button class="modal-close" onclick="closeModal('modalUploadDoc')">✖</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Arquivo</label>
+                    <input type="file" id="updFile" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Descrição Breve</label>
+                    <input type="text" id="updDesc" class="form-input" placeholder="Ex: Contrato de Manutenção 2024">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Cliente (Opcional)</label>
+                    <select id="updClient" class="form-input">
+                        <option value="">Selecione...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Categoria</label>
+                    <select id="updCat" class="form-input">
+                        <option value="contrato">Contrato</option>
+                        <option value="aditivo">Aditivo</option>
+                        <option value="projeto">Projeto Técnico</option>
+                        <option value="termo_aceite">Termo de Aceite</option>
+                        <option value="diversos" selected>Diversos</option>
+                    </select>
+                </div>
+                <div style="font-size:0.8rem;color:var(--text-muted);margin-top:-8px">
+                    Nota: O ambiente atual salva o arquivo convertido em Base64 no LocalStorage do seu navegador. Não abuse do tamanho.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('modalUploadDoc')">Cancelar</button>
+                <button class="btn btn-primary" onclick="submitUploadDoc()">Salvar Documento</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script src="../js/storage.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/approval-banner.js"></script>
+    <script src="../js/utils.js"></script>
+    <script>
+        // ─── Auth gate ───
+        const session = auth.protect(['admin', 'superadmin']);
+        initSidebar();
+
+        // ─── Chart config helpers ───
+        const CHART_OPTS = (indexAxis) => ({
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                [indexAxis === 'y' ? 'x' : 'y']: {
+                    beginAtZero: true,
+                    ticks: { color: '#8B949E', precision: 0 },
+                    grid: { color: 'rgba(255,255,255,0.05)' }
+                },
+                [indexAxis === 'y' ? 'y' : 'x']: {
+                    ticks: { color: '#8B949E' },
+                    grid: { display: false }
+                }
+            }
+        });
+
+        function fmtSize(bytes) {
+            if (!bytes) return '—';
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / 1048576).toFixed(1) + ' MB';
+        }
+
+        // ─── Populate client dropdowns (once) ───
+        let docClientsPopulated = false;
+        function populateDocClients(clients) {
+            if (docClientsPopulated) return;
+            const selF = document.getElementById('docClientFilter');
+            const selU = document.getElementById('updClient');
+            if (!selF || !selU) return;
+            const opts = clients.map(c => `<option value="${esc(c.id)}">${esc(c.fantasia || c.razaoSocial)}</option>`).join('');
+            selF.innerHTML = '<option value="">Todos os clientes</option>' + opts;
+            selU.innerHTML = '<option value="">Sem vínculo</option>' + opts;
+            docClientsPopulated = true;
+        }
+
+        // ─── Render principal ───
+        function loadDocs() {
+            const allClients = db.get('clients');
+            populateDocClients(allClients);
+
+            const activeClients = allClients.filter(c => c.status === 'ativo');
+            const allDocs = db.get('documents');
+            const clientsWithDoc = new Set(allDocs.map(d => d.clientId).filter(Boolean));
+            const withDoc = activeClients.filter(c => clientsWithDoc.has(c.id)).length;
+            const withoutDoc = activeClients.filter(c => !clientsWithDoc.has(c.id));
+            const coverage = activeClients.length ? Math.round(withDoc / activeClients.length * 100) : 0;
+
+            // KPIs
+            const kpis = [
+                { label: 'Total de Documentos', value: allDocs.length, icon: '📎', cls: 'blue' },
+                { label: 'Clientes c/ Documento', value: withDoc, icon: '✅', cls: 'green' },
+                { label: 'Cobertura Digital', value: coverage + '%', icon: '📊', cls: coverage >= 80 ? 'green' : coverage >= 50 ? 'yellow' : 'red' },
+                { label: 'Sem Documento', value: withoutDoc.length, icon: '⚠ï¸', cls: 'red', title: 'Clientes ativos sem nenhum documento' },
+            ];
+            document.getElementById('docKpis').innerHTML = kpis.map(k => `
+                <div class="kpi-card" ${k.title ? `title="${esc(k.title)}"` : ''}>
+                    <div class="kpi-info">
+                        <div class="kpi-label">${esc(k.label)}</div>
+                        <div class="kpi-value">${k.value}</div>
+                    </div>
+                    <div class="kpi-icon ${k.cls}" style="font-size:1.3rem">${k.icon}</div>
+                </div>`).join('');
+
+            // Pending list
+            document.getElementById('docPendingCount').textContent = `(${withoutDoc.length})`;
+            const pendingEl = document.getElementById('docPendingList');
+            pendingEl.innerHTML = withoutDoc.length ? withoutDoc.map(c => `
+                <div class="pending-row">
+                    <div style="flex:1">
+                        <div style="font-weight:600;font-size:0.84rem">${esc(c.fantasia || c.razaoSocial)}</div>
+                        <div style="font-size:0.73rem;color:var(--text-muted)">${esc(c.contato || '')} · ${esc(c.email || '')}</div>
+                    </div>
+                    <a href="clients.html" class="btn btn-ghost btn-sm" style="font-size:0.75rem">Ver cliente →</a>
+                </div>`).join('') : '<p style="color:var(--text-secondary);padding:16px 0;font-size:0.85rem;text-align:center">✅ Todos os clientes ativos têm documentos!</p>';
+
+            // Uploads chart
+            const monthCounts = {};
+            allDocs.forEach(d => {
+                const m = d.createdAt ? d.createdAt.slice(0, 7) : 'Desconhecido';
+                monthCounts[m] = (monthCounts[m] || 0) + 1;
+            });
+            const monthLabels = Object.keys(monthCounts).sort().slice(-6);
+            const monthData = monthLabels.map(m => monthCounts[m]);
+            if (window.chartDocUpInst) window.chartDocUpInst.destroy();
+            const ctx = document.getElementById('chartDocUploads').getContext('2d');
+            window.chartDocUpInst = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: monthLabels.map(m => {
+                        const [y, mo] = m.split('-');
+                        return new Date(+y, +mo - 1).toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' });
+                    }),
+                    datasets: [{ data: monthData, backgroundColor: '#00AEEF', borderRadius: 6 }]
+                },
+                options: { ...CHART_OPTS('x'), plugins: { legend: { display: false } } }
+            });
+
+            // Tabela filtrada
+            const search = (document.getElementById('docSearch').value || '').toLowerCase();
+            const fClient = document.getElementById('docClientFilter').value;
+            const fCat = document.getElementById('docCatFilter').value;
+            const sDate = document.getElementById('docStart').value;
+            const eDate = document.getElementById('docEnd').value;
+
+            let filteredDocs = [...allDocs].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            if (fClient) filteredDocs = filteredDocs.filter(d => d.clientId === fClient);
+            if (fCat) filteredDocs = filteredDocs.filter(d => d.category === fCat);
+            if (search) filteredDocs = filteredDocs.filter(d =>
+                (d.name || '').toLowerCase().includes(search) ||
+                (d.description || '').toLowerCase().includes(search)
+            );
+            if (sDate) {
+                const sT = new Date(sDate + 'T00:00:00').getTime();
+                filteredDocs = filteredDocs.filter(d => new Date(d.createdAt).getTime() >= sT);
+            }
+            if (eDate) {
+                const eT = new Date(eDate + 'T23:59:59').getTime();
+                filteredDocs = filteredDocs.filter(d => new Date(d.createdAt).getTime() <= eT);
+            }
+
+            const catColors = {
+                'contrato': 'blue',
+                'aditivo': 'orange',
+                'projeto': 'yellow',
+                'termo_aceite': 'green',
+                'diversos': 'gray'
+            };
+
+            document.getElementById('docHistoryTable').innerHTML = filteredDocs.length ? filteredDocs.map(d => {
+                const safeName = esc(d.name || '');
+                const safeDesc = esc(d.description || '—');
+                const safeClient = esc(d.clientName || '—');
+                const safeCategory = esc((d.category || 'diversos').toUpperCase());
+                const safeUploader = esc(d.uploadedByName || '—');
+                const dt = new Date(d.createdAt);
+                const dataStr = isNaN(dt.getTime()) ? '—' : fmt.date(d.createdAt);
+                const horaStr = isNaN(dt.getTime()) ? '' : dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                const catCls = catColors[d.category || 'diversos'] || 'gray';
+
+                return `
+                <tr>
+                    <td data-label="Arquivo">
+                        <div style="font-weight:600;font-size:0.85rem;color:var(--text-primary)">${safeName}</div>
+                        <div style="font-size:0.75rem;color:var(--text-secondary);margin-top:2px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${safeDesc}">${safeDesc}</div>
+                    </td>
+                    <td data-label="Cliente" style="font-size:0.82rem;font-weight:500">${safeClient}</td>
+                    <td data-label="Categoria"><span class="badge badge-${catCls}" style="text-transform:uppercase">${safeCategory}</span></td>
+                    <td data-label="Tamanho" class="td-muted">${fmtSize(d.sizeBytes)}</td>
+                    <td data-label="Enviado por" class="td-muted" style="font-size:0.78rem">${safeUploader}</td>
+                    <td data-label="Data / Hora" class="td-muted" style="font-size:0.8rem">
+                        <div>${dataStr}</div>
+                        <div style="font-size:0.7rem">${horaStr}</div>
+                    </td>
+                    <td data-label="Ações" style="text-align:right" class="td-actions">
+                        <button class="btn btn-ghost btn-icon-sm" title="Download" onclick="downloadDoc('${esc(d.id)}')">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        </button>
+                        <button class="btn btn-ghost btn-icon-sm" title="Excluir" onclick="deleteDoc('${esc(d.id)}')" style="color:var(--danger)">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+                        </button>
+                    </td>
+                </tr>`;
+            }).join('') : `<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-secondary);font-size:0.85rem">Nenhum documento encontrado para os filtros aplicados.</td></tr>`;
+        }
+
+        // ─── Upload (base64 em localStorage — consistente com demais módulos) ───
+        function openUploadDocModal() {
+            // reset form
+            document.getElementById('updFile').value = '';
+            document.getElementById('updDesc').value = '';
+            const selU = document.getElementById('updClient');
+            if (selU) selU.value = '';
+            document.getElementById('updCat').value = 'diversos';
+            openModal('modalUploadDoc');
+        }
+
+        function submitUploadDoc() {
+            const fileInput = document.getElementById('updFile');
+            const desc = document.getElementById('updDesc').value.trim();
+            const clientId = document.getElementById('updClient').value;
+            const category = document.getElementById('updCat').value;
+
+            if (!fileInput.files || !fileInput.files[0]) {
+                toast('Arquivo obrigatório', 'Selecione um arquivo para enviar.', 'warning');
+                return;
+            }
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const allClients = db.get('clients');
+                const client = allClients.find(c => c.id === clientId);
+                const docObj = {
+                    id: db._uid(),
+                    name: file.name,
+                    description: desc,
+                    type: file.type,
+                    sizeBytes: file.size,
+                    data: e.target.result,
+                    clientId: clientId || null,
+                    clientName: client ? (client.fantasia || client.razaoSocial) : null,
+                    category: category,
+                    uploadedBy: session.userId,
+                    uploadedByName: session.name || 'Admin',
+                    createdAt: new Date().toISOString()
+                };
+
+                const docs = db.get('documents');
+                docs.push(docObj);
+                db.set('documents', docs);
+                logAudit('doc_upload', `Documento: ${file.name} (Cliente: ${client ? (client.fantasia || client.razaoSocial) : 'Nenhum'})`);
+
+                closeModal('modalUploadDoc');
+                toast('Sucesso', 'Documento adicionado à base.', 'success');
+                loadDocs();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function downloadDoc(id) {
+            const doc = db.get('documents').find(d => d.id === id);
+            if (!doc) return toast('Erro', 'Documento não encontrado.', 'error');
+            if (!doc.data) return toast('Indisponível', 'Este documento não possui arquivo anexado.', 'warning');
+
+            const a = document.createElement('a');
+            a.href = doc.data;
+            a.download = doc.name;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        function deleteDoc(id) {
+            if (session.role !== 'superadmin') return toast('Erro', 'Acesso negado', 'error');
+            if (!confirm('Deseja realmente excluir este documento permanentemente?')) return;
+
+            let docs = db.get('documents');
+            const doc = docs.find(d => d.id === id);
+            docs = docs.filter(d => d.id !== id);
+            db.set('documents', docs);
+            logAudit('doc_delete', `Excluiu doc: ${doc ? doc.name : id}`);
+            toast('Excluído', 'Documento removido.', 'success');
+            loadDocs();
+        }
+
+        function exportDocHistory() {
+            const search = (document.getElementById('docSearch').value || '').toLowerCase();
+            const fClient = document.getElementById('docClientFilter').value;
+            const fCat = document.getElementById('docCatFilter').value;
+            const sDate = document.getElementById('docStart').value;
+            const eDate = document.getElementById('docEnd').value;
+
+            let filteredDocs = [...db.get('documents')].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            if (fClient) filteredDocs = filteredDocs.filter(d => d.clientId === fClient);
+            if (fCat) filteredDocs = filteredDocs.filter(d => d.category === fCat);
+            if (search) filteredDocs = filteredDocs.filter(d =>
+                (d.name || '').toLowerCase().includes(search) ||
+                (d.description || '').toLowerCase().includes(search));
+            if (sDate) filteredDocs = filteredDocs.filter(d => new Date(d.createdAt).getTime() >= new Date(sDate + 'T00:00:00').getTime());
+            if (eDate) filteredDocs = filteredDocs.filter(d => new Date(d.createdAt).getTime() <= new Date(eDate + 'T23:59:59').getTime());
+
+            const data = filteredDocs.map(d => ({
+                arquivo: d.name,
+                descricao: d.description || '',
+                cliente: d.clientName || '',
+                categoria: d.category || 'diversos',
+                tamanho: fmtSize(d.sizeBytes),
+                enviadoPor: d.uploadedByName || '',
+                data: fmt.datetime(d.createdAt)
+            }));
+            exportCSV(data, 'documentos-filtrados-renostter.csv');
+            toast('CSV exportado', 'Apenas os resultados visíveis foram baixados.', 'success');
+        }
+
+        // ─── Init ───
+        document.addEventListener('DOMContentLoaded', () => {
+            try { initSidebar(); } catch (e) { /* sidebar já inicializado pelo protect */ }
+            loadDocs();
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<title>Dispatch — Localização de Técnicos | Renostter CRM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../css/global.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="anonymous" />
+<style>
+.dispatch-grid { display: grid; grid-template-columns: 320px 1fr; gap: 16px; height: calc(100vh - 200px); }
+@media (max-width: 1024px) { .dispatch-grid { grid-template-columns: 1fr; height: auto; } .dispatch-map { height: 60vh; } }
+.dispatch-list { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 12px; overflow-y: auto; }
+.dispatch-list-header { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.dispatch-list-header h3 { font-size: 0.85rem; font-weight: 700; }
+.dispatch-tech { padding: 12px 16px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.15s; }
+.dispatch-tech:hover { background: rgba(0,174,239,0.06); }
+.dispatch-tech.active { background: var(--blue-dim); border-left: 3px solid var(--blue); }
+.dispatch-tech-row { display: flex; align-items: center; gap: 10px; }
+.dispatch-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--blue-dim); color: var(--blue); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0; }
+.dispatch-info { flex: 1; min-width: 0; }
+.dispatch-name { font-weight: 600; font-size: 0.85rem; color: var(--text-primary); }
+.dispatch-meta { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; display: flex; gap: 8px; flex-wrap: wrap; }
+.dispatch-meta-item { display: inline-flex; align-items: center; gap: 3px; }
+.dispatch-status { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.dispatch-status.online { background: var(--green); box-shadow: 0 0 8px var(--green); }
+.dispatch-status.stale { background: var(--orange); }
+.dispatch-status.offline { background: var(--red); opacity: 0.5; }
+.dispatch-map { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; position: relative; }
+#map { width: 100%; height: 100%; }
+.dispatch-overlay { position: absolute; top: 12px; right: 12px; z-index: 1000; background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.3); min-width: 220px; }
+.dispatch-overlay h4 { font-size: 0.78rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+.dispatch-overlay .stat { display: flex; justify-content: space-between; padding: 4px 0; font-size: 0.82rem; }
+.dispatch-overlay .stat-value { font-weight: 700; color: var(--text-primary); }
+.dispatch-empty { padding: 40px 20px; text-align: center; color: var(--text-muted); }
+.tech-popup { font-family: 'Inter', sans-serif; min-width: 180px; }
+.tech-popup-name { font-weight: 700; font-size: 0.9rem; margin-bottom: 4px; }
+.tech-popup-meta { font-size: 0.72rem; color: #666; }
+.tech-popup-actions { margin-top: 8px; display: flex; gap: 6px; }
+.tech-popup-actions a { display: inline-block; padding: 4px 10px; background: var(--blue); color: #fff; text-decoration: none; border-radius: 6px; font-size: 0.72rem; font-weight: 600; }
+.leaflet-container { background: #0a0e14; }
+.leaflet-popup-content-wrapper { background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border); }
+.leaflet-popup-tip { background: var(--bg-card); border: 1px solid var(--border); }
+.leaflet-popup-content { margin: 10px 12px; }
+.leaflet-control-attribution { background: var(--bg-surface) !important; color: var(--text-muted) !important; }
+.leaflet-control-attribution a { color: var(--text-secondary) !important; }
+.leaflet-bar a { background: var(--bg-card) !important; color: var(--text-primary) !important; border-color: var(--border) !important; }
+.dispatch-legend { position: absolute; bottom: 12px; left: 12px; z-index: 1000; background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; font-size: 0.72rem; }
+.dispatch-legend-item { display: flex; align-items: center; gap: 6px; padding: 2px 0; }
+.dispatch-legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+.refresh-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; background: var(--green-dim); color: var(--green); border-radius: 50px; font-size: 0.7rem; font-weight: 600; }
+.refresh-badge .pulse-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+</style>
+</head>
+<body>
+<div class="app-layout">
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <img src="../assets/logo-crm.png" alt="Renostter CRM" style="max-height:52px;object-fit:contain">
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Principal</div>
+    <a class="nav-item" href="dashboard.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span>Dashboard</span></a>
+    <a class="nav-item" href="financeiro.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span>Financeiro</span></a>
+    <a class="nav-item" href="cobrancas.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg><span>Cobranças</span></a>
+    <div class="nav-section-label">Gestão</div>
+    <a class="nav-item" href="clients.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><span>Clientes</span></a>
+    <a class="nav-item" href="leads.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.39a2 2 0 0 1 1.98-2.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span>Leads</span></a>
+    <a class="nav-item" href="contracts.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>Contratos</span></a>
+    <a class="nav-item" href="tickets.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><span>Chamados</span></a>
+    <div class="nav-section-label">Operacional</div>
+    <a class="nav-item" href="dispatch.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg><span>Dispatch</span></a>
+    <a class="nav-item" href="garantia.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><span>Garantia</span></a>
+    <a class="nav-item" href="pmoc.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg><span>PMOC</span></a>
+    <div class="nav-section-label">Análise</div>
+    <a class="nav-item" href="reports.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>Relatórios</span></a>
+  </nav>
+</aside>
+
+<!-- MAIN -->
+<div class="main-content">
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="hamburger btn btn-ghost btn-icon" id="hamburger"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <span class="page-title">Dispatch — Técnicos em Campo</span>
+    </div>
+    <div class="topbar-right">
+      <span class="refresh-badge" id="refreshBadge">
+        <span class="pulse-dot"></span>
+        <span id="lastSync">Sincronizando...</span>
+      </span>
+      <button class="btn btn-ghost btn-sm" onclick="loadAll()" style="display:inline-flex;align-items:center;gap:6px">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        Atualizar
+      </button>
+    </div>
+  </div>
+
+  <div class="page-body">
+    <div class="dispatch-grid">
+
+      <!-- LISTA DE TÉCNICOS -->
+      <div class="dispatch-list">
+        <div class="dispatch-list-header">
+          <h3>Técnicos <span style="color:var(--text-muted);font-weight:500" id="techCount">0</span></h3>
+          <select id="filterStatus" onchange="renderList()" style="padding:4px 8px;background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border);border-radius:6px;font-size:0.78rem">
+            <option value="all">Todos</option>
+            <option value="online">Online</option>
+            <option value="stale">Sem sync</option>
+            <option value="offline">Offline</option>
+          </select>
+        </div>
+        <div id="techList">
+          <div class="dispatch-empty">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:0.4;margin-bottom:8px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <div>Carregando técnicos...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MAPA -->
+      <div class="dispatch-map">
+        <div id="map"></div>
+
+        <div class="dispatch-overlay">
+          <h4>Estatísticas em Tempo Real</h4>
+          <div class="stat"><span style="color:var(--text-secondary)">Online agora</span><span class="stat-value" id="statOnline" style="color:var(--green)">0</span></div>
+          <div class="stat"><span style="color:var(--text-secondary)">Sem sync >30min</span><span class="stat-value" id="statStale" style="color:var(--orange)">0</span></div>
+          <div class="stat"><span style="color:var(--text-secondary)">Offline</span><span class="stat-value" id="statOffline" style="color:var(--red)">0</span></div>
+          <div class="stat" style="border-top:1px solid var(--border);margin-top:6px;padding-top:8px"><span style="color:var(--text-secondary)">Cobertura</span><span class="stat-value" id="statArea">— km²</span></div>
+        </div>
+
+        <div class="dispatch-legend">
+          <div style="font-weight:700;margin-bottom:4px">Legenda</div>
+          <div class="dispatch-legend-item"><span class="dispatch-legend-dot" style="background:var(--green)"></span> Online (&lt;15min)</div>
+          <div class="dispatch-legend-item"><span class="dispatch-legend-dot" style="background:var(--orange)"></span> Sem sync (15-60min)</div>
+          <div class="dispatch-legend-item"><span class="dispatch-legend-dot" style="background:var(--red);opacity:0.5"></span> Offline (&gt;1h)</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="anonymous"></script>
+<script>
+const BASE = '/api';
+let allLocations = [];
+let map = null;
+let markers = {};
+let selectedTecnico = null;
+let refreshInterval = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+  initSidebar();
+  initMap();
+  loadAll();
+  // Auto-refresh a cada 30s
+  refreshInterval = setInterval(loadAll, 30000);
+});
+
+function initSidebar() {
+  const hamburger = document.getElementById('hamburger');
+  const sidebar = document.getElementById('sidebar');
+  hamburger?.addEventListener('click', () => sidebar?.classList.toggle('collapsed'));
+}
+
+function initMap() {
+  // Centro padrão: São Paulo (pode ser ajustado depois)
+  map = L.map('map', { zoomControl: true, attributionControl: true })
+    .setView([-23.5505, -46.6333], 11);
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; OpenStreetMap &copy; CARTO',
+    subdomains: 'abcd',
+    maxZoom: 19
+  }).addTo(map);
+
+  // Tenta ajustar bounds quando tem localizações
+}
+
+async function loadAll() {
+  try {
+    const r = await fetch(BASE + '/tecnico/localizacao?since=120');
+    const j = await r.json();
+    if (!j.success) throw new Error(j.error);
+
+    allLocations = j.data || [];
+    renderList();
+    renderMap();
+    updateStats();
+
+    const now = new Date();
+    document.getElementById('lastSync').textContent = 'Atualizado: ' + now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  } catch (e) {
+    console.error('Dispatch load error:', e);
+    document.getElementById('lastSync').textContent = 'Erro ao sincronizar';
+  }
+}
+
+function getStatus(loc) {
+  if (!loc.recorded_at) return 'offline';
+  const age = Date.now() - new Date(loc.recorded_at).getTime();
+  if (age < 15 * 60 * 1000) return 'online';   // < 15 min
+  if (age < 60 * 60 * 1000) return 'stale';     // < 1h
+  return 'offline';
+}
+
+function formatAge(isoDate) {
+  if (!isoDate) return '—';
+  const ms = Date.now() - new Date(isoDate).getTime();
+  const min = Math.floor(ms / 60000);
+  if (min < 1) return 'agora';
+  if (min < 60) return `há ${min} min`;
+  const h = Math.floor(min / 60);
+  if (h < 24) return `há ${h}h`;
+  const d = Math.floor(h / 24);
+  return `há ${d}d`;
+}
+
+function renderList() {
+  const filter = document.getElementById('filterStatus').value;
+  const filtered = filter === 'all' ? allLocations : allLocations.filter(l => getStatus(l) === filter);
+
+  document.getElementById('techCount').textContent = `(${allLocations.length})`;
+
+  const html = filtered.length ? filtered.map(loc => {
+    const status = getStatus(loc);
+    const initials = (loc.tecnico_nome || loc.tecnico_id || '??').split(' ').map(s => s[0]).slice(0, 2).join('').toUpperCase();
+    return `
+    <div class="dispatch-tech ${selectedTecnico === loc.tecnico_id ? 'active' : ''}" onclick="focusTecnico('${loc.tecnico_id}')">
+      <div class="dispatch-tech-row">
+        <div class="dispatch-avatar">${initials}</div>
+        <div class="dispatch-info">
+          <div style="display:flex;align-items:center;gap:6px">
+            <div class="dispatch-status ${status}"></div>
+            <div class="dispatch-name">${esc(loc.tecnico_nome || loc.tecnico_id)}</div>
+          </div>
+          <div class="dispatch-meta">
+            <span class="dispatch-meta-item">📍 ${formatAge(loc.recorded_at)}</span>
+            ${loc.battery_level != null ? `<span class="dispatch-meta-item">🔋 ${loc.battery_level}%</span>` : ''}
+            ${loc.precisao ? `<span class="dispatch-meta-item">🎯 ±${Math.round(loc.precisao)}m</span>` : ''}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('') : `<div class="dispatch-empty"><div>Nenhum técnico com sync nos últimos 2h</div></div>`;
+
+  document.getElementById('techList').innerHTML = html;
+}
+
+function renderMap() {
+  // Limpa markers antigos
+  Object.values(markers).forEach(m => map.removeLayer(m));
+  markers = {};
+
+  if (!allLocations.length) return;
+
+  const online = allLocations.filter(l => getStatus(l) === 'online');
+  const bounds = [];
+
+  online.forEach(loc => {
+    if (!loc.latitude || !loc.longitude) return;
+    const status = getStatus(loc);
+    const color = status === 'online' ? '#22c55e' : status === 'stale' ? '#f59e0b' : '#ef4444';
+    const initials = (loc.tecnico_nome || loc.tecnico_id || '??').split(' ').map(s => s[0]).slice(0, 2).join('').toUpperCase();
+
+    const icon = L.divIcon({
+      className: 'tech-marker',
+      html: `<div style="
+        width:36px;height:36px;border-radius:50%;
+        background:${color};border:3px solid #fff;
+        box-shadow:0 0 12px ${color};
+        display:flex;align-items:center;justify-content:center;
+        color:#fff;font-weight:700;font-size:0.78rem;
+        font-family:Inter,sans-serif;
+      ">${initials}</div>`,
+      iconSize: [36, 36],
+      iconAnchor: [18, 18]
+    });
+
+    const marker = L.marker([loc.latitude, loc.longitude], { icon })
+      .bindPopup(`
+        <div class="tech-popup">
+          <div class="tech-popup-name">${esc(loc.tecnico_nome || loc.tecnico_id)}</div>
+          <div class="tech-popup-meta">
+            📍 ${loc.latitude.toFixed(4)}, ${loc.longitude.toFixed(4)}<br>
+            🕐 ${formatAge(loc.recorded_at)}<br>
+            ${loc.battery_level != null ? `🔋 ${loc.battery_level}%<br>` : ''}
+            ${loc.precisao ? `🎯 Precisão: ±${Math.round(loc.precisao)}m<br>` : ''}
+            ${loc.speed ? `💨 ${(loc.speed * 3.6).toFixed(0)} km/h` : ''}
+          </div>
+          <div class="tech-popup-actions">
+            <a href="https://www.google.com/maps?q=${loc.latitude},${loc.longitude}" target="_blank">Ver no Maps</a>
+          </div>
+        </div>
+      `)
+      .addTo(map);
+
+    markers[loc.tecnico_id] = marker;
+    bounds.push([loc.latitude, loc.longitude]);
+  });
+
+  // Ajusta bounds se tem pelo menos 1 ponto
+  if (bounds.length === 1) {
+    map.setView(bounds[0], 14);
+  } else if (bounds.length > 1) {
+    map.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 });
+  }
+}
+
+function updateStats() {
+  const online = allLocations.filter(l => getStatus(l) === 'online').length;
+  const stale = allLocations.filter(l => getStatus(l) === 'stale').length;
+  const offline = allLocations.filter(l => getStatus(l) === 'offline').length;
+
+  document.getElementById('statOnline').textContent = online;
+  document.getElementById('statStale').textContent = stale;
+  document.getElementById('statOffline').textContent = offline;
+
+  // Calcula área de cobertura
+  const validLocs = allLocations.filter(l => l.latitude && l.longitude);
+  if (validLocs.length >= 2) {
+    const lats = validLocs.map(l => l.latitude);
+    const lons = validLocs.map(l => l.longitude);
+    const dLat = (Math.max(...lats) - Math.min(...lats)) * 111;
+    const dLon = (Math.max(...lons) - Math.min(...lons)) * 111 * Math.cos(lats[0] * Math.PI / 180);
+    const area = Math.abs(dLat * dLon);
+    document.getElementById('statArea').textContent = area < 1 ? `${(area * 100).toFixed(0)} km²` : `${area.toFixed(0)} km²`;
+  } else {
+    document.getElementById('statArea').textContent = '—';
+  }
+}
+
+function focusTecnico(id) {
+  selectedTecnico = id;
+  document.querySelectorAll('.dispatch-tech').forEach(el => el.classList.remove('active'));
+  event?.currentTarget?.classList.add('active');
+  const marker = markers[id];
+  if (marker) {
+    map.setView(marker.getLatLng(), 15, { animate: true });
+    marker.openPopup();
+  }
+}
+
+function esc(s) { return s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : ''; }
+</script>
+</body>
+</html>

@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="robots" content="noindex, nofollow"/>
+<title>Guia de Uso — Chamados (Suporte Técnico) | Renostter CRM</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+:root { --bg-base:#0d1117; --bg-card:#161b22; --bg-surface:#1c2129; --bg-hover:#21262d; --border:#30363d; --border-soft:rgba(255,255,255,0.06); --text-primary:#e6edf3; --text-secondary:#8b949e; --text-muted:#6b7280; --blue:#00AEEF; --blue-dim:rgba(0,174,239,0.12); --green:#22c55e; --green-dim:rgba(34,197,94,0.12); --orange:#f59e0b; --orange-dim:rgba(245,158,11,0.12); --red:#ef4444; --red-dim:rgba(239,68,68,0.12); --purple:#8b5cf6; --purple-dim:rgba(139,92,246,0.12); --yellow:#eab308; --yellow-dim:rgba(234,179,8,0.12); --shadow-md:0 4px 16px rgba(0,0,0,0.3); }
+* { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-behavior:smooth; }
+body { font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif; background:var(--bg-base); color:var(--text-primary); line-height:1.65; font-size:15px; }
+code, .mono { font-family:'JetBrains Mono',Consolas,monospace; font-size:.88em; }
+.hero { background:linear-gradient(135deg,#0d1117 0%,#0a1a2e 50%,#0d1117 100%); border-bottom:1px solid var(--border); padding:60px 40px 50px; position:relative; overflow:hidden; }
+.hero::before { content:''; position:absolute; top:-50%; right:-10%; width:600px; height:600px; background:radial-gradient(circle,var(--blue-dim) 0%,transparent 60%); pointer-events:none; }
+.hero-inner { max-width:1280px; margin:0 auto; position:relative; z-index:1; }
+.hero-breadcrumb { display:inline-flex; align-items:center; gap:8px; padding:6px 14px; background:var(--bg-card); border:1px solid var(--border); border-radius:50px; font-size:.75rem; color:var(--text-secondary); margin-bottom:24px; }
+.hero-breadcrumb .dot { width:6px; height:6px; border-radius:50%; background:var(--green); box-shadow:0 0 8px var(--green); }
+.hero h1 { font-size:2.6rem; font-weight:800; margin-bottom:14px; background:linear-gradient(90deg,#fff 0%,var(--blue) 100%); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; letter-spacing:-.02em; }
+.hero .subtitle { color:var(--text-secondary); font-size:1.1rem; max-width:720px; margin-bottom:28px; }
+.hero-meta { display:flex; gap:14px; flex-wrap:wrap; }
+.meta-chip { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; font-size:.8rem; color:var(--text-secondary); }
+.meta-chip strong { color:var(--text-primary); font-weight:600; }
+.meta-chip .icon { font-size:1rem; }
+.layout { max-width:1280px; margin:0 auto; padding:40px; display:grid; grid-template-columns:240px 1fr; gap:50px; }
+@media (max-width:900px) { .layout { grid-template-columns:1fr; padding:24px; } .toc { position:static !important; } }
+.toc { position:sticky; top:24px; align-self:start; max-height:calc(100vh - 48px); overflow-y:auto; padding-right:12px; }
+.toc-title { font-size:.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.08em; margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--border-soft); }
+.toc ul { list-style:none; }
+.toc li { margin-bottom:2px; }
+.toc a { display:block; padding:6px 10px; color:var(--text-secondary); text-decoration:none; font-size:.83rem; border-radius:6px; border-left:2px solid transparent; transition:all .15s; }
+.toc a:hover { color:var(--text-primary); background:var(--bg-card); }
+.toc a.active { color:var(--blue); border-left-color:var(--blue); background:var(--blue-dim); }
+.toc .sub { padding-left:24px; font-size:.78rem; }
+.content { min-width:0; }
+h2 { font-size:1.75rem; font-weight:700; margin:56px 0 20px; padding-bottom:12px; border-bottom:1px solid var(--border); letter-spacing:-.01em; scroll-margin-top:24px; }
+h2:first-of-type { margin-top:0; }
+h2 .num { display:inline-block; width:36px; height:36px; line-height:36px; text-align:center; background:var(--blue-dim); color:var(--blue); border-radius:8px; font-size:1.1rem; font-weight:800; margin-right:12px; vertical-align:middle; }
+h3 { font-size:1.2rem; font-weight:700; margin:32px 0 12px; color:var(--text-primary); }
+h4 { font-size:1rem; font-weight:700; margin:20px 0 8px; color:var(--text-primary); }
+p { margin-bottom:14px; color:var(--text-secondary); }
+strong { color:var(--text-primary); font-weight:600; }
+ul, ol { margin:0 0 14px 24px; color:var(--text-secondary); }
+li { margin-bottom:4px; }
+hr { border:none; border-top:1px solid var(--border-soft); margin:40px 0; }
+.callout { display:flex; gap:14px; padding:16px 18px; background:var(--bg-card); border:1px solid var(--border); border-left:4px solid var(--blue); border-radius:8px; margin:18px 0; }
+.callout-icon { font-size:1.3rem; flex-shrink:0; line-height:1; padding-top:2px; }
+.callout-body { flex:1; }
+.callout-title { font-weight:700; color:var(--text-primary); margin-bottom:4px; font-size:.92rem; }
+.callout-body p:last-child { margin-bottom:0; font-size:.92rem; }
+.callout.tip { border-left-color:var(--green); background:linear-gradient(90deg,var(--green-dim),var(--bg-card) 30%); }
+.callout.warn { border-left-color:var(--orange); background:linear-gradient(90deg,var(--orange-dim),var(--bg-card) 30%); }
+.callout.danger { border-left-color:var(--red); background:linear-gradient(90deg,var(--red-dim),var(--bg-card) 30%); }
+.callout.info { border-left-color:var(--blue); }
+pre { background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:14px 16px; overflow-x:auto; font-size:.85rem; line-height:1.55; margin:12px 0; }
+pre code { color:var(--text-primary); }
+.kw { color:#ff7b72; } .fn { color:#d2a8ff; } .st { color:#a5d6ff; } .nm { color:#79c0ff; } .cm { color:var(--text-muted); font-style:italic; }
+.table-wrap { border:1px solid var(--border); border-radius:8px; overflow:hidden; margin:14px 0; }
+table { width:100%; border-collapse:collapse; font-size:.88rem; }
+thead { background:var(--bg-surface); }
+th { text-align:left; padding:10px 14px; font-weight:700; font-size:.72rem; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.05em; border-bottom:1px solid var(--border); }
+td { padding:10px 14px; border-bottom:1px solid var(--border-soft); color:var(--text-primary); vertical-align:top; }
+tbody tr:last-child td { border-bottom:none; }
+tbody tr:hover { background:var(--bg-hover); }
+td code { background:var(--bg-surface); padding:2px 6px; border-radius:4px; font-size:.82rem; color:var(--text-primary); }
+.shot { margin:18px 0; border:1px solid var(--border); border-radius:10px; overflow:hidden; background:var(--bg-card); box-shadow:var(--shadow-md); }
+.shot img { display:block; width:100%; height:auto; }
+.shot-caption { padding:10px 16px; background:var(--bg-surface); border-top:1px solid var(--border-soft); font-size:.82rem; color:var(--text-secondary); display:flex; align-items:center; gap:8px; }
+.shot-caption strong { color:var(--text-primary); }
+kbd { display:inline-block; padding:2px 6px; background:var(--bg-surface); border:1px solid var(--border); border-bottom-width:2px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:.78rem; color:var(--text-primary); font-weight:600; }
+.steps { counter-reset:step; list-style:none; margin:18px 0; padding:0; }
+.steps > li { counter-increment:step; position:relative; padding-left:48px; margin-bottom:20px; min-height:36px; }
+.steps > li::before { content:counter(step); position:absolute; left:0; top:0; width:32px; height:32px; background:var(--blue); color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.9rem; }
+.badge-i { display:inline-block; padding:2px 8px; background:var(--blue-dim); color:var(--blue); border-radius:4px; font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.03em; vertical-align:middle; }
+.badge-g { background:var(--green-dim); color:var(--green); }
+.badge-o { background:var(--orange-dim); color:var(--orange); }
+.badge-r { background:var(--red-dim); color:var(--red); }
+.badge-y { background:var(--yellow-dim); color:var(--yellow); }
+footer { margin-top:60px; padding:32px 40px; border-top:1px solid var(--border); background:var(--bg-card); text-align:center; color:var(--text-muted); font-size:.85rem; }
+footer .row { display:flex; justify-content:space-between; align-items:center; max-width:1280px; margin:0 auto; flex-wrap:wrap; gap:12px; }
+footer a { color:var(--blue); text-decoration:none; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="hero-breadcrumb"><span class="dot"></span><span>Renostter CRM · Documentação</span></div>
+    <h1>Guia de Uso — Chamados (Suporte Técnico)</h1>
+    <p class="subtitle">Central de tickets com SLA, priorização, transferência entre técnicos, base de conhecimento e pesquisa CSAT pós-atendimento.</p>
+    <div class="hero-meta">
+      <div class="meta-chip"><span class="icon">🎫</span> <strong>Módulo:</strong> Chamados / Tickets</div>
+      <div class="meta-chip"><span class="icon">✅</span> <strong>Status:</strong> 100% operacional</div>
+      <div class="meta-chip"><span class="icon">📅</span> <strong>Versão:</strong> 1.0 (Jul/2026)</div>
+      <div class="meta-chip"><span class="icon">⏱</span> <strong>SLA:</strong> Crítica 4h · Alta 24h · Média 48h · Baixa 72h</div>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="toc" id="toc">
+    <div class="toc-title">Sumário</div>
+    <ul>
+      <li><a href="#visao-geral">1. Visão geral</a></li>
+      <li><a href="#status">2. Status de um chamado</a></li>
+      <li><a href="#sla">3. SLA & priorização</a></li>
+      <li><a href="#acesso">4. Acesso rápido</a></li>
+      <li><a href="#abas">5. As 3 abas</a></li>
+      <li><a href="#todos" class="sub">5.1 Todos os Chamados</a></li>
+      <li><a href="#meus" class="sub">5.2 Meus Chamados</a></li>
+      <li><a href="#transferidos" class="sub">5.3 Transferidos para Mim</a></li>
+      <li><a href="#criar">6. Como criar um chamado</a></li>
+      <li><a href="#workflow">7. Workflow do técnico</a></li>
+      <li><a href="#transferir">8. Como transferir</a></li>
+      <li><a href="#csat">9. CSAT pós-atendimento</a></li>
+      <li><a href="#praticas">10. Boas práticas</a></li>
+      <li><a href="#api">11. API reference</a></li>
+    </ul>
+  </nav>
+
+  <main class="content">
+
+    <h2 id="visao-geral"><span class="num">1</span>Visão geral</h2>
+    <p>O módulo de <strong>Chamados</strong> (também chamado de <em>Tickets</em>) é a central de atendimento técnico da Renostter. Clientes abrem chamados via portal ou telefone, técnicos recebem, executam o serviço, fecham o ticket. Tudo com controle de SLA, priorização e base de conhecimento.</p>
+
+    <h3>Por que existe</h3>
+    <p>Antes deste módulo, atendimento era em planilha + whatsapp. Problemas:</p>
+    <ul>
+      <li>Sem SLA formal → cliente fica sem saber quando é atendido</li>
+      <li>Sem rastreio de quem fez o quê</li>
+      <li>Conhecimento técnico se perdia (técnico saía, ninguém sabia resolver)</li>
+      <li>Sem priorização → crítico e trivial na mesma fila</li>
+    </ul>
+    <p>O módulo resolve com: fila priorizada, SLA automático, transferência entre técnicos, base de conhecimento pesquisável, e CSAT pós-atendimento.</p>
+
+    <h3>Quem usa</h3>
+    <ul>
+      <li><strong>Cliente</strong> — abre chamado via portal ou telefone, acompanha status</li>
+      <li><strong>Técnico</strong> — pega, executa, fecha chamado</li>
+      <li><strong>Coordenador de campo</strong> — distribui carga, acompanha SLA, prioriza</li>
+      <li><strong>Gerente</strong> — KPIs, satisfação, gargalos</li>
+    </ul>
+
+    <h2 id="status"><span class="num">2</span>Status de um chamado</h2>
+    <p>Todo chamado passa por 6 status sequenciais:</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Status</th><th>O que significa</th><th>Próximo passo</th></tr></thead>
+        <tbody>
+          <tr><td><span class="badge-i">Aberto</span></td><td>Cliente abriu, ninguém pegou</td><td>Técnico aceita e vira "em andamento"</td></tr>
+          <tr><td><span class="badge-i badge-y">Em Andamento</span></td><td>Técnico trabalhando</td><td>Resolve (vira resolvido) ou aguarda cliente/peça (vira aguardando)</td></tr>
+          <tr><td><span class="badge-i badge-o">Aguardando</span></td><td>Bloqueado por terceiro (peça, cliente, fornecedor)</td><td>Desbloqueia e volta para em andamento</td></tr>
+          <tr><td><span class="badge-i badge-g">Resolvido</span></td><td>Serviço executado, cliente notificado</td><td>Cliente confirma (vira fechado) ou reabre</td></tr>
+          <tr><td><span class="badge-i badge-g">Fechado</span></td><td>Cliente confirmou ou &gt; 7 dias sem objeção</td><td>(final, vai para base de conhecimento)</td></tr>
+          <tr><td><span class="badge-i badge-r">Cancelado</span></td><td>Cancelado (cliente desistiu, foi em duplicidade, etc)</td><td>(final)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="sla"><span class="num">3</span>SLA &amp; priorização</h2>
+
+    <h3>Tempos de SLA por prioridade</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Prioridade</th><th>Tempo de 1ª resposta</th><th>Tempo de resolução</th><th>Quando usar</th></tr></thead>
+        <tbody>
+          <tr><td><span class="badge-i badge-r">Crítica</span></td><td>30 minutos</td><td>4 horas</td><td>Sistema parado, cliente sem ar-condicionado, risco à saúde</td></tr>
+          <tr><td><span class="badge-i badge-o">Alta</span></td><td>2 horas</td><td>24 horas</td><td>Problema sério mas com workaround, equipamento crítico</td></tr>
+          <tr><td><span class="badge-i badge-y">Média</span></td><td>8 horas</td><td>48 horas</td><td>Manutenção corretiva, equipamento funcionando com restrição</td></tr>
+          <tr><td><span class="badge-i badge-g">Baixa</span></td><td>24 horas</td><td>72 horas</td><td>Dúvidas, orientações, ajustes cosméticos</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout warn">
+      <div class="callout-icon">⚠</div>
+      <div class="callout-body">
+        <div class="callout-title">SLA vencendo / vencido</div>
+        <p>O sistema marca chamados com SLA em 3 cores: <strong style="color:var(--green)">verde</strong> (no prazo), <strong style="color:var(--orange)">laranja</strong> (vencendo em &lt; 25% do tempo) e <strong style="color:var(--red)">vermelho</strong> (vencido). O alerta visual fica no card do chamado e na lista.</p>
+      </div>
+    </div>
+
+    <h2 id="acesso"><span class="num">4</span>Acesso rápido</h2>
+    <p>Para abrir o módulo:</p>
+    <ol>
+      <li><strong>Sidebar</strong> → menu <em>Gestão</em> → <em>Chamados</em></li>
+      <li><strong>URL direta</strong>: <code>http://localhost:3000/crm/admin/tickets.html</code></li>
+      <li><strong>PWA técnico</strong> (<code>tecnico/index.html</code>) — fila priorizada para o técnico logado</li>
+      <li><strong>Portal do cliente</strong> — vê só os próprios chamados</li>
+    </ol>
+
+    <h3>Credenciais de demo</h3>
+    <p>Para testar o módulo:</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Perfil</th><th>E-mail</th><th>Senha</th></tr></thead>
+        <tbody>
+          <tr><td>Admin</td><td><code>admin@renostter.com</code></td><td><code>admin123</code></td></tr>
+          <tr><td>Técnico</td><td><code>tecnico@renostter.com</code></td><td><code>tech123</code></td></tr>
+          <tr><td>Cliente</td><td><code>joao@techcorp.com</code></td><td><code>client123</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout info">
+      <div class="callout-icon">🔐</div>
+      <div class="callout-body">
+        <div class="callout-title">2FA obrigatório para admin</div>
+        <p>O login admin exige 2FA (código simulado aparece na tela). Técnicos e clientes não precisam.</p>
+      </div>
+    </div>
+
+    <div class="shot">
+      <img src="assets/guia-chamados-1-lista.png" alt="Lista de chamados"/>
+      <div class="shot-caption"><strong>Figura 1.</strong> Tela principal — 5 KPIs (Abertos, Em Andamento, Aguardando, Resolvidos, SLAs Vencidos), 3 abas, filtros e tabela de chamados com status coloridos.</div>
+    </div>
+
+    <h2 id="abas"><span class="num">5</span>As 3 abas do módulo</h2>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Aba</th><th>O que mostra</th><th>Quando usar</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Todos os Chamados</strong></td><td>Fila geral, todos os status, todos os técnicos</td><td>Coordenador/gerente acompanhando operação</td></tr>
+          <tr><td><strong>Meus Chamados</strong></td><td>Apenas os atribuídos ao técnico logado</td><td>Técnico vendo a fila dele</td></tr>
+          <tr><td><strong>Transferidos para Mim</strong></td><td>Chamados que outro técnico transferiu para você</td><td>Técnico ao iniciar o dia</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 id="todos">5.1 Todos os Chamados</h3>
+    <p>Visão geral da operação. Lista com filtros (status, prioridade, categoria, busca textual). Permite transfer, assign, close, etc.</p>
+
+    <h3 id="meus">5.2 Meus Chamados</h3>
+    <p>Fila pessoal do técnico. Aparece após o login na home. Atualização em tempo real (a cada 30s).</p>
+
+    <h3 id="transferidos">5.3 Transferidos para Mim</h3>
+    <p>Notificação visual de transferências pendentes. Aparece em destaque no topo da home do técnico.</p>
+
+    <h2 id="criar"><span class="num">6</span>Como criar um chamado</h2>
+    <ol class="steps">
+      <li>Na home, clique <kbd>+ Novo Chamado</kbd></li>
+      <li>Selecione o <strong>cliente</strong> (busca por nome, CNPJ ou e-mail)</li>
+      <li>Vincule um <strong>contrato</strong> (opcional — se o cliente tem PMOC, o chamado entra no escopo)</li>
+      <li>Preencha o <strong>título</strong> (curto, ex: "Aparelho do CPD desligou sozinho")</li>
+      <li>Escolha a <strong>categoria</strong> (Manutenção Corretiva, PMOC, Instalação, Higienização, etc)</li>
+      <li>Defina a <strong>prioridade</strong> (Crítica, Alta, Média, Baixa) — afeta o SLA</li>
+      <li>Atribua um <strong>técnico</strong> (ou deixe "sem atribuição" para a coordenação pegar)</li>
+      <li>Descreva o <strong>problema detalhadamente</strong> (sintomas, localização, quando começou)</li>
+      <li>Clique <kbd>📩 Criar Chamado</kbd> — o sistema agenda SLA e notifica o técnico</li>
+    </ol>
+
+    <div class="shot">
+      <img src="assets/guia-chamados-2-detalhe.png" alt="Modal de novo chamado"/>
+      <div class="shot-caption"><strong>Figura 2.</strong> Modal de criação — cliente, contrato, título, categoria, prioridade, atribuição e descrição detalhada.</div>
+    </div>
+
+    <h2 id="workflow"><span class="num">7</span>Workflow do técnico</h2>
+    <p>Como o técnico trabalha o chamado do início ao fim:</p>
+
+    <ol class="steps">
+      <li><strong>Aceitar</strong> — clica em "Aceitar" no chamado atribuído (muda para "em andamento")</li>
+      <li><strong>Adicionar atualização</strong> — anota progresso (ex: "Vou ao local amanhã 9h")</li>
+      <li><strong>Marcar como aguardando</strong> se bloqueado (peça, cliente, fornecedor) — relógio de SLA pausa</li>
+      <li><strong>Resolver no local</strong> — executa o serviço, tira fotos</li>
+      <li><strong>Documentar solução</strong> — preenche checklist, peças usadas, observações técnicas</li>
+      <li><strong>Marcar como resolvido</strong> — notifica o cliente por e-mail</li>
+      <li><strong>Cliente confirma</strong> (ou após 7 dias sem objeção, fecha automático)</li>
+      <li><strong>CSAT</strong> — sistema envia pesquisa de satisfação 24h depois</li>
+    </ol>
+
+    <div class="callout tip">
+      <div class="callout-icon">💡</div>
+      <div class="callout-body">
+        <div class="callout-title">Dica — documente a solução na base de conhecimento</div>
+        <p>Quando você resolve um problema incomum, marque a checkbox "Adicionar à base de conhecimento" no fechamento. A solução fica pesquisável para os próximos técnicos resolverem problemas similares em segundos.</p>
+      </div>
+    </div>
+
+    <h2 id="transferir"><span class="num">8</span>Como transferir entre técnicos</h2>
+    <p>Quando o chamado precisa ir para outro técnico (especialidade, férias, sobrecarga):</p>
+
+    <ol class="steps">
+      <li>Abra o chamado</li>
+      <li>Clique em <kbd>↪ Transferir</kbd></li>
+      <li>Selecione o técnico destino</li>
+      <li>Adicione um <strong>motivo</strong> da transferência (audit log)</li>
+      <li>Confirme</li>
+    </ol>
+
+    <p>Aparece automaticamente na aba "Transferidos para Mim" do destinatário. O sistema registra no audit log (Carlos Admin → Marina Silva — "Redistribuição de carga").</p>
+
+    <h2 id="csat"><span class="num">9</span>CSAT pós-atendimento</h2>
+    <p>24 horas após o fechamento do chamado, o sistema envia automaticamente um e-mail com pesquisa CSAT (Customer Satisfaction Score):</p>
+
+    <ul>
+      <li><strong>Pergunta 1</strong>: De 0 a 10, qual a chance de recomendar a Renostter? (NPS)</li>
+      <li><strong>Pergunta 2</strong>: O problema foi resolvido? (sim/não)</li>
+      <li><strong>Pergunta 3</strong>: Comentário aberto (opcional)</li>
+    </ul>
+
+    <p>As respostas alimentam o KPI "CSAT Médio" no Dashboard e BI.</p>
+
+    <div class="callout tip">
+      <div class="callout-icon">📊</div>
+      <div class="callout-body">
+        <div class="callout-title">Benchmarks de CSAT</div>
+        <p>• <strong>9-10</strong> = promotor (NPS positivo)<br>
+        • <strong>7-8</strong> = neutro<br>
+        • <strong>0-6</strong> = detrator (risco de churn)<br>
+        • <strong>Meta saudável</strong>: CSAT médio &gt; 8.0, promotores &gt; 60%</p>
+      </div>
+    </div>
+
+    <h2 id="praticas"><span class="num">10</span>Boas práticas</h2>
+
+    <h3>✅ Faça</h3>
+    <ul>
+      <li><strong>Responda rápido em chamados críticos</strong> — SLA de 30min existe por motivo</li>
+      <li><strong>Sempre atribua um técnico</strong> — chamados sem dono somem da fila</li>
+      <li><strong>Use "Aguardando" quando bloqueado</strong> — relógio SLA pausa, mas não some da fila</li>
+      <li><strong>Documente a solução</strong> — futuros técnicos agradecem (e você também, quando esquecer)</li>
+      <li><strong>Adicione fotos antes/depois</strong> — evidência visual + base de conhecimento</li>
+      <li><strong>Revise os KPIs no fim do dia</strong> — veja se tem SLA vencendo, distribua carga</li>
+    </ul>
+
+    <h3>❌ Evite</h3>
+    <ul>
+      <li><strong>Não use prioridade "Crítica" sem motivo real</strong> — esgota o tempo de SLA do time e vira alarme falso</li>
+      <li><strong>Não deixe chamado parado em "em andamento" dias</strong> — se não consegue resolver, mude para "aguardando"</li>
+      <li><strong>Não delete chamados fechados</strong> — vai contra auditoria e LGPD</li>
+      <li><strong>Não transfira sem motivo</strong> — gera desconfiança do cliente</li>
+    </ul>
+
+    <h2 id="api"><span class="num">11</span>API reference (resumo)</h2>
+    <p>O módulo de Chamados tem duas camadas: <strong>API local (localStorage)</strong> e <strong>sync opcional com backend</strong> (em `cora-api/server.js`).</p>
+
+    <h3>API local (db.get / db.set)</h3>
+    <p>O frontend usa a abstração <code>db</code> em <code>js/storage.js</code>:</p>
+    <pre><code><span class="cm">// Listar todos os chamados</span>
+<span class="kw">const</span> tickets = db.get(<span class="st">'tickets'</span>);
+
+<span class="cm">// Buscar por ID</span>
+<span class="kw">const</span> t = tickets.find(x => x.id === <span class="st">'tkt-00001'</span>);
+
+<span class="cm">// Atualizar</span>
+db.update(<span class="st">'tickets'</span>, t.id, { status: <span class="st">'resolvido'</span> });
+
+<span class="cm">// Criar</span>
+db.insert(<span class="st">'tickets'</span>, { id: <span class="st">'tkt-00010'</span>, titulo: <span class="st">'...'</span>, ... });
+
+<span class="cm">// Transferir</span>
+db.insert(<span class="st">'transfers'</span>, { ticketId: <span class="st">'tkt-00001'</span>, fromUserId: <span class="st">'u1'</span>, toUserId: <span class="st">'u2'</span>, motivo: <span class="st">'especialidade'</span> });</code></pre>
+
+    <h3>Backend sync (opcional)</h3>
+    <p>Endpoints em <code>cora-api/server.js</code> (usados para sync ou BI):</p>
+
+    <h3>GET /api/chamados</h3>
+    <p>Lista chamados (com sync do localStorage).</p>
+
+    <h3>GET /api/chamados/stats</h3>
+    <p>KPIs: total, em_aberto, fechados, taxa_resolucao, sla_vencidos. Alimenta o BI.</p>
+
+    <h3>GET /api/chamados/:id</h3>
+    <p>Detalhe de um chamado + histórico de atualizações + transferências.</p>
+
+    <h3>POST /api/chamados/:id/atualizar</h3>
+    <p>Adiciona uma atualização textual (visível no histórico do chamado).</p>
+
+    <h3>POST /api/chamados/:id/transferir</h3>
+    <p>Registra transferência (cria entrada em `transfers`).</p>
+
+    <h3>POST /api/chamados/:id/csat</h3>
+    <p>Registra resposta de CSAT (NPS 0-10, comentário, se resolveu).</p>
+
+    <hr>
+
+    <div class="callout tip">
+      <div class="callout-icon">📚</div>
+      <div class="callout-body">
+        <div class="callout-title">Documentos relacionados</div>
+        <p>• <a href="README.md" style="color:var(--blue)">README geral</a> · <a href="guia-leads.html" style="color:var(--blue)">Guia de Leads</a> · <a href="guia-cotacao.html" style="color:var(--blue)">Guia de Cotação</a><br>
+        • <a href="guia-pmoc.html" style="color:var(--blue)">Guia de PMOC</a> · <a href="guia-contratos.html" style="color:var(--blue)">Guia de Contratos</a></p>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<footer>
+  <div class="row">
+    <div>Renostter Climatização &amp; Manutenção HVAC · contato@renostter.com.br · (11) 9999-9999</div>
+    <div>v1.0 · 22/07/2026 · <a href="README.md">Índice</a> · <a href="guia-leads.html">Leads</a> · <a href="guia-cotacao.html">Cotação</a></div>
+  </div>
+</footer>
+
+<script>
+const tocLinks = document.querySelectorAll('.toc a');
+const sections = Array.from(tocLinks).map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    const id = '#' + entry.target.id;
+    const link = document.querySelector('.toc a[href="' + id + '"]');
+    if (link && entry.isIntersecting) {
+      tocLinks.forEach(l => l.classList.remove('active'));
+      link.classList.add('active');
+    }
+  });
+}, { rootMargin: '-20% 0px -70% 0px' });
+sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>

@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="robots" content="noindex, nofollow"/>
+<title>Guia de Uso — Contratos & RMR | Renostter CRM</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+:root { --bg-base:#0d1117; --bg-card:#161b22; --bg-surface:#1c2129; --bg-hover:#21262d; --border:#30363d; --border-soft:rgba(255,255,255,0.06); --text-primary:#e6edf3; --text-secondary:#8b949e; --text-muted:#6b7280; --blue:#00AEEF; --blue-dim:rgba(0,174,239,0.12); --green:#22c55e; --green-dim:rgba(34,197,94,0.12); --orange:#f59e0b; --orange-dim:rgba(245,158,11,0.12); --red:#ef4444; --red-dim:rgba(239,68,68,0.12); --purple:#8b5cf6; --purple-dim:rgba(139,92,246,0.12); --shadow-md:0 4px 16px rgba(0,0,0,0.3); }
+* { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-behavior:smooth; }
+body { font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif; background:var(--bg-base); color:var(--text-primary); line-height:1.65; font-size:15px; }
+code, .mono { font-family:'JetBrains Mono',Consolas,monospace; font-size:.88em; }
+.hero { background:linear-gradient(135deg,#0d1117 0%,#0a1a2e 50%,#0d1117 100%); border-bottom:1px solid var(--border); padding:60px 40px 50px; position:relative; overflow:hidden; }
+.hero::before { content:''; position:absolute; top:-50%; right:-10%; width:600px; height:600px; background:radial-gradient(circle,var(--purple-dim) 0%,transparent 60%); pointer-events:none; }
+.hero-inner { max-width:1280px; margin:0 auto; position:relative; z-index:1; }
+.hero-breadcrumb { display:inline-flex; align-items:center; gap:8px; padding:6px 14px; background:var(--bg-card); border:1px solid var(--border); border-radius:50px; font-size:.75rem; color:var(--text-secondary); margin-bottom:24px; }
+.hero-breadcrumb .dot { width:6px; height:6px; border-radius:50%; background:var(--green); box-shadow:0 0 8px var(--green); }
+.hero h1 { font-size:2.6rem; font-weight:800; margin-bottom:14px; background:linear-gradient(90deg,#fff 0%,var(--purple) 100%); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; letter-spacing:-.02em; }
+.hero .subtitle { color:var(--text-secondary); font-size:1.1rem; max-width:720px; margin-bottom:28px; }
+.hero-meta { display:flex; gap:14px; flex-wrap:wrap; }
+.meta-chip { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; font-size:.8rem; color:var(--text-secondary); }
+.meta-chip strong { color:var(--text-primary); font-weight:600; }
+.meta-chip .icon { font-size:1rem; }
+.layout { max-width:1280px; margin:0 auto; padding:40px; display:grid; grid-template-columns:240px 1fr; gap:50px; }
+@media (max-width:900px) { .layout { grid-template-columns:1fr; padding:24px; } .toc { position:static !important; } }
+.toc { position:sticky; top:24px; align-self:start; max-height:calc(100vh - 48px); overflow-y:auto; padding-right:12px; }
+.toc-title { font-size:.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.08em; margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--border-soft); }
+.toc ul { list-style:none; }
+.toc li { margin-bottom:2px; }
+.toc a { display:block; padding:6px 10px; color:var(--text-secondary); text-decoration:none; font-size:.83rem; border-radius:6px; border-left:2px solid transparent; transition:all .15s; }
+.toc a:hover { color:var(--text-primary); background:var(--bg-card); }
+.toc a.active { color:var(--purple); border-left-color:var(--purple); background:var(--purple-dim); }
+.toc .sub { padding-left:24px; font-size:.78rem; }
+.content { min-width:0; }
+h2 { font-size:1.75rem; font-weight:700; margin:56px 0 20px; padding-bottom:12px; border-bottom:1px solid var(--border); letter-spacing:-.01em; scroll-margin-top:24px; }
+h2:first-of-type { margin-top:0; }
+h2 .num { display:inline-block; width:36px; height:36px; line-height:36px; text-align:center; background:var(--purple-dim); color:var(--purple); border-radius:8px; font-size:1.1rem; font-weight:800; margin-right:12px; vertical-align:middle; }
+h3 { font-size:1.2rem; font-weight:700; margin:32px 0 12px; color:var(--text-primary); }
+h4 { font-size:1rem; font-weight:700; margin:20px 0 8px; color:var(--text-primary); }
+p { margin-bottom:14px; color:var(--text-secondary); }
+strong { color:var(--text-primary); font-weight:600; }
+ul, ol { margin:0 0 14px 24px; color:var(--text-secondary); }
+li { margin-bottom:4px; }
+hr { border:none; border-top:1px solid var(--border-soft); margin:40px 0; }
+.callout { display:flex; gap:14px; padding:16px 18px; background:var(--bg-card); border:1px solid var(--border); border-left:4px solid var(--blue); border-radius:8px; margin:18px 0; }
+.callout-icon { font-size:1.3rem; flex-shrink:0; line-height:1; padding-top:2px; }
+.callout-body { flex:1; }
+.callout-title { font-weight:700; color:var(--text-primary); margin-bottom:4px; font-size:.92rem; }
+.callout-body p:last-child { margin-bottom:0; font-size:.92rem; }
+.callout.tip { border-left-color:var(--green); background:linear-gradient(90deg,var(--green-dim),var(--bg-card) 30%); }
+.callout.warn { border-left-color:var(--orange); background:linear-gradient(90deg,var(--orange-dim),var(--bg-card) 30%); }
+.callout.danger { border-left-color:var(--red); background:linear-gradient(90deg,var(--red-dim),var(--bg-card) 30%); }
+.callout.info { border-left-color:var(--blue); }
+pre { background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:14px 16px; overflow-x:auto; font-size:.85rem; line-height:1.55; margin:12px 0; }
+pre code { color:var(--text-primary); }
+.kw { color:#ff7b72; } .fn { color:#d2a8ff; } .st { color:#a5d6ff; } .nm { color:#79c0ff; } .cm { color:var(--text-muted); font-style:italic; }
+.table-wrap { border:1px solid var(--border); border-radius:8px; overflow:hidden; margin:14px 0; }
+table { width:100%; border-collapse:collapse; font-size:.88rem; }
+thead { background:var(--bg-surface); }
+th { text-align:left; padding:10px 14px; font-weight:700; font-size:.72rem; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.05em; border-bottom:1px solid var(--border); }
+td { padding:10px 14px; border-bottom:1px solid var(--border-soft); color:var(--text-primary); vertical-align:top; }
+tbody tr:last-child td { border-bottom:none; }
+tbody tr:hover { background:var(--bg-hover); }
+td code { background:var(--bg-surface); padding:2px 6px; border-radius:4px; font-size:.82rem; color:var(--text-primary); }
+.shot { margin:18px 0; border:1px solid var(--border); border-radius:10px; overflow:hidden; background:var(--bg-card); box-shadow:var(--shadow-md); }
+.shot img { display:block; width:100%; height:auto; }
+.shot-caption { padding:10px 16px; background:var(--bg-surface); border-top:1px solid var(--border-soft); font-size:.82rem; color:var(--text-secondary); display:flex; align-items:center; gap:8px; }
+.shot-caption strong { color:var(--text-primary); }
+kbd { display:inline-block; padding:2px 6px; background:var(--bg-surface); border:1px solid var(--border); border-bottom-width:2px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:.78rem; color:var(--text-primary); font-weight:600; }
+.steps { counter-reset:step; list-style:none; margin:18px 0; padding:0; }
+.steps > li { counter-increment:step; position:relative; padding-left:48px; margin-bottom:20px; min-height:36px; }
+.steps > li::before { content:counter(step); position:absolute; left:0; top:0; width:32px; height:32px; background:var(--purple); color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.9rem; }
+.badge-i { display:inline-block; padding:2px 8px; background:var(--blue-dim); color:var(--blue); border-radius:4px; font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.03em; vertical-align:middle; }
+.badge-g { background:var(--green-dim); color:var(--green); }
+.badge-o { background:var(--orange-dim); color:var(--orange); }
+.badge-r { background:var(--red-dim); color:var(--red); }
+.badge-p { background:var(--purple-dim); color:var(--purple); }
+footer { margin-top:60px; padding:32px 40px; border-top:1px solid var(--border); background:var(--bg-card); text-align:center; color:var(--text-muted); font-size:.85rem; }
+footer .row { display:flex; justify-content:space-between; align-items:center; max-width:1280px; margin:0 auto; flex-wrap:wrap; gap:12px; }
+footer a { color:var(--purple); text-decoration:none; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="hero-breadcrumb"><span class="dot"></span><span>Renostter CRM · Documentação</span></div>
+    <h1>Guia de Uso — Contratos &amp; RMR</h1>
+    <p class="subtitle">Gestão de contratos recorrentes, analytics de receita recorrente (MRR/ARR/NRR/Churn), renovações automáticas e expansão de receita.</p>
+    <div class="hero-meta">
+      <div class="meta-chip"><span class="icon">📄</span> <strong>Módulo:</strong> Contratos &amp; RMR</div>
+      <div class="meta-chip"><span class="icon">✅</span> <strong>Status:</strong> 100% operacional</div>
+      <div class="meta-chip"><span class="icon">📅</span> <strong>Versão:</strong> 1.0 (Jul/2026)</div>
+      <div class="meta-chip"><span class="icon">💰</span> <strong>Modelo:</strong> SaaS + Cobrança Cora</div>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="toc" id="toc">
+    <div class="toc-title">Sumário</div>
+    <ul>
+      <li><a href="#visao-geral">1. Visão geral</a></li>
+      <li><a href="#rmr">2. O que é RMR</a></li>
+      <li><a href="#acesso">3. Acesso rápido</a></li>
+      <li><a href="#abas">4. As 2 abas</a></li>
+      <li><a href="#contratos" class="sub">4.1 Contratos (lista)</a></li>
+      <li><a href="#rmr-analytics" class="sub">4.2 RMR Analytics</a></li>
+      <li><a href="#tipos">5. Tipos de contrato</a></li>
+      <li><a href="#metricas">6. Métricas-chave</a></li>
+      <li><a href="#renovacao">7. Renovação & churn</a></li>
+      <li><a href="#workflow">8. Workflow típico</a></li>
+      <li><a href="#api">9. API reference</a></li>
+    </ul>
+  </nav>
+
+  <main class="content">
+
+    <h2 id="visao-geral"><span class="num">1</span>Visão geral</h2>
+    <p>O módulo de <strong>Contratos &amp; RMR</strong> gerencia o coração financeiro da Renostter: contratos recorrentes com clientes (PMOC, manutenção preventiva, locação de equipamentos, planos de suporte) e as métricas de receita recorrente que determinam o valuation do negócio.</p>
+
+    <h3>Por que existe</h3>
+    <p>Contratos HVAC são tipicamente anuais com cobrança mensal (PMOC, manutenção) ou trimestral (garantias estendidas). Sem um sistema:</p>
+    <ul>
+      <li>Renovação depende de planilha + bom senso do gerente → <strong>churn involuntário</strong></li>
+      <li>Sem visibilidade de MRR/ARR/Churn → decisões de negócio no escuro</li>
+      <li>Cobrança manual via boleto → inadimplência alta + custo operacional</li>
+      <li>Cross-sell e upsell só na conversa do técnico</li>
+    </ul>
+    <p>O módulo resolve com: gestão centralizada, alertas de vencimento, renovação automática, integração com gateway Cora para cobrança recorrente, e analytics de receita.</p>
+
+    <h3>Quem usa</h3>
+    <ul>
+      <li><strong>Gerente comercial</strong> — fecha contratos, gerencia renovações, analisa churn</li>
+      <li><strong>Financeiro</strong> — acompanha MRR/ARR, inadimplência, fluxo de caixa recorrente</li>
+      <li><strong>Diretoria / Sócios</strong> — visualizam KPIs de saúde do negócio SaaS</li>
+      <li><strong>Operações</strong> — visualiza quais clientes estão ativos para alocar técnicos</li>
+    </ul>
+
+    <h2 id="rmr"><span class="num">2</span>O que é RMR (Receita Mensal Recorrente)</h2>
+    <p><strong>RMR (Receita Mensal Recorrente)</strong> — em inglês <em>MRR (Monthly Recurring Revenue)</em> — é a métrica fundamental de qualquer negócio SaaS ou de assinatura. Representa a receita previsível que você recebe TODO MÊS.</p>
+
+    <h3>Por que é importante</h3>
+    <ul>
+      <li><strong>Previsibilidade</strong> — permite planejar caixa, contratações, investimentos</li>
+      <li><strong>Valuation</strong> — empresas SaaS são avaliadas em múltiplos de ARR (5-10x)</li>
+      <li><strong>Saúde do negócio</strong> — MRR crescendo = saudável, MRR caindo = alerta vermelho</li>
+    </ul>
+
+    <h3>Métricas derivadas do MRR</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Métrica</th><th>O que é</th><th>Como calcular</th><th>Meta saudável</th></tr></thead>
+        <tbody>
+          <tr><td><strong>MRR</strong></td><td>Receita Mensal Recorrente</td><td>Soma do valor mensal de todos contratos ativos</td><td>Crescer &gt; 10%/mês</td></tr>
+          <tr><td><strong>ARR</strong></td><td>Receita Anual Recorrente</td><td>MRR × 12</td><td>—</td></tr>
+          <tr><td><strong>Churn Rate</strong></td><td>% de clientes que cancelam no mês</td><td>Cancelados no mês / Ativos no início</td><td>&lt; 5%</td></tr>
+          <tr><td><strong>NRR</strong></td><td>Net Revenue Retention</td><td>(MRR atual + expansão - churn) / MRR inicial</td><td>&gt; 100%</td></tr>
+          <tr><td><strong>Ticket Médio</strong></td><td>Valor médio por contrato</td><td>MRR total / Nº contratos ativos</td><td>Crescer &gt; 5%/ano</td></tr>
+          <tr><td><strong>LTV</strong></td><td>Lifetime Value</td><td>Ticket médio / Churn rate</td><td>&gt; 3x CAC</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout info">
+      <div class="callout-icon">ℹ️</div>
+      <div class="callout-body">
+        <div class="callout-title">Por que NRR &gt; 100% é o santo graal</div>
+        <p>NRR (Net Revenue Retention) &gt; 100% significa que o crescimento orgânico (expansão + upsell) compensa o churn. Empresas como Snowflake e Datadog têm NRR &gt; 130%. A Renostter, sendo B2B com contratos anuais, pode aspirar NRR &gt; 110%.</p>
+      </div>
+    </div>
+
+    <h2 id="acesso"><span class="num">3</span>Acesso rápido</h2>
+    <p>Para abrir o módulo:</p>
+    <ol>
+      <li><strong>Sidebar</strong> → menu <em>Gestão</em> → <em>Contratos &amp; RMR</em></li>
+      <li><strong>URL direta</strong>: <code>http://localhost:3000/crm/admin/contracts.html</code></li>
+      <li><strong>BI Dashboard</strong> → cards de MRR/ARR/Churn (em <code>admin/bi.html</code>)</li>
+    </ol>
+
+    <div class="shot">
+      <img src="assets/guia-contratos-1-lista.png" alt="Lista de contratos"/>
+      <div class="shot-caption"><strong>Figura 1.</strong> Tela inicial — lista de contratos com busca, filtros (status, tipo), KPIs no topo e ações por linha.</div>
+    </div>
+
+    <h2 id="abas"><span class="num">4</span>As 2 abas do módulo</h2>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Aba</th><th>Função</th><th>Quando usar</th></tr></thead>
+        <tbody>
+          <tr><td><strong>📄 Contratos</strong></td><td>CRUD completo de contratos: criar, listar, editar, cancelar, renovar</td><td>Operação do dia-a-dia</td></tr>
+          <tr><td><strong>📈 RMR Analytics</strong></td><td>KPIs de receita recorrente: MRR, ARR, NRR, Churn, Expansão, Vencendo</td><td>Reuniões de gestão, decisão estratégica</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 id="contratos">4.1 Contratos (lista e CRUD)</h3>
+    <p>A aba Contratos é onde o trabalho operacional acontece. Lista todos os contratos do sistema com busca, filtros e ações rápidas.</p>
+
+    <h4>Status de um contrato</h4>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Status</th><th>Significado</th><th>Ações</th></tr></thead>
+        <tbody>
+          <tr><td><span class="badge-i">Ativo</span></td><td>Vigente, gerando receita</td><td>Editar, renovar, cancelar</td></tr>
+          <tr><td><span class="badge-i badge-o">Pendente</span></td><td>Assinado mas primeira cobrança ainda não processou</td><td>Aguardar compensação</td></tr>
+          <tr><td><span class="badge-i badge-r">Cancelado</span></td><td>Encerrado antes do prazo (churn)</td><td>Ver motivo, oferecer reativação</td></tr>
+          <tr><td><span class="badge-i badge-g">Renovado</span></td><td>Substituído por novo contrato (renovação)</td><td>Ver contrato novo</td></tr>
+          <tr><td><span class="badge-i badge-p">Suspenso</span></td><td>Cliente pediu pausa temporária</td><td>Reativar ou cancelar</td></tr>
+          <tr><td><span class="badge-i" style="background:var(--gray-dim);color:var(--text-secondary)">Vencido</span></td><td>Passou do prazo final, não renovado</td><td>Tentar recuperar ou arquivar</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>Como criar um contrato</h4>
+    <ol class="steps">
+      <li>Na aba <em>Contratos</em>, clique <kbd>+ Novo Contrato</kbd></li>
+      <li>Selecione o <strong>cliente</strong> (precisa estar cadastrado antes)</li>
+      <li>Escolha o <strong>tipo de contrato</strong> (PMOC, Empresarial, Premium, etc.)</li>
+      <li>Defina <strong>valor mensal</strong>, <strong>periodicidade de cobrança</strong> (mensal/trimestral/anual) e <strong>data de início</strong></li>
+      <li>Configure a <strong>renovação automática</strong> (recomendado)</li>
+      <li>Adicione <strong>escopo</strong> (o que está incluso: nº de visitas, equipamentos cobertos, SLA)</li>
+      <li>Salve — o sistema agenda a primeira cobrança via Cora</li>
+    </ol>
+
+    <div class="callout tip">
+      <div class="callout-icon">💡</div>
+      <div class="callout-body">
+        <div class="callout-title">Dica — vincule a uma cotação aprovada</div>
+        <p>Quando você aprova uma cotação no módulo de Cotações, pode clicar em <em>"Gerar Contrato"</em> e o sistema cria o contrato já preenchido com base na cotação. Use sempre que possível para evitar retrabalho.</p>
+      </div>
+    </div>
+
+    <h3 id="rmr-analytics">4.2 RMR Analytics</h3>
+    <p>A aba RMR Analytics é o dashboard financeiro. Mostra a "saúde" do seu negócio recorrente.</p>
+
+    <div class="shot">
+      <img src="assets/guia-contratos-2-rmr.png" alt="RMR Analytics"/>
+      <div class="shot-caption"><strong>Figura 2.</strong> Aba RMR Analytics — KPIs no topo, gráfico de evolução do MRR, tabela de contratos por plano e lista de vencendo em 60 dias.</div>
+    </div>
+
+    <h4>KPIs exibidos</h4>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>KPI</th><th>Cor</th><th>O que é</th><th>Onde fica</th></tr></thead>
+        <tbody>
+          <tr><td><strong>MRR</strong></td><td><span style="color:var(--green)">verde</span></td><td>Soma do valor mensal de contratos ativos</td><td>Cabeçalho</td></tr>
+          <tr><td><strong>ARR</strong></td><td><span style="color:var(--blue)">azul</span></td><td>MRR × 12 (projeção anual)</td><td>Cabeçalho</td></tr>
+          <tr><td><strong>Novos no mês</strong></td><td><span style="color:var(--green)">verde</span></td><td>Contratos criados no mês corrente</td><td>Cabeçalho</td></tr>
+          <tr><td><strong>Churnados</strong></td><td><span style="color:var(--red)">vermelho</span></td><td>Cancelados no mês</td><td>Cabeçalho</td></tr>
+          <tr><td><strong>NRR</strong></td><td><span style="color:var(--purple)">roxo</span></td><td>Net Revenue Retention (ideal &gt; 100%)</td><td>Cabeçalho</td></tr>
+          <tr><td><strong>Ticket Médio</strong></td><td>branco</td><td>Valor médio por contrato</td><td>Cabeçalho</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>Tabela de Receita por Plano</h4>
+    <p>Mostra a contribuição de cada tipo de contrato para o MRR total. Use para decidir onde focar vendas.</p>
+
+    <h4>Lista de Vencendo em 60 dias</h4>
+    <p>Tabela priorizada de contratos próximos do fim. Use para ação de retenção: ligue para o cliente, ofereça renovação antecipada com desconto.</p>
+
+    <h2 id="tipos"><span class="num">5</span>Tipos de contrato</h2>
+    <p>A Renostter trabalha com 5 tipos de contrato recorrente, cada um com escopo e margem diferentes:</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Tipo</th><th>Escopo típico</th><th>Faixa de preço (R$/mês)</th><th>Margem</th></tr></thead>
+        <tbody>
+          <tr><td><span class="badge-i">Básico</span></td><td>1-2 equipamentos, manutenção semestral, sem atendimento de emergência</td><td>150-400</td><td>40-50%</td></tr>
+          <tr><td><span class="badge-i" style="background:var(--blue-dim);color:var(--blue)">Empresarial</span></td><td>3-10 equipamentos, manutenção trimestral, SLA 48h</td><td>500-2.000</td><td>35-45%</td></tr>
+          <tr><td><span class="badge-i badge-p">Premium</span></td><td>10+ equipamentos, manutenção mensal, SLA 24h, atendimento emergência 24/7</td><td>2.000-10.000</td><td>30-40%</td></tr>
+          <tr><td><span class="badge-i badge-g">PMOC</span></td><td>Obrigatório por lei (≥ 60k BTU), inclui relatório NBR 16020</td><td>300-1.500</td><td>50-60% (alta margem)</td></tr>
+          <tr><td><span class="badge-i badge-o">Emergencial</span></td><td>Plantão 24/7, sem manutenção preventiva incluída</td><td>800-3.000</td><td>20-30% (baixa margem)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="metricas"><span class="num">6</span>Métricas-chave (SaaS 101)</h2>
+
+    <h3>6.1 Churn Rate (Taxa de Cancelamento)</h3>
+    <p>Percentual de clientes que cancelam num período. É a métrica mais perigosa — alto churn destrói valor.</p>
+    <pre><code>Churn Rate (%) = (Clientes cancelados no mês / Clientes ativos no início) × 100</code></pre>
+    <p>Benchmark HVAC: <strong>3-5%/mês</strong> é saudável. Acima de 8% é alerta vermelho.</p>
+
+    <h3>6.2 NRR (Net Revenue Retention)</h3>
+    <p>Retenção líquida de receita — mede se a expansão compensa o churn.</p>
+    <pre><code>NRR (%) = (MRR atual + Expansão - Churn - Contração) / MRR inicial × 100</code></pre>
+    <p>Meta: <strong>&gt; 100%</strong>. Acima de 110% é excelente (viabiliza growth sem novos clientes).</p>
+
+    <h3>6.3 LTV (Lifetime Value)</h3>
+    <p>Quanto um cliente gera de receita durante todo o relacionamento.</p>
+    <pre><code>LTV (R$) = Ticket Médio / Churn Rate Mensal</code></pre>
+    <p>Ex: contrato de R$ 500/mês com churn 5% → LTV = R$ 10.000.</p>
+
+    <div class="callout tip">
+      <div class="callout-icon">🎯</div>
+      <div class="callout-body">
+        <div class="callout-title">Regra prática — LTV/CAC</div>
+        <p>Para um negócio SaaS saudável, o <strong>LTV deve ser pelo menos 3x o CAC</strong> (custo de aquisição). Se LTV &lt; 3× CAC, você está perdendo dinheiro em marketing. Se LTV &gt; 5× CAC, pode investir mais agressivamente em vendas.</p>
+      </div>
+    </div>
+
+    <h2 id="renovacao"><span class="num">7</span>Renovação &amp; churn</h2>
+
+    <h3>Renovação automática (recomendada)</h3>
+    <p>Contratos com renovação automática são prorrogados por mais 12 meses a partir do vencimento, sem ação manual. Requer:</p>
+    <ul>
+      <li>Forma de pagamento válida (cartão de crédito ou Pix Automático via Cora)</li>
+      <li>Cliente sem inadimplência &gt; 30 dias</li>
+    </ul>
+
+    <h3>Renovação manual</h3>
+    <p>Quando renovação automática está desligada ou falhou, o sistema alerta 60 dias antes do vencimento. Ações:</p>
+    <ol class="steps">
+      <li>Aparece na aba <em>RMR Analytics &gt; Vencendo em 60 dias</em></li>
+      <li>Gerente entra em contato com o cliente</li>
+      <li>Se cliente aceita: clica <em>Renovar</em>, ajusta termos se preciso, salva</li>
+      <li>Se cliente recusa: clica <em>Cancelar</em>, registra motivo (churn feedback)</li>
+    </ol>
+
+    <h3>Análise de churn</h3>
+    <p>Para cada cancelamento, registre o motivo. Os mais comuns em HVAC:</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Motivo</th><th>% típico</th><th>Como evitar</th></tr></thead>
+        <tbody>
+          <tr><td>Preço alto</td><td>30-40%</td><td>Plano mais enxuto, desconto fidelidade</td></tr>
+          <tr><td>Mudou de fornecedor</td><td>20-30%</td><td>Atendimento proativo, vínculo com técnico</td></tr>
+          <tr><td>Empresa fechou / mudou endereço</td><td>10-20%</td><td>(inevitável)</td></tr>
+          <tr><td>Insatisfação com serviço</td><td>10-20%</td><td>NPS/CSAT, ação corretiva rápida</td></tr>
+          <tr><td>Problemas financeiros do cliente</td><td>5-10%</td><td>Plano flexível, pausa temporária</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="workflow"><span class="num">8</span>Workflow típico</h2>
+    <p>Do lead à renovação:</p>
+
+    <ol class="steps">
+      <li><strong>Lead qualificado</strong> (já passou pelo funil de Leads)</li>
+      <li><strong>Cotação gerada</strong> (módulo de Cotação, com cálculo técnico)</li>
+      <li><strong>Cotação aprovada</strong> pelo cliente (status: aprovada)</li>
+      <li><strong>Botão "Gerar Contrato"</strong> na cotação cria contrato pré-preenchido</li>
+      <li><strong>Contrato ativo</strong> — primeira cobrança agendada via Cora</li>
+      <li><strong>Execução mensal</strong> — manutenções PMOC + suporte + relatórios</li>
+      <li><strong>D-60 dias do vencimento</strong> — alerta de renovação</li>
+      <li><strong>Renovação automática ou manual</strong> — ciclo recomeça</li>
+    </ol>
+
+    <h2 id="api"><span class="num">9</span>API reference (resumo)</h2>
+
+    <h3>GET /api/contratos</h3>
+    <p>Lista contratos com filtros: <code>status</code>, <code>tipo</code>, <code>clienteId</code>, <code>page</code>, <code>size</code>.</p>
+
+    <h3>POST /api/contratos</h3>
+    <p>Cria novo contrato.</p>
+    <pre><code>POST /api/contratos
+{
+  <span class="st">"cliente_id"</span>: <span class="st">"&lt;uuid&gt;"</span>,
+  <span class="st">"tipo_contrato"</span>: <span class="st">"empresarial"</span>,
+  <span class="st">"valor_mensal"</span>: <span class="nm">850.00</span>,
+  <span class="st">"data_inicio"</span>: <span class="st">"2026-07-21"</span>,
+  <span class="st">"duracao_meses"</span>: <span class="nm">12</span>,
+  <span class="st">"renovacao_automatica"</span>: <span class="nm">true</span>,
+  <span class="st">"escopo"</span>: <span class="st">"Manutenção trimestral de 5 splits + SLA 48h"</span>
+}</code></pre>
+
+    <h3>GET /api/contratos/:id</h3>
+    <p>Detalhe completo de um contrato + histórico de cobranças.</p>
+
+    <h3>PUT /api/contratos/:id</h3>
+    <p>Atualiza dados (valor, escopo, data de vencimento, etc).</p>
+
+    <h3>POST /api/contratos/:id/cancelar</h3>
+    <p>Cancela o contrato (com motivo).</p>
+    <pre><code>POST /api/contratos/:id/cancelar
+{
+  <span class="st">"motivo"</span>: <span class="st">"preco_alto"</span>,
+  <span class="st">"observacoes"</span>: <span class="st">"Cliente fechou filial SP, mantém apenas RJ"</span>
+}</code></pre>
+
+    <h3>POST /api/contratos/:id/renovar</h3>
+    <p>Cria novo contrato vinculado (renovação).</p>
+
+    <h3>GET /api/contratos/rmr</h3>
+    <p>KPIs de receita recorrente (alimenta BI).</p>
+    <pre><code>{
+  <span class="st">"mrr"</span>: <span class="nm">15750.00</span>,
+  <span class="st">"arr"</span>: <span class="nm">189000.00</span>,
+  <span class="st">"totalContratos"</span>: <span class="nm">23</span>,
+  <span class="st">"contratosAtivos"</span>: <span class="nm">21</span>,
+  <span class="st">"contratosCancelados"</span>: <span class="nm">2</span>,
+  <span class="st">"vencemEm30Dias"</span>: <span class="nm">3</span>,
+  <span class="st">"vencemEm60Dias"</span>: <span class="nm">5</span>,
+  <span class="st">"churnedMes"</span>: <span class="nm">1</span>,
+  <span class="st">"novoMes"</span>: <span class="nm">2</span>,
+  <span class="st">"expansao"</span>: <span class="nm">0.05</span>,
+  <span class="st">"nrr"</span>: <span class="nm">105.2</span>,
+  <span class="st">"churnRate"</span>: <span class="nm">4.3</span>
+}</code></pre>
+
+    <h3>GET /api/contratos/rmr/por-plano</h3>
+    <p>Distribuição de receita por tipo de contrato (Básico, Empresarial, Premium, PMOC, Emergencial).</p>
+
+    <h3>GET /api/contratos/rmr/historico</h3>
+    <p>Evolução temporal do MRR (últimos 12 meses). Alimenta gráfico no BI.</p>
+
+    <h3>GET /api/contratos/vencendo?dias=60</h3>
+    <p>Lista contratos que vencem nos próximos N dias (default 60). Use para ação de retenção.</p>
+
+    <hr>
+
+    <div class="callout tip">
+      <div class="callout-icon">📚</div>
+      <div class="callout-body">
+        <div class="callout-title">Documentos relacionados</div>
+        <p>• <a href="README.md" style="color:var(--purple)">README geral</a> · <a href="guia-cotacao.html" style="color:var(--purple)">Guia de Cotação</a> · <a href="guia-pmoc.html" style="color:var(--purple)">Guia de PMOC</a><br>
+        • <a href="arquitetura-erp.html" style="color:var(--purple)">Arquitetura do ERP</a> · <a href="MIGRACAO-POSTGRES-ROADMAP.md" style="color:var(--purple)">Roadmap Postgres</a></p>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<footer>
+  <div class="row">
+    <div>Renostter Climatização &amp; Manutenção HVAC · contato@renostter.com.br · (11) 9999-9999</div>
+    <div>v1.0 · 21/07/2026 · <a href="README.md">Índice</a> · <a href="guia-pmoc.html">PMOC</a> · <a href="guia-cotacao.html">Cotação</a></div>
+  </div>
+</footer>
+
+<script>
+const tocLinks = document.querySelectorAll('.toc a');
+const sections = Array.from(tocLinks).map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    const id = '#' + entry.target.id;
+    const link = document.querySelector('.toc a[href="' + id + '"]');
+    if (link && entry.isIntersecting) {
+      tocLinks.forEach(l => l.classList.remove('active'));
+      link.classList.add('active');
+    }
+  });
+}, { rootMargin: '-20% 0px -70% 0px' });
+sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>

@@ -1,0 +1,16 @@
+name = "renostter-crm-reset"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+# Workers gratuito: 100.000 req/dia — sem cartão de crédito
+
+[vars]
+# Variáveis públicas (sem dados sensíveis aqui)
+CODE_EXPIRY_MINUTES = "15"
+
+# ⚠️  Secrets NÃO ficam aqui — configure via CLI:
+#     wrangler secret put RESEND_API_KEY
+#     wrangler secret put RESET_HMAC_SECRET
+#
+# Obtenha a RESEND_API_KEY em: https://resend.com/api-keys
+# RESET_HMAC_SECRET: qualquer string aleatória longa (ex: openssl rand -hex 32)

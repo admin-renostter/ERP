@@ -1,0 +1,616 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Gestão de Projetos — Renostter CRM</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="../css/global.css" />
+    <style>
+        .kanban-board {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            padding-bottom: 20px;
+            min-height: calc(100vh - 250px);
+        }
+
+        .kanban-column {
+            flex: 0 0 320px;
+            background: var(--bg-surface);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            max-height: calc(100vh - 250px);
+        }
+
+        .column-header {
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .column-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-primary);
+        }
+
+        .column-count {
+            background: var(--border);
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 50px;
+        }
+
+        .card-list {
+            padding: 12px;
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .kanban-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px;
+            cursor: pointer;
+            transition: 0.2s;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .kanban-card:hover {
+            border-color: var(--blue);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .kanban-card.dragging {
+            opacity: 0.5;
+            border: 2px dashed var(--blue);
+        }
+
+        .card-priority {
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            display: inline-block;
+        }
+
+        .card-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            line-height: 1.4;
+            color: var(--text-primary);
+        }
+
+        .card-client {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+
+        .card-tech {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .tech-avatar {
+            width: 20px;
+            height: 20px;
+            background: var(--blue-dim);
+            color: var(--blue);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65rem;
+            font-weight: 700;
+        }
+
+        .card-sla {
+            font-size: 0.7rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .sla-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .sla-ok {
+            background: var(--success);
+        }
+
+        .sla-warning {
+            background: var(--warning);
+        }
+
+        .sla-danger {
+            background: var(--danger);
+        }
+
+        .dashboard-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .view-switcher {
+            display: flex;
+            background: var(--bg-surface);
+            padding: 4px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .view-btn {
+            padding: 6px 16px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+        }
+
+        .view-btn.active {
+            background: var(--card-bg);
+            color: var(--blue);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Timeline Styles */
+        #timelineView {
+            background: var(--bg-surface);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            padding: 24px;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <img src="../assets/logo-crm.png" alt="Renostter CRM" style="max-height:52px;object-fit:contain">
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section-label">Principal</div>
+                <a class="nav-item" href="dashboard.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7" />
+                        <rect x="14" y="3" width="7" height="7" />
+                        <rect x="14" y="14" width="7" height="7" />
+                        <rect x="3" y="14" width="7" height="7" />
+                    </svg><span>Dashboard</span></a>
+                <a class="nav-item" href="financeiro.html">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="1" x2="12" y2="23"></line>
+                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                    </svg>
+                    <span>Financeiro</span>
+                </a>
+                <a class="nav-item" href="cobrancas.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg><span>Cobranças</span></a>
+                <div class="nav-section-label">Gestão</div>
+                <a class="nav-item active" href="projects.html"><svg width="16" height="16" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2">
+                        <path
+                            d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                    </svg><span>Dashboard PM</span></a>
+                <a class="nav-item" href="knowledge.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                    </svg><span>Base de Conhecimento</span></a>
+                <a class="nav-item" href="clients.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                    </svg><span>Clientes</span></a>
+                <a class="nav-item" href="leads.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.39a2 2 0 0 1 1.98-2.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span>Leads</span></a>
+                <a class="nav-item" href="tickets.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="M9 11l3 3L22 4" />
+                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                    </svg><span>Chamados</span></a>
+                <!-- Rest of sidebar -->
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-card" onclick="auth.logout()">
+                    <div class="user-avatar" id="sidebarAvatar">A</div>
+                    <div class="user-info"><strong id="sidebarUserName">Admin</strong><span
+                            id="sidebarUserRole">Administrador</span></div>
+                </div>
+            </div>
+        </aside>
+
+        <div class="main-content">
+            <div class="topbar">
+                <div class="topbar-left">
+                    <button class="hamburger btn btn-ghost btn-icon" id="hamburger"><svg width="18" height="18"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="3" y1="6" x2="21" y2="6" />
+                            <line x1="3" y1="12" x2="21" y2="12" />
+                            <line x1="3" y1="18" x2="21" y2="18" />
+                        </svg></button>
+                    <span class="page-title">Project Management Dashboard</span>
+                </div>
+                <div class="topbar-right">
+                    <button class="btn btn-primary" onclick="window.location.href='tickets.html'">+ Novo
+                        Chamado</button>
+                </div>
+            </div>
+
+            <div class="page-body">
+                <div class="dashboard-controls">
+                    <div class="view-switcher">
+                        <button class="view-btn active" onclick="switchView('kanban')">Kanban</button>
+                        <button class="view-btn" onclick="switchView('timeline')">Linha do Tempo</button>
+                        <button class="view-btn" onclick="switchView('activity')">Mural de Atividades</button>
+                    </div>
+                    <div class="filters-bar" style="margin-bottom:0">
+                        <div class="search-box">
+                            <input type="text" id="kanbanSearch" placeholder="Buscar chamados..."
+                                oninput="renderKanban()">
+                        </div>
+                        <select class="filter-select" id="fTech" onchange="renderKanban()">
+                            <option value="">Todos os Técnicos</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- KANBAN VIEW -->
+                <div id="kanbanView" class="kanban-board">
+                    <!-- Column: Aberto -->
+                    <div class="kanban-column" data-status="aberto">
+                        <div class="column-header">
+                            <div class="column-title">🔵 Aguardando Atribuição</div>
+                            <span class="column-count" id="count-aberto">0</span>
+                        </div>
+                        <div class="card-list" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
+                    </div>
+
+                    <!-- Column: Andamento -->
+                    <div class="kanban-column" data-status="andamento">
+                        <div class="column-header">
+                            <div class="column-title">🟡 Em Execução</div>
+                            <span class="column-count" id="count-andamento">0</span>
+                        </div>
+                        <div class="card-list" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
+                    </div>
+
+                    <!-- Column: Aguardando -->
+                    <div class="kanban-column" data-status="aguardando">
+                        <div class="column-header">
+                            <div class="column-title">⚪ Pendente Cliente/Peça</div>
+                            <span class="column-count" id="count-aguardando">0</span>
+                        </div>
+                        <div class="card-list" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
+                    </div>
+
+                    <!-- Column: Resolvido -->
+                    <div class="kanban-column" data-status="resolvido">
+                        <div class="column-header">
+                            <div class="column-title">🟢 Concluído</div>
+                            <span class="column-count" id="count-resolvido">0</span>
+                        </div>
+                        <div class="card-list" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
+                    </div>
+                </div>
+
+                <!-- TIMELINE VIEW -->
+                <div id="timelineView" style="display:none"></div>
+
+                <!-- ACTIVITY FEED VIEW -->
+                <div id="activityView" style="display:none">
+                    <div style="max-width:800px;margin:30px auto" id="activityList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script src="../js/storage.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/approval-banner.js"></script>
+    <script src="../js/utils.js"></script>
+    <script>
+        const session = auth.protect(['admin', 'superadmin']);
+        if (!session) throw new Error('Access denied');
+
+        // Initialize técnicos filter with capacity info
+        function initFilters() {
+            const techs = db.get('users').filter(u => u.role === 'tecnico');
+            const tickets = db.get('tickets');
+            const sel = document.getElementById('fTech');
+
+            techs.forEach(t => {
+                const count = tickets.filter(tk => tk.assignedTo === t.id && !['resolvido', 'fechado', 'cancelado'].includes(tk.status)).length;
+                const opt = document.createElement('option');
+                opt.value = t.id;
+                opt.textContent = `${t.name} (${count} ativos)`;
+                sel.appendChild(opt);
+            });
+        }
+
+        function switchView(view) {
+            document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('kanbanView').style.display = view === 'kanban' ? 'flex' : 'none';
+            document.getElementById('timelineView').style.display = view === 'timeline' ? 'block' : 'none';
+            document.getElementById('activityView').style.display = view === 'activity' ? 'block' : 'none';
+
+            if (view === 'timeline') renderTimeline();
+            if (view === 'activity') renderActivityFeed();
+        }
+
+        function renderActivityFeed() {
+            const container = document.getElementById('activityList');
+            const comments = db.get('comments');
+            const transfers = db.get('transfers');
+            const stock = db.get('stock_movements');
+            const audit = db.get('auditlog');
+
+            const feed = [
+                ...comments.map(c => ({ date: c.createdAt, type: 'comment', icon: '💬', authorId: c.authorId, text: `<strong>${esc(c.authorName)}</strong> comentou no chamado <strong>#${c.ticketId.substring(1)}</strong>: "${esc(c.text.substring(0, 50))}..."` })),
+                ...transfers.map(x => ({ date: x.createdAt, type: 'transfer', icon: '🔄', fromUserId: x.fromUserId, text: `<strong>${esc(x.fromUserName)}</strong> transferiu o chamado <strong>${x.ticketNum}</strong> para <strong>${esc(x.toUserName)}</strong>` })),
+                ...stock.map(s => ({ date: s.createdAt, type: 'stock', icon: '📦', technicianId: s.technicianId, text: `<strong>${esc(s.technicianName || 'Admin')}</strong> registrou ${s.type} de <strong>${esc(s.productName)}</strong> para o chamado <strong>${s.ticketNum}</strong>` })),
+                ...audit.filter(a => a.action === 'ticket_status_change').map(a => ({ date: a.createdAt, type: 'audit', icon: '⚡', authorId: a.userId, text: a.details }))
+            ].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 50);
+
+            if (feed.length === 0) {
+                container.innerHTML = '<p style="text-align:center;color:var(--text-secondary)">Nenhuma atividade recente.</p>';
+                return;
+            }
+
+            container.innerHTML = feed.map(item => `
+                <div style="display:flex;gap:16px;padding:16px;border-bottom:1px solid var(--border);border-left:4px solid var(--blue);background:var(--bg-surface);margin-bottom:8px;border-radius:0 8px 8px 0">
+                    <div style="flex-shrink:0">${renderAvatar(item.authorId || item.fromUserId || item.technicianId, '32px', '0.8rem')}</div>
+                    <div style="flex:1">
+                        <div style="font-size:0.875rem;color:var(--text-primary)">${item.text}</div>
+                        <div style="font-size:0.75rem;color:var(--text-secondary);margin-top:4px">${new Date(item.date).toLocaleString()}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderTimeline() {
+            const tickets = db.get('tickets').sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+            const container = document.getElementById('timelineView');
+
+            if (tickets.length === 0) {
+                container.innerHTML = '<p style="text-align:center;color:var(--text-secondary)">Nenhum projeto para exibir no cronograma.</p>';
+                return;
+            }
+
+            let html = `
+                <div style="overflow-x:auto">
+                    <table style="width:100%;border-collapse:collapse;font-size:0.85rem">
+                        <thead>
+                            <tr style="border-bottom:2px solid var(--border)">
+                                <th style="text-align:left;padding:12px;width:250px">Chamado / Projeto</th>
+                                <th style="text-align:left;padding:12px">Distribuição Temporal (SLA vs Real)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            tickets.forEach(t => {
+                const sla = calcSLA(t, t.contractType || 'basico');
+                const start = new Date(t.createdAt);
+                const deadline = new Date(t.slaResolutionDeadline==='cronograma'? 0 : t.slaResolutionDeadline);
+                const now = new Date();
+
+                // Simple visualization logic: 
+                // We'll show a bar representing the time from creation to deadline
+                // And another bar for time elapsed
+                html += `
+                    <tr style="border-bottom:1px solid var(--border)">
+                        <td style="padding:12px">
+                            <div style="font-weight:600;color:var(--text-primary)">${esc(t.num)}: ${esc(t.title)}</div>
+                            <div style="font-size:0.75rem;color:var(--text-secondary)">Cliente: ${esc(t.clientName)}</div>
+                        </td>
+                        <td style="padding:12px">
+                            <div style="background:var(--bg-inset);height:24px;border-radius:12px;position:relative;overflow:hidden;border:1px solid var(--border)">
+                                <div style="position:absolute;left:0;top:0;height:100%;width:${Math.min(sla.pct, 100)}%;background:${sla.state === 'danger' ? 'var(--danger)' : (sla.state === 'warning' ? 'var(--warning)' : 'var(--success)')};opacity:0.6" title="Progresso Real"></div>
+                                <div style="position:absolute;left:0;top:0;height:100%;width:100%;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:var(--text-primary);z-index:2">
+                                    SLA: ${t.slaDeadline ? new Date(t.slaResolutionDeadline==='cronograma'? 0 : t.slaResolutionDeadline).toLocaleString() : 'N/A'}
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            container.innerHTML = html;
+        }
+
+        function renderKanban() {
+            const tickets = db.get('tickets');
+            const searchQuery = document.getElementById('kanbanSearch').value.toLowerCase();
+            const techFilter = document.getElementById('fTech').value;
+
+            // Clear lists
+            document.querySelectorAll('.card-list').forEach(l => l.innerHTML = '');
+
+            const filtered = tickets.filter(t => {
+                const matchesSearch = t.title.toLowerCase().includes(searchQuery) || t.num.includes(searchQuery);
+                const matchesTech = !techFilter || t.assignedTo === techFilter;
+                return matchesSearch && matchesTech;
+            });
+
+            const stats = { aberto: 0, andamento: 0, aguardando: 0, resolvido: 0 };
+
+            filtered.forEach(t => {
+                const column = document.querySelector(`.kanban-column[data-status="${t.status}"] .card-list`);
+                if (column) {
+                    stats[t.status]++;
+                    column.innerHTML += createCard(t);
+                }
+            });
+
+            // Update counts
+            Object.keys(stats).forEach(k => {
+                const el = document.getElementById(`count-${k}`);
+                if (el) el.textContent = stats[k];
+            });
+        }
+
+        function createCard(t) {
+            const sla = calcSLA(t, t.contractType || 'basico');
+            const priorityLabel = PRIORITY[t.priority]?.label || t.priority;
+            const priorityClass = t.priority === 'critica' || t.priority === 'alta' ? 'badge-red' : (t.priority === 'media' ? 'badge-blue' : 'badge-gray');
+
+            return `
+                <div class="kanban-card" draggable="true" ondragstart="drag(event)" id="${t.id}" onclick="window.location.href='tickets.html?id=${t.id}'">
+                    <span class="card-priority ${priorityClass}">${priorityLabel}</span>
+                    <div class="card-title">${esc(t.title)}</div>
+                    <div class="card-client">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                        </svg>
+                        ${esc(t.clientName)}
+                    </div>
+                    <div class="card-footer">
+                        <div class="card-tech">
+                            <div class="tech-avatar">${t.assignedName ? t.assignedName.charAt(0) : '?'}</div>
+                            <span>${t.assignedName || 'Não atribuído'}</span>
+                        </div>
+                        <div class="card-sla" title="SLA: ${sla.label}">
+                            <div class="sla-indicator sla-${sla.state}"></div>
+                            <span>${sla.pct}%</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Drag and Drop Logic
+        function drag(ev) {
+            ev.dataTransfer.setData("text", ev.target.id);
+            ev.target.classList.add('dragging');
+        }
+
+        function allowDrop(ev) {
+            ev.preventDefault();
+        }
+
+        function drop(ev) {
+            ev.preventDefault();
+            const id = ev.dataTransfer.getData("text");
+            const newStatus = ev.target.closest('.kanban-column').getAttribute('data-status');
+
+            // Update storage
+            const ticket = db.find('tickets', id);
+            if (ticket && ticket.status !== newStatus) {
+                db.update('tickets', id, { status: newStatus });
+                logAudit('ticket_status_change', `Status do chamado ${ticket.num} alterado para ${newStatus} via Kanban por ${session.name}`);
+                toast('Status atualizado', `Chamado movido para ${newStatus}`, 'success');
+            }
+
+            document.querySelectorAll('.kanban-card').forEach(c => c.classList.remove('dragging'));
+            renderKanban();
+        }
+
+        function checkCriticalAlerts() {
+            const tickets = db.get('tickets');
+            const now = new Date();
+            let alertsTriggered = 0;
+
+            tickets.forEach(t => {
+                if (['resolvido', 'fechado', 'cancelado'].includes(t.status)) return;
+
+                // Priority Check
+                if (t.priority === 'critica' && !t.criticaNotified) {
+                    db.insert('notifications', {
+                        type: 'critical_task',
+                        title: '🔥 CHAMADO CRÍTICO',
+                        text: `O chamado ${t.num} possui prioridade crítica e requer atenção imediata.`,
+                        ticketId: t.id,
+                        targetUserId: t.assignedTo || session.userId,
+                        read: false
+                    });
+                    db.update('tickets', t.id, { criticaNotified: true });
+                    alertsTriggered++;
+                }
+
+                // SLA Check
+                const deadline = new Date(t.slaResolutionDeadline==='cronograma'? 0 : t.slaResolutionDeadline);
+                if (deadline < now && !t.slaExpiredNotified) {
+                    db.insert('notifications', {
+                        type: 'sla_breach',
+                        title: '⏰ SLA VENCIDO',
+                        text: `O SLA do chamado ${t.num} venceu em ${deadline.toLocaleString()}.`,
+                        ticketId: t.id,
+                        targetUserId: t.assignedTo || session.userId,
+                        read: false
+                    });
+                    db.update('tickets', t.id, { slaExpiredNotified: true });
+                    alertsTriggered++;
+                }
+            });
+
+            if (alertsTriggered > 0) {
+                toast('Alertas disparados', `${alertsTriggered} notificações de incidentes críticos criadas.`, 'warning');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initSidebar();
+            initFilters();
+            renderKanban();
+            checkCriticalAlerts();
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="robots" content="noindex, nofollow"/>
+<title>Tenants — Renostter CRM</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../css/global.css"/>
+<style>
+:root {
+  --bg: #0a0e14; --bg-surface: #121821; --bg-card: #1a2230;
+  --border: #2a3441; --border-med: #3a4654;
+  --text-primary: #e8edf3; --text-secondary: #a0aab8; --text-muted: #6b7686;
+  --blue: #00AEEF; --blue-dim: rgba(0,174,239,.12);
+  --green: #22c55e; --green-dim: rgba(34,197,94,.12);
+  --orange: #f59e0b; --orange-dim: rgba(245,158,11,.12);
+  --red: #ef4444; --red-dim: rgba(239,68,68,.12);
+  --purple: #a855f7; --purple-dim: rgba(168,85,247,.12);
+}
+body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text-primary); margin: 0; }
+.container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+header h1 { font-size: 1.5rem; margin: 0; }
+header .badge { background: var(--blue-dim); color: var(--blue); padding: 4px 10px; border-radius: 99px; font-size: .72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+header p { color: var(--text-secondary); margin: 4px 0 0; font-size: .9rem; }
+
+.toolbar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+.toolbar input, .toolbar select { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-primary); padding: 8px 12px; border-radius: 6px; font-family: inherit; font-size: .9rem; }
+.toolbar input { flex: 1; min-width: 200px; }
+.btn { background: var(--blue); color: #0a0e14; border: 0; padding: 10px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: .9rem; }
+.btn:hover { background: #00c4ff; }
+.btn-secondary { background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border); }
+.btn-danger { background: var(--red); color: #fff; }
+.btn-sm { padding: 6px 12px; font-size: .8rem; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+
+.tenant-list { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.tenant-row { display: grid; grid-template-columns: 1fr 120px 100px 80px 100px 100px; gap: 16px; padding: 14px 18px; align-items: center; border-bottom: 1px solid var(--border); cursor: pointer; transition: background .15s; }
+.tenant-row:hover { background: var(--bg-surface); }
+.tenant-row:last-child { border-bottom: 0; }
+.tenant-row.header { background: var(--bg-surface); font-size: .75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; font-weight: 600; cursor: default; }
+.tenant-row.header:hover { background: var(--bg-surface); }
+.tenant-row .name { font-weight: 600; }
+.tenant-row .slug { color: var(--text-muted); font-family: 'Courier New', monospace; font-size: .8rem; }
+
+.status-tag, .plano-tag, .role-tag { display: inline-block; padding: 3px 10px; border-radius: 99px; font-size: .72rem; font-weight: 600; }
+.status-ativo { background: var(--green-dim); color: var(--green); }
+.status-suspenso { background: var(--orange-dim); color: var(--orange); }
+.status-cancelado { background: var(--red-dim); color: var(--red); }
+.status-trial { background: var(--purple-dim); color: var(--purple); }
+.plano-trial { background: var(--purple-dim); color: var(--purple); }
+.plano-starter { background: var(--blue-dim); color: var(--blue); }
+.plano-pro { background: var(--green-dim); color: var(--green); }
+.plano-enterprise { background: var(--orange-dim); color: var(--orange); }
+.role-owner { background: var(--orange-dim); color: var(--orange); }
+.role-admin { background: var(--blue-dim); color: var(--blue); }
+.role-user { background: var(--bg-surface); color: var(--text-secondary); }
+.role-viewer { background: var(--bg-surface); color: var(--text-muted); }
+
+.empty { padding: 60px 20px; text-align: center; color: var(--text-muted); }
+
+/* Modal & Drawer */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.7); display: none; align-items: center; justify-content: center; z-index: 1000; }
+.modal-overlay.active { display: flex; }
+.modal { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; width: 90%; max-width: 700px; max-height: 90vh; overflow: auto; }
+.modal h2 { margin: 0 0 16px; }
+.modal .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.modal .row.full { grid-template-columns: 1fr; }
+.modal label { display: block; font-size: .85rem; color: var(--text-secondary); margin-bottom: 4px; }
+.modal input, .modal select, .modal textarea { width: 100%; background: var(--bg-card); border: 1px solid var(--border); color: var(--text-primary); padding: 8px 12px; border-radius: 6px; font-family: inherit; font-size: .9rem; box-sizing: border-box; }
+.modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+
+/* Detail Drawer */
+.drawer { position: fixed; top: 0; right: 0; width: 720px; max-width: 95vw; height: 100vh; background: var(--bg-surface); border-left: 1px solid var(--border); z-index: 999; overflow: hidden; display: none; flex-direction: column; }
+.drawer.active { display: flex; }
+.drawer-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.drawer-header h2 { margin: 0; font-size: 1.2rem; }
+.drawer-body { flex: 1; overflow-y: auto; padding: 24px; }
+.drawer-close { background: transparent; border: 0; color: var(--text-secondary); font-size: 1.5rem; cursor: pointer; padding: 4px 8px; }
+.drawer-close:hover { color: var(--text-primary); }
+
+.tabs { display: flex; gap: 0; margin-bottom: 20px; border-bottom: 1px solid var(--border); }
+.tabs button { background: transparent; border: 0; color: var(--text-secondary); padding: 10px 16px; cursor: pointer; font-size: .9rem; border-bottom: 2px solid transparent; transition: all .15s; }
+.tabs button:hover { color: var(--text-primary); }
+.tabs button.active { color: var(--blue); border-bottom-color: var(--blue); font-weight: 600; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
+.stat-card .label { font-size: .72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; }
+.stat-card .value { font-size: 1.4rem; font-weight: 700; margin-top: 4px; }
+
+.user-list { display: grid; gap: 8px; }
+.user-row { display: grid; grid-template-columns: 1fr 100px 120px; gap: 12px; padding: 10px 14px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; align-items: center; }
+.user-row .info .name { font-weight: 500; }
+.user-row .info .email { font-size: .8rem; color: var(--text-muted); }
+.user-row .actions { display: flex; gap: 6px; justify-content: flex-end; }
+
+.invite-list { display: grid; gap: 8px; }
+.invite-row { padding: 10px 14px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; display: grid; grid-template-columns: 1fr 100px 120px 100px; gap: 12px; align-items: center; font-size: .85rem; }
+.invite-link { font-family: 'Courier New', monospace; font-size: .72rem; color: var(--blue); word-break: break-all; }
+
+.toast { position: fixed; bottom: 20px; right: 20px; background: var(--bg-card); border: 1px solid var(--border); padding: 12px 18px; border-radius: 8px; opacity: 0; transition: opacity .2s; z-index: 2000; }
+.toast.show { opacity: 1; }
+.toast.success { border-left: 3px solid var(--green); }
+.toast.error { border-left: 3px solid var(--red); }
+
+.info-grid { display: grid; grid-template-columns: 140px 1fr; gap: 8px 16px; font-size: .9rem; }
+.info-grid .label { color: var(--text-muted); }
+.info-grid .value { color: var(--text-primary); }
+
+.loading { padding: 40px; text-align: center; color: var(--text-muted); }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div>
+      <h1>🏢 Tenants (Multi-tenant SaaS)</h1>
+      <p>Gerencie as organizações/empresas do sistema. Cada tenant tem seus próprios dados isolados.</p>
+    </div>
+    <div>
+      <span class="badge" id="authBadge">Carregando...</span>
+    </div>
+  </header>
+
+  <div class="toolbar">
+    <input type="text" id="searchInput" placeholder="🔎 Buscar por nome, slug, CNPJ..." />
+    <select id="filterStatus">
+      <option value="">Todos os status</option>
+      <option value="ativo">Ativo</option>
+      <option value="trial">Trial</option>
+      <option value="suspenso">Suspenso</option>
+      <option value="cancelado">Cancelado</option>
+    </select>
+    <select id="filterPlano">
+      <option value="">Todos os planos</option>
+      <option value="trial">Trial</option>
+      <option value="starter">Starter</option>
+      <option value="pro">Pro</option>
+      <option value="enterprise">Enterprise</option>
+    </select>
+    <button class="btn" id="btnNewTenant">+ Novo Tenant</button>
+  </div>
+
+  <div class="tenant-list" id="tenantList">
+    <div class="tenant-row header">
+      <div>Nome / Slug</div>
+      <div>Plano</div>
+      <div>Status</div>
+      <div>Users</div>
+      <div>Criado</div>
+      <div>Ações</div>
+    </div>
+    <div id="tenantRows">
+      <div class="loading">Carregando tenants...</div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Novo Tenant -->
+<div class="modal-overlay" id="newTenantModal">
+  <div class="modal">
+    <h2>+ Criar Novo Tenant</h2>
+    <div class="row">
+      <div>
+        <label>Slug (URL-friendly) *</label>
+        <input type="text" id="newSlug" placeholder="ex: acme-corp" />
+      </div>
+      <div>
+        <label>Nome Fantasia *</label>
+        <input type="text" id="newNome" placeholder="ACME Corporation" />
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label>CNPJ / CPF</label>
+        <input type="text" id="newDocumento" placeholder="00.000.000/0000-00" />
+      </div>
+      <div>
+        <label>Email</label>
+        <input type="email" id="newEmail" placeholder="contato@acme.com" />
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label>Telefone</label>
+        <input type="text" id="newTelefone" placeholder="(11) 99999-9999" />
+      </div>
+      <div>
+        <label>Plano</label>
+        <select id="newPlano">
+          <option value="trial">Trial</option>
+          <option value="starter">Starter</option>
+          <option value="pro">Pro</option>
+          <option value="enterprise">Enterprise</option>
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label>Limite de Usuários</label>
+        <input type="number" id="newLimiteUsuarios" value="5" min="1" />
+      </div>
+      <div>
+        <label>Limite de Contratos</label>
+        <input type="number" id="newLimiteContratos" value="50" min="1" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="btnCancelNew">Cancelar</button>
+      <button class="btn" id="btnCreateTenant">Criar Tenant</button>
+    </div>
+  </div>
+</div>
+
+<!-- Drawer: Detalhe do Tenant -->
+<div class="drawer" id="tenantDrawer">
+  <div class="drawer-header">
+    <h2 id="drawerTitle">Carregando...</h2>
+    <button class="drawer-close" id="btnCloseDrawer">×</button>
+  </div>
+  <div class="drawer-body">
+    <div class="tabs">
+      <button data-tab="overview" class="active">Visão Geral</button>
+      <button data-tab="users">Usuários</button>
+      <button data-tab="invites">Convites</button>
+      <button data-tab="settings">Configurações</button>
+    </div>
+
+    <div class="tab-content active" id="tab-overview">
+      <div id="overviewContent" class="loading">Carregando...</div>
+    </div>
+
+    <div class="tab-content" id="tab-users">
+      <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+        <h3 style="margin: 0;">Usuários do Tenant</h3>
+        <button class="btn btn-sm" id="btnAddUser">+ Adicionar Usuário</button>
+      </div>
+      <div class="user-list" id="userList">
+        <div class="loading">Carregando usuários...</div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-invites">
+      <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+        <h3 style="margin: 0;">Convites Pendentes</h3>
+        <button class="btn btn-sm" id="btnNewInvite">+ Novo Convite</button>
+      </div>
+      <div class="invite-list" id="inviteList">
+        <div class="loading">Carregando convites...</div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-settings">
+      <h3 style="margin-top: 0;">Configurações do Tenant</h3>
+      <div class="row">
+        <div>
+          <label>Nome</label>
+          <input type="text" id="editNome" />
+        </div>
+        <div>
+          <label>Email</label>
+          <input type="email" id="editEmail" />
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>Telefone</label>
+          <input type="text" id="editTelefone" />
+        </div>
+        <div>
+          <label>CNPJ/CPF</label>
+          <input type="text" id="editDocumento" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btnCancelTenant" style="display:none;">⏸ Suspender</button>
+        <button class="btn btn-secondary" id="btnReactivateTenant" style="display:none;">▶ Reativar</button>
+        <button class="btn btn-danger" id="btnCancelTenantForce" style="display:none;">✕ Cancelar</button>
+        <button class="btn" id="btnSaveSettings">💾 Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Adicionar Usuário -->
+<div class="modal-overlay" id="addUserModal">
+  <div class="modal" style="max-width: 500px;">
+    <h2>Adicionar Usuário ao Tenant</h2>
+    <div class="row full">
+      <div>
+        <label>User ID *</label>
+        <input type="text" id="addUserId" placeholder="ID do usuário existente" />
+        <small style="color: var(--text-muted); font-size: .8rem;">Cole o ID do usuário que deseja adicionar.</small>
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label>Role</label>
+        <select id="addUserRole">
+          <option value="user">User</option>
+          <option value="admin">Admin</option>
+          <option value="owner">Owner</option>
+          <option value="viewer">Viewer</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="btnCancelAddUser">Cancelar</button>
+      <button class="btn" id="btnConfirmAddUser">Adicionar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Novo Convite -->
+<div class="modal-overlay" id="inviteModal">
+  <div class="modal" style="max-width: 500px;">
+    <h2>Convidar Usuário por Email</h2>
+    <div class="row full">
+      <div>
+        <label>Email *</label>
+        <input type="email" id="inviteEmail" placeholder="novousuario@empresa.com" />
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label>Role</label>
+        <select id="inviteRole">
+          <option value="user">User</option>
+          <option value="admin">Admin</option>
+          <option value="owner">Owner</option>
+          <option value="viewer">Viewer</option>
+        </select>
+      </div>
+      <div>
+        <label>Validade (horas)</label>
+        <input type="number" id="inviteTTL" value="72" min="1" max="720" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="btnCancelInvite">Cancelar</button>
+      <button class="btn" id="btnConfirmInvite">Enviar Convite</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════════════════════════════════════════════════════════════
+// ESTADO & AUTH
+// ════════════════════════════════════════════════════════════════
+const API_BASE = (() => {
+  // Detecta se está rodando no mesmo host (porta 8080) ou em outro
+  return `${window.location.protocol}//${window.location.hostname}:3000`;
+})();
+let authToken = localStorage.getItem('jwt') || '';
+let currentUser = null;
+let currentTenant = null;
+
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast show ${type}`;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+async function api(path, opts = {}) {
+  const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
+  if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+  const res = await fetch(`${API_BASE}${path}`, { ...opts, headers });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const err = new Error(data.error || `HTTP ${res.status}`);
+    err.code = data.code; err.status = res.status; err.data = data;
+    throw err;
+  }
+  return data;
+}
+
+// ════════════════════════════════════════════════════════════════
+// AUTH BOOT
+// ════════════════════════════════════════════════════════════════
+async function boot() {
+  // Token legado (fallback dev) — o ideal é JWT
+  if (!authToken) {
+    const legacyUser = localStorage.getItem('user_data');
+    if (legacyUser) {
+      try { currentUser = JSON.parse(legacyUser); } catch (_) {}
+    }
+  }
+  try {
+    const me = await api('/api/auth/me');
+    currentUser = me.user;
+    document.getElementById('authBadge').textContent =
+      `${currentUser.role || 'user'} · ${currentUser.name || ''}`;
+    // Listar tenants do user como fallback
+    if (!document.getElementById('tenantRows').dataset.loaded) {
+      loadTenants();
+    }
+  } catch (e) {
+    // Modo dev: usa headers legados via query ?userId=...
+    if (e.status === 401) {
+      document.getElementById('authBadge').textContent = 'Não autenticado';
+      showToast('Faça login para acessar. Em dev, ?token=JWT funciona.', 'error');
+    }
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// LISTAGEM
+// ════════════════════════════════════════════════════════════════
+async function loadTenants() {
+  const rows = document.getElementById('tenantRows');
+  rows.innerHTML = '<div class="loading">Carregando tenants...</div>';
+  const status = document.getElementById('filterStatus').value;
+  const plano = document.getElementById('filterPlano').value;
+  const search = document.getElementById('searchInput').value.trim();
+  const qs = new URLSearchParams();
+  if (status) qs.set('status', status);
+  if (plano) qs.set('plano', plano);
+  if (search) qs.set('search', search);
+
+  try {
+    const data = await api(`/api/tenants?${qs.toString()}`);
+    rows.dataset.loaded = '1';
+    if (!data.data || data.data.length === 0) {
+      rows.innerHTML = '<div class="empty">Nenhum tenant encontrado.</div>';
+      return;
+    }
+    rows.innerHTML = '';
+    for (const t of data.data) {
+      const created = t.created_at ? new Date(t.created_at).toLocaleDateString('pt-BR') : '—';
+      const usersCount = t.total_usuarios || 0;
+      const row = document.createElement('div');
+      row.className = 'tenant-row';
+      row.innerHTML = `
+        <div>
+          <div class="name">${escapeHtml(t.nome)}</div>
+          <div class="slug">${escapeHtml(t.slug)}${t.documento ? ' · ' + escapeHtml(t.documento) : ''}</div>
+        </div>
+        <div><span class="plano-tag plano-${t.plano}">${t.plano}</span></div>
+        <div><span class="status-tag status-${t.status}">${t.status}</span></div>
+        <div>${usersCount}</div>
+        <div style="font-size: .85rem; color: var(--text-secondary);">${created}</div>
+        <div><button class="btn btn-sm btn-secondary" data-id="${t.id}">Ver</button></div>
+      `;
+      row.querySelector('button').addEventListener('click', (e) => {
+        e.stopPropagation();
+        openDrawer(t.id);
+      });
+      row.addEventListener('click', () => openDrawer(t.id));
+      rows.appendChild(row);
+    }
+  } catch (e) {
+    rows.innerHTML = `<div class="empty">Erro ao carregar: ${escapeHtml(e.message)}<br/><small>Verifique se você tem permissão de superadmin.</small></div>`;
+  }
+}
+
+// Filtros (debounce)
+let searchDebounce = null;
+document.getElementById('searchInput').addEventListener('input', () => {
+  clearTimeout(searchDebounce);
+  searchDebounce = setTimeout(loadTenants, 300);
+});
+document.getElementById('filterStatus').addEventListener('change', loadTenants);
+document.getElementById('filterPlano').addEventListener('change', loadTenants);
+
+// ════════════════════════════════════════════════════════════════
+// DRAWER
+// ════════════════════════════════════════════════════════════════
+async function openDrawer(tenantId) {
+  const drawer = document.getElementById('tenantDrawer');
+  drawer.classList.add('active');
+  document.getElementById('drawerTitle').textContent = 'Carregando...';
+  try {
+    const t = await api(`/api/tenants/${tenantId}`);
+    currentTenant = t.data;
+    document.getElementById('drawerTitle').innerHTML = `
+      ${escapeHtml(currentTenant.nome)}
+      <span class="plano-tag plano-${currentTenant.plano}" style="margin-left: 8px; font-size: .65rem;">${currentTenant.plano}</span>
+      <span class="status-tag status-${currentTenant.status}" style="margin-left: 4px; font-size: .65rem;">${currentTenant.status}</span>
+    `;
+    renderOverview();
+    loadUsers();
+    loadInvites();
+    fillSettings();
+    // Mostrar/esconder botões de admin
+    const isDefault = currentTenant.id === 'tnt_default';
+    document.getElementById('btnCancelTenant').style.display = isDefault ? 'none' : (currentTenant.status === 'ativo' ? '' : 'none');
+    document.getElementById('btnCancelTenantForce').style.display = isDefault ? 'none' : (currentTenant.status === 'cancelado' ? 'none' : '');
+    document.getElementById('btnReactivateTenant').style.display = (currentTenant.status === 'suspenso' || currentTenant.status === 'cancelado') ? '' : 'none';
+  } catch (e) {
+    document.getElementById('drawerTitle').textContent = 'Erro: ' + e.message;
+  }
+}
+
+function closeDrawer() {
+  document.getElementById('tenantDrawer').classList.remove('active');
+  currentTenant = null;
+}
+document.getElementById('btnCloseDrawer').addEventListener('click', closeDrawer);
+
+// Tabs
+document.querySelectorAll('.tabs button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
+  });
+});
+
+// ════════════════════════════════════════════════════════════════
+// OVERVIEW
+// ════════════════════════════════════════════════════════════════
+async function renderOverview() {
+  const el = document.getElementById('overviewContent');
+  el.innerHTML = '<div class="loading">Carregando...</div>';
+  try {
+    const stats = await api(`/api/tenants/${currentTenant.id}/stats`);
+    const expira = stats.data.tenant.data_expiracao
+      ? new Date(stats.data.tenant.data_expiracao).toLocaleDateString('pt-BR')
+      : '—';
+    el.innerHTML = `
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="label">Usuários Ativos</div>
+          <div class="value">${stats.data.usuarios.ativos} / ${stats.data.usuarios.limite}</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Plano</div>
+          <div class="value" style="font-size: 1rem;">${stats.data.tenant.plano}</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Status</div>
+          <div class="value" style="font-size: 1rem;">${stats.data.tenant.status}</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Expira em</div>
+          <div class="value" style="font-size: 1rem;">${expira}</div>
+        </div>
+      </div>
+      <div class="info-grid">
+        <div class="label">ID:</div>           <div class="value">${escapeHtml(currentTenant.id)}</div>
+        <div class="label">Slug:</div>         <div class="value" style="font-family: monospace;">${escapeHtml(currentTenant.slug)}</div>
+        <div class="label">Nome:</div>         <div class="value">${escapeHtml(currentTenant.nome)}</div>
+        <div class="label">Email:</div>        <div class="value">${escapeHtml(currentTenant.email || '—')}</div>
+        <div class="label">Telefone:</div>     <div class="value">${escapeHtml(currentTenant.telefone || '—')}</div>
+        <div class="label">CNPJ/CPF:</div>     <div class="value">${escapeHtml(currentTenant.documento || '—')}</div>
+        <div class="label">Criado em:</div>    <div class="value">${new Date(currentTenant.created_at).toLocaleString('pt-BR')}</div>
+      </div>
+    `;
+  } catch (e) {
+    el.innerHTML = `<div class="empty">Erro: ${escapeHtml(e.message)}</div>`;
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// USERS
+// ════════════════════════════════════════════════════════════════
+async function loadUsers() {
+  const list = document.getElementById('userList');
+  list.innerHTML = '<div class="loading">Carregando usuários...</div>';
+  try {
+    const data = await api(`/api/tenants/${currentTenant.id}/users`);
+    if (!data.data || data.data.length === 0) {
+      list.innerHTML = '<div class="empty">Nenhum usuário vinculado.</div>';
+      return;
+    }
+    list.innerHTML = '';
+    for (const u of data.data) {
+      const row = document.createElement('div');
+      row.className = 'user-row';
+      const ativoClass = u.ativo ? '' : 'opacity: .5;';
+      row.style.cssText = ativoClass;
+      row.innerHTML = `
+        <div class="info">
+          <div class="name">${escapeHtml(u.nome || u.username || '—')}</div>
+          <div class="email">${escapeHtml(u.email || '')}</div>
+        </div>
+        <div><span class="role-tag role-${u.role}">${u.role}</span></div>
+        <div class="actions">
+          <button class="btn btn-sm btn-secondary" data-action="role" data-user="${u.usuario_id}">Alterar Role</button>
+          <button class="btn btn-sm btn-danger" data-action="remove" data-user="${u.usuario_id}">Remover</button>
+        </div>
+      `;
+      row.querySelector('[data-action="role"]').addEventListener('click', () => changeUserRole(u));
+      row.querySelector('[data-action="remove"]').addEventListener('click', () => removeUser(u));
+      list.appendChild(row);
+    }
+  } catch (e) {
+    list.innerHTML = `<div class="empty">Erro: ${escapeHtml(e.message)}</div>`;
+  }
+}
+
+async function changeUserRole(user) {
+  const newRole = prompt(`Nova role para ${user.nome || user.email || user.usuario_id}:\n(owner | admin | user | viewer)`, user.role);
+  if (!newRole || !['owner','admin','user','viewer'].includes(newRole)) return;
+  try {
+    await api(`/api/tenants/${currentTenant.id}/users/${user.usuario_id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ role: newRole }),
+    });
+    showToast(`Role atualizada para ${newRole}`);
+    loadUsers();
+  } catch (e) { showToast(e.message, 'error'); }
+}
+
+async function removeUser(user) {
+  if (!confirm(`Remover ${user.nome || user.email} do tenant?`)) return;
+  try {
+    await api(`/api/tenants/${currentTenant.id}/users/${user.usuario_id}`, { method: 'DELETE' });
+    showToast('Usuário removido');
+    loadUsers();
+    renderOverview();
+  } catch (e) { showToast(e.message, 'error'); }
+}
+
+// Add user
+document.getElementById('btnAddUser').addEventListener('click', () => {
+  document.getElementById('addUserId').value = '';
+  document.getElementById('addUserRole').value = 'user';
+  document.getElementById('addUserModal').classList.add('active');
+});
+document.getElementById('btnCancelAddUser').addEventListener('click', () => {
+  document.getElementById('addUserModal').classList.remove('active');
+});
+document.getElementById('btnConfirmAddUser').addEventListener('click', async () => {
+  const userId = document.getElementById('addUserId').value.trim();
+  const role = document.getElementById('addUserRole').value;
+  if (!userId) { showToast('Informe o User ID', 'error'); return; }
+  try {
+    await api(`/api/tenants/${currentTenant.id}/users`, {
+      method: 'POST',
+      body: JSON.stringify({ userId, role }),
+    });
+    showToast('Usuário adicionado');
+    document.getElementById('addUserModal').classList.remove('active');
+    loadUsers();
+    renderOverview();
+  } catch (e) { showToast(e.message, 'error'); }
+});
+
+// ════════════════════════════════════════════════════════════════
+// INVITES
+// ════════════════════════════════════════════════════════════════
+async function loadInvites() {
+  const list = document.getElementById('inviteList');
+  list.innerHTML = '<div class="loading">Carregando convites...</div>';
+  try {
+    const data = await api(`/api/tenants/${currentTenant.id}/invites`);
+    if (!data.data || data.data.length === 0) {
+      list.innerHTML = '<div class="empty">Nenhum convite pendente.</div>';
+      return;
+    }
+    list.innerHTML = '';
+    for (const inv of data.data) {
+      const expira = new Date(inv.expira_em);
+      const expiraStr = expira.toLocaleString('pt-BR');
+      const expirado = expira < new Date();
+      const row = document.createElement('div');
+      row.className = 'invite-row';
+      row.style.cssText = expirado ? 'opacity: .5;' : '';
+      row.innerHTML = `
+        <div>
+          <div>${escapeHtml(inv.email)}</div>
+          <div class="invite-link">Token: ${escapeHtml(inv.token.substring(0, 16))}...</div>
+        </div>
+        <div><span class="role-tag role-${inv.role}">${inv.role}</span></div>
+        <div style="font-size: .8rem; color: var(--text-muted);">${expirado ? '❌ Expirado' : '⏰'} ${expiraStr}</div>
+        <div><button class="btn btn-sm btn-secondary" data-token="${inv.token}">📋 Copiar Link</button></div>
+      `;
+      row.querySelector('button').addEventListener('click', () => copyInviteLink(inv));
+      list.appendChild(row);
+    }
+  } catch (e) {
+    list.innerHTML = `<div class="empty">Erro: ${escapeHtml(e.message)}</div>`;
+  }
+}
+
+function copyInviteLink(invite) {
+  const link = `${window.location.origin}${API_BASE}/api/tenants/accept-invite?token=${invite.token}`;
+  navigator.clipboard.writeText(link).then(() => {
+    showToast('Link copiado! Compartilhe com o convidado.');
+  }).catch(() => {
+    prompt('Copie o link:', link);
+  });
+}
+
+document.getElementById('btnNewInvite').addEventListener('click', () => {
+  document.getElementById('inviteEmail').value = '';
+  document.getElementById('inviteRole').value = 'user';
+  document.getElementById('inviteTTL').value = '72';
+  document.getElementById('inviteModal').classList.add('active');
+});
+document.getElementById('btnCancelInvite').addEventListener('click', () => {
+  document.getElementById('inviteModal').classList.remove('active');
+});
+document.getElementById('btnConfirmInvite').addEventListener('click', async () => {
+  const email = document.getElementById('inviteEmail').value.trim();
+  const role = document.getElementById('inviteRole').value;
+  const ttlHours = parseInt(document.getElementById('inviteTTL').value) || 72;
+  if (!email) { showToast('Informe o email', 'error'); return; }
+  try {
+    const r = await api(`/api/tenants/${currentTenant.id}/invites`, {
+      method: 'POST',
+      body: JSON.stringify({ email, role, ttlHours }),
+    });
+    showToast('Convite criado! Token: ' + r.data.token.substring(0, 16) + '...');
+    document.getElementById('inviteModal').classList.remove('active');
+    loadInvites();
+  } catch (e) { showToast(e.message, 'error'); }
+});
+
+// ════════════════════════════════════════════════════════════════
+// SETTINGS
+// ════════════════════════════════════════════════════════════════
+function fillSettings() {
+  document.getElementById('editNome').value = currentTenant.nome || '';
+  document.getElementById('editEmail').value = currentTenant.email || '';
+  document.getElementById('editTelefone').value = currentTenant.telefone || '';
+  document.getElementById('editDocumento').value = currentTenant.documento || '';
+}
+
+document.getElementById('btnSaveSettings').addEventListener('click', async () => {
+  try {
+    const data = await api(`/api/tenants/${currentTenant.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        nome: document.getElementById('editNome').value,
+        email: document.getElementById('editEmail').value,
+        telefone: document.getElementById('editTelefone').value,
+        documento: document.getElementById('editDocumento').value,
+      }),
+    });
+    showToast('Configurações salvas');
+    currentTenant = data.data;
+    openDrawer(currentTenant.id);
+  } catch (e) { showToast(e.message, 'error'); }
+});
+
+document.getElementById('btnCancelTenant').addEventListener('click', async () => {
+  if (!confirm('Suspender este tenant? Usários não conseguirão acessar.')) return;
+  try {
+    await api(`/api/tenants/${currentTenant.id}/suspend`, { method: 'POST' });
+    showToast('Tenant suspenso');
+    openDrawer(currentTenant.id);
+    loadTenants();
+  } catch (e) { showToast(e.message, 'error'); }
+});
+
+document.getElementById('btnReactivateTenant').addEventListener('click', async () => {
+  try {
+    await api(`/api/tenants/${currentTenant.id}/reactivate`, { method: 'POST' });
+    showToast('Tenant reativado');
+    openDrawer(currentTenant.id);
+    loadTenants();
+  } catch (e) { showToast(e.message, 'error'); }
+});
+
+document.getElementById('btnCancelTenantForce').addEventListener('click', async () => {
+  if (!confirm('CANCELAR tenant? Esta ação é definitiva (soft delete).')) return;
+  try {
+    await api(`/api/tenants/${currentTenant.id}/cancel`, { method: 'POST' });
+    showToast('Tenant cancelado');
+    openDrawer(currentTenant.id);
+    loadTenants();
+  } catch (e) { showToast(e.message, 'error'); }
+});
+
+// ════════════════════════════════════════════════════════════════
+// NEW TENANT
+// ════════════════════════════════════════════════════════════════
+document.getElementById('btnNewTenant').addEventListener('click', () => {
+  document.getElementById('newSlug').value = '';
+  document.getElementById('newNome').value = '';
+  document.getElementById('newDocumento').value = '';
+  document.getElementById('newEmail').value = '';
+  document.getElementById('newTelefone').value = '';
+  document.getElementById('newPlano').value = 'trial';
+  document.getElementById('newLimiteUsuarios').value = '5';
+  document.getElementById('newLimiteContratos').value = '50';
+  document.getElementById('newTenantModal').classList.add('active');
+});
+document.getElementById('btnCancelNew').addEventListener('click', () => {
+  document.getElementById('newTenantModal').classList.remove('active');
+});
+document.getElementById('btnCreateTenant').addEventListener('click', async () => {
+  const slug = document.getElementById('newSlug').value.trim().toLowerCase();
+  const nome = document.getElementById('newNome').value.trim();
+  if (!slug || !nome) { showToast('Slug e nome são obrigatórios', 'error'); return; }
+  try {
+    await api('/api/tenants', {
+      method: 'POST',
+      body: JSON.stringify({
+        slug,
+        nome,
+        documento: document.getElementById('newDocumento').value.trim(),
+        email: document.getElementById('newEmail').value.trim(),
+        telefone: document.getElementById('newTelefone').value.trim(),
+        plano: document.getElementById('newPlano').value,
+        limite_usuarios: parseInt(document.getElementById('newLimiteUsuarios').value) || 5,
+        limite_contratos: parseInt(document.getElementById('newLimiteContratos').value) || 50,
+        ownerUserId: currentUser?.id, // atual user vira owner
+      }),
+    });
+    showToast('Tenant criado!');
+    document.getElementById('newTenantModal').classList.remove('active');
+    loadTenants();
+  } catch (e) { showToast(e.message, 'error'); }
+});
+
+// ════════════════════════════════════════════════════════════════
+// UTILS
+// ════════════════════════════════════════════════════════════════
+function escapeHtml(s) {
+  if (s === null || s === undefined) return '';
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+boot();
+</script>
+</body>
+</html>

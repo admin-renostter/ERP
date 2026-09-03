@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boleto QA Test - Cora API</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0d1117;
+            --card: #161b22;
+            --border: #30363d;
+            --green: #2ea043;
+            --blue: #58a6ff;
+            --yellow: #d29922;
+            --text: #e6edf3;
+            --text2: #8b949e;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+        .container { max-width: 720px; width: 100%; }
+
+        .header { text-align: center; margin-bottom: 32px; }
+        .header h1 { font-size: 1.4rem; font-weight: 700; margin-bottom: 4px; }
+        .header p { color: var(--text2); font-size: 0.85rem; }
+        .badge-qa { display: inline-block; background: #2ea04322; color: var(--green); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; margin-bottom: 12px; border: 1px solid #2ea04366; }
+
+        .boleto-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+        .boleto-top { background: linear-gradient(135deg, #1a1f2e 0%, #1d2839 100%); padding: 24px 28px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .boleto-top .bank-name { font-size: 1.1rem; font-weight: 700; letter-spacing: 1px; }
+        .boleto-top .bank-code { background: var(--blue); color: #fff; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.85rem; }
+
+        .boleto-body { padding: 24px 28px; }
+        .row { display: grid; gap: 20px; margin-bottom: 20px; }
+        .row-2 { grid-template-columns: 1fr 1fr; }
+        .row-3 { grid-template-columns: 1fr 1fr 1fr; }
+        .row-4 { grid-template-columns: 2fr 1fr 1fr 1fr; }
+
+        .field { }
+        .field-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text2); font-weight: 600; margin-bottom: 4px; }
+        .field-value { font-size: 0.9rem; font-weight: 500; word-break: break-all; }
+        .field-value.mono { font-family: 'Courier New', monospace; letter-spacing: 0.5px; }
+        .field-value.highlight { color: var(--green); font-weight: 700; font-size: 1.3rem; }
+        .field-value.highlight-blue { color: var(--blue); font-weight: 600; }
+
+        .divider { border: 0; border-top: 1px dashed var(--border); margin: 20px 0; }
+
+        .barcode-area { text-align: center; padding: 20px 0; }
+        .barcode-visual { display: flex; justify-content: center; gap: 1px; margin-bottom: 12px; height: 50px; }
+        .barcode-visual .bar { background: var(--text); }
+        .barcode-visual .space { background: transparent; }
+        .digitable-line { font-family: 'Courier New', monospace; font-size: 1rem; font-weight: 600; letter-spacing: 1.5px; color: var(--blue); background: #58a6ff11; padding: 10px 16px; border-radius: 6px; display: inline-block; border: 1px solid #58a6ff33; word-break: break-all; }
+
+        .status-badge { display: inline-block; padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+        .status-open { background: #d2992222; color: var(--yellow); border: 1px solid #d2992266; }
+        .status-paid { background: #2ea04322; color: var(--green); border: 1px solid #2ea04366; }
+
+        .actions { display: flex; gap: 12px; margin-top: 24px; }
+        .btn { padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; border: none; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-primary { background: var(--blue); color: #fff; }
+        .btn-primary:hover { background: #79c0ff; }
+        .btn-green { background: var(--green); color: #fff; }
+        .btn-green:hover { background: #3fb950; }
+        .btn-ghost { background: transparent; color: var(--text2); border: 1px solid var(--border); }
+        .btn-ghost:hover { border-color: var(--text); color: var(--text); }
+
+        .qa-meta { margin-top: 24px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px 28px; }
+        .qa-meta h3 { font-size: 0.85rem; font-weight: 700; margin-bottom: 12px; color: var(--green); }
+        .qa-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #30363d55; font-size: 0.8rem; }
+        .qa-row:last-child { border-bottom: none; }
+        .qa-row .qa-label { color: var(--text2); }
+        .qa-row .qa-val { font-weight: 600; font-family: 'Courier New', monospace; font-size: 0.78rem; }
+        .qa-val.ok { color: var(--green); }
+        .qa-val.warn { color: var(--yellow); }
+
+        @media (max-width: 600px) {
+            .row-3, .row-4 { grid-template-columns: 1fr 1fr; }
+            .boleto-top { flex-direction: column; gap: 8px; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="badge-qa">✅ QA TEST — BOLETO REAL GERADO</div>
+            <h1>Visualização de Boleto — Cora Stage API</h1>
+            <p>Teste de integração end-to-end: CRM Renostter → Middleware Node.js → API Cora (mTLS)</p>
+        </div>
+
+        <div class="boleto-card">
+            <div class="boleto-top">
+                <div>
+                    <div class="bank-name">CORA SCFI</div>
+                    <div style="color:var(--text2);font-size:0.75rem;margin-top:2px">Cora Sociedade de Crédito, Financiamento e Investimento</div>
+                </div>
+                <div class="bank-code">403-9</div>
+            </div>
+
+            <div class="boleto-body">
+                <!-- Linha 1: Beneficiário -->
+                <div class="row row-2">
+                    <div class="field">
+                        <div class="field-label">Beneficiário (Cedente)</div>
+                        <div class="field-value">Conta Cora — Renostter</div>
+                    </div>
+                    <div class="field">
+                        <div class="field-label">Status</div>
+                        <div><span class="status-badge status-open">⏳ ABERTO (OPEN)</span></div>
+                    </div>
+                </div>
+
+                <!-- Linha 2: Pagador -->
+                <div class="row row-2">
+                    <div class="field">
+                        <div class="field-label">Pagador (Sacado)</div>
+                        <div class="field-value">Renostter Tecnologia Ltda</div>
+                    </div>
+                    <div class="field">
+                        <div class="field-label">CNPJ</div>
+                        <div class="field-value mono">11.222.333/0001-81</div>
+                    </div>
+                </div>
+
+                <!-- Linha 3: Endereço -->
+                <div class="row">
+                    <div class="field">
+                        <div class="field-label">Endereço do Pagador</div>
+                        <div class="field-value">Rua das Palmeiras, 500 — Sala 12 — Centro — São Paulo/SP — CEP 01001-000</div>
+                    </div>
+                </div>
+
+                <hr class="divider">
+
+                <!-- Linha 4: Valores -->
+                <div class="row row-4">
+                    <div class="field">
+                        <div class="field-label">Descrição do Serviço</div>
+                        <div class="field-value">Manutenção Preventiva PMOC — Higienização</div>
+                    </div>
+                    <div class="field">
+                        <div class="field-label">Valor (R$)</div>
+                        <div class="field-value highlight">R$ 250,00</div>
+                    </div>
+                    <div class="field">
+                        <div class="field-label">Vencimento</div>
+                        <div class="field-value highlight-blue">15/04/2026</div>
+                    </div>
+                    <div class="field">
+                        <div class="field-label">Nosso Número</div>
+                        <div class="field-value mono" style="font-size:0.78rem">88086620000201366</div>
+                    </div>
+                </div>
+
+                <hr class="divider">
+
+                <!-- Código de Barras -->
+                <div class="barcode-area">
+                    <div class="field-label" style="margin-bottom:10px">Representação do Código de Barras</div>
+                    <div class="barcode-visual" id="barcodeVisual"></div>
+                    <div class="field-label" style="margin-top:16px; margin-bottom:6px">Linha Digitável</div>
+                    <div class="digitable-line">40390.00007 48808.662000 00201.366010 1 14170000025000</div>
+                </div>
+
+                <hr class="divider">
+
+                <!-- ID da Invoice -->
+                <div class="row row-2">
+                    <div class="field">
+                        <div class="field-label">Invoice ID (Cora)</div>
+                        <div class="field-value mono" style="font-size:0.8rem">inv_qEfzXczGSKuC83Qp8DQN2g</div>
+                    </div>
+                    <div class="field">
+                        <div class="field-label">Código do Contrato (CRM)</div>
+                        <div class="field-value mono" style="font-size:0.8rem">QA_TEST_REAL</div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="actions">
+                    <a href="https://storage.googleapis.com/download/storage/v1/b/cora_stage_exporter_bankslip_storage/o/boleto-e04692bd-1766-4755-b85c-d3b7fe26d0b8.pdf?generation=1774315108950869&alt=media" target="_blank" class="btn btn-primary">📄 Baixar PDF do Boleto</a>
+                    <button class="btn btn-ghost" onclick="navigator.clipboard.writeText('40390000074880866200000201366010114170000025000');this.textContent='✅ Copiado!'">📋 Copiar Linha Digitável</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- QA Metadata -->
+        <div class="qa-meta">
+            <h3>📊 Relatório QA — Validação de Integração</h3>
+            <div class="qa-row"><span class="qa-label">Ambiente</span><span class="qa-val ok">Stage (matls-clients.api.stage.cora.com.br)</span></div>
+            <div class="qa-row"><span class="qa-label">Autenticação mTLS</span><span class="qa-val ok">✅ PASS — Token obtido em ~1s</span></div>
+            <div class="qa-row"><span class="qa-label">Endpoint</span><span class="qa-val">POST /v2/invoices/</span></div>
+            <div class="qa-row"><span class="qa-label">HTTP Response</span><span class="qa-val ok">200 OK</span></div>
+            <div class="qa-row"><span class="qa-label">Invoice ID retornado</span><span class="qa-val ok">inv_qEfzXczGSKuC83Qp8DQN2g</span></div>
+            <div class="qa-row"><span class="qa-label">Barcode retornado</span><span class="qa-val ok">40391141700000250000000048808662000020136601</span></div>
+            <div class="qa-row"><span class="qa-label">Linha Digitável retornada</span><span class="qa-val ok">40390000074880866200000201366010114170000025000</span></div>
+            <div class="qa-row"><span class="qa-label">PDF URL retornada</span><span class="qa-val ok">✅ Google Cloud Storage URL válida</span></div>
+            <div class="qa-row"><span class="qa-label">Nosso Número</span><span class="qa-val ok">88086620000201366</span></div>
+            <div class="qa-row"><span class="qa-label">Idempotency-Key</span><span class="qa-val ok">✅ UUID v4 gerado</span></div>
+            <div class="qa-row"><span class="qa-label">Valor (centavos)</span><span class="qa-val ok">25000 = R$ 250,00 ✅</span></div>
+            <div class="qa-row"><span class="qa-label">Status Cora</span><span class="qa-val warn">OPEN (aguardando pagamento)</span></div>
+            <div class="qa-row"><span class="qa-label">Data/Hora da Emissão</span><span class="qa-val">2026-03-24T01:18:27Z</span></div>
+            <div class="qa-row"><span class="qa-label">Banco Código</span><span class="qa-val">403 (Cora SCFI)</span></div>
+        </div>
+    </div>
+
+    <script>
+        // Gerar representação visual do código de barras
+        const barcode = '40391141700000250000000048808662000020136601';
+        const container = document.getElementById('barcodeVisual');
+        for (let i = 0; i < barcode.length; i++) {
+            const digit = parseInt(barcode[i]);
+            // Simular barras baseadas nos dígitos
+            const w = (digit % 3 === 0) ? 3 : (digit % 2 === 0) ? 2 : 1;
+            const isBar = i % 2 === 0;
+            const el = document.createElement('div');
+            el.className = isBar ? 'bar' : 'space';
+            el.style.width = w + 'px';
+            container.appendChild(el);
+            // Adicionar barras finas entre
+            if (i < barcode.length - 1) {
+                const thin = document.createElement('div');
+                thin.className = isBar ? 'space' : 'bar';
+                thin.style.width = '1px';
+                container.appendChild(thin);
+            }
+        }
+    </script>
+<script src="../js/approval-banner.js"></script>
+    </body>
+</html>

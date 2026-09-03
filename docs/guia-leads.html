@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="robots" content="noindex, nofollow"/>
+<title>Guia de Uso — Leads (CRM Pipeline) | Renostter CRM</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+:root { --bg-base:#0d1117; --bg-card:#161b22; --bg-surface:#1c2129; --bg-hover:#21262d; --border:#30363d; --border-soft:rgba(255,255,255,0.06); --text-primary:#e6edf3; --text-secondary:#8b949e; --text-muted:#6b7280; --blue:#00AEEF; --blue-dim:rgba(0,174,239,0.12); --green:#22c55e; --green-dim:rgba(34,197,94,0.12); --orange:#f59e0b; --orange-dim:rgba(245,158,11,0.12); --red:#ef4444; --red-dim:rgba(239,68,68,0.12); --purple:#8b5cf6; --purple-dim:rgba(139,92,246,0.12); --pink:#ec4899; --pink-dim:rgba(236,72,153,0.12); --shadow-md:0 4px 16px rgba(0,0,0,0.3); }
+* { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-behavior:smooth; }
+body { font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif; background:var(--bg-base); color:var(--text-primary); line-height:1.65; font-size:15px; }
+code, .mono { font-family:'JetBrains Mono',Consolas,monospace; font-size:.88em; }
+.hero { background:linear-gradient(135deg,#0d1117 0%,#0a1a2e 50%,#0d1117 100%); border-bottom:1px solid var(--border); padding:60px 40px 50px; position:relative; overflow:hidden; }
+.hero::before { content:''; position:absolute; top:-50%; right:-10%; width:600px; height:600px; background:radial-gradient(circle,var(--pink-dim) 0%,transparent 60%); pointer-events:none; }
+.hero-inner { max-width:1280px; margin:0 auto; position:relative; z-index:1; }
+.hero-breadcrumb { display:inline-flex; align-items:center; gap:8px; padding:6px 14px; background:var(--bg-card); border:1px solid var(--border); border-radius:50px; font-size:.75rem; color:var(--text-secondary); margin-bottom:24px; }
+.hero-breadcrumb .dot { width:6px; height:6px; border-radius:50%; background:var(--green); box-shadow:0 0 8px var(--green); }
+.hero h1 { font-size:2.6rem; font-weight:800; margin-bottom:14px; background:linear-gradient(90deg,#fff 0%,var(--pink) 100%); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; letter-spacing:-.02em; }
+.hero .subtitle { color:var(--text-secondary); font-size:1.1rem; max-width:720px; margin-bottom:28px; }
+.hero-meta { display:flex; gap:14px; flex-wrap:wrap; }
+.meta-chip { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; font-size:.8rem; color:var(--text-secondary); }
+.meta-chip strong { color:var(--text-primary); font-weight:600; }
+.meta-chip .icon { font-size:1rem; }
+.layout { max-width:1280px; margin:0 auto; padding:40px; display:grid; grid-template-columns:240px 1fr; gap:50px; }
+@media (max-width:900px) { .layout { grid-template-columns:1fr; padding:24px; } .toc { position:static !important; } }
+.toc { position:sticky; top:24px; align-self:start; max-height:calc(100vh - 48px); overflow-y:auto; padding-right:12px; }
+.toc-title { font-size:.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.08em; margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--border-soft); }
+.toc ul { list-style:none; }
+.toc li { margin-bottom:2px; }
+.toc a { display:block; padding:6px 10px; color:var(--text-secondary); text-decoration:none; font-size:.83rem; border-radius:6px; border-left:2px solid transparent; transition:all .15s; }
+.toc a:hover { color:var(--text-primary); background:var(--bg-card); }
+.toc a.active { color:var(--pink); border-left-color:var(--pink); background:var(--pink-dim); }
+.toc .sub { padding-left:24px; font-size:.78rem; }
+.content { min-width:0; }
+h2 { font-size:1.75rem; font-weight:700; margin:56px 0 20px; padding-bottom:12px; border-bottom:1px solid var(--border); letter-spacing:-.01em; scroll-margin-top:24px; }
+h2:first-of-type { margin-top:0; }
+h2 .num { display:inline-block; width:36px; height:36px; line-height:36px; text-align:center; background:var(--pink-dim); color:var(--pink); border-radius:8px; font-size:1.1rem; font-weight:800; margin-right:12px; vertical-align:middle; }
+h3 { font-size:1.2rem; font-weight:700; margin:32px 0 12px; color:var(--text-primary); }
+h4 { font-size:1rem; font-weight:700; margin:20px 0 8px; color:var(--text-primary); }
+p { margin-bottom:14px; color:var(--text-secondary); }
+strong { color:var(--text-primary); font-weight:600; }
+ul, ol { margin:0 0 14px 24px; color:var(--text-secondary); }
+li { margin-bottom:4px; }
+hr { border:none; border-top:1px solid var(--border-soft); margin:40px 0; }
+.callout { display:flex; gap:14px; padding:16px 18px; background:var(--bg-card); border:1px solid var(--border); border-left:4px solid var(--blue); border-radius:8px; margin:18px 0; }
+.callout-icon { font-size:1.3rem; flex-shrink:0; line-height:1; padding-top:2px; }
+.callout-body { flex:1; }
+.callout-title { font-weight:700; color:var(--text-primary); margin-bottom:4px; font-size:.92rem; }
+.callout-body p:last-child { margin-bottom:0; font-size:.92rem; }
+.callout.tip { border-left-color:var(--green); background:linear-gradient(90deg,var(--green-dim),var(--bg-card) 30%); }
+.callout.warn { border-left-color:var(--orange); background:linear-gradient(90deg,var(--orange-dim),var(--bg-card) 30%); }
+.callout.danger { border-left-color:var(--red); background:linear-gradient(90deg,var(--red-dim),var(--bg-card) 30%); }
+.callout.info { border-left-color:var(--blue); }
+pre { background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:14px 16px; overflow-x:auto; font-size:.85rem; line-height:1.55; margin:12px 0; }
+pre code { color:var(--text-primary); }
+.kw { color:#ff7b72; } .fn { color:#d2a8ff; } .st { color:#a5d6ff; } .nm { color:#79c0ff; } .cm { color:var(--text-muted); font-style:italic; }
+.table-wrap { border:1px solid var(--border); border-radius:8px; overflow:hidden; margin:14px 0; }
+table { width:100%; border-collapse:collapse; font-size:.88rem; }
+thead { background:var(--bg-surface); }
+th { text-align:left; padding:10px 14px; font-weight:700; font-size:.72rem; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.05em; border-bottom:1px solid var(--border); }
+td { padding:10px 14px; border-bottom:1px solid var(--border-soft); color:var(--text-primary); vertical-align:top; }
+tbody tr:last-child td { border-bottom:none; }
+tbody tr:hover { background:var(--bg-hover); }
+td code { background:var(--bg-surface); padding:2px 6px; border-radius:4px; font-size:.82rem; color:var(--text-primary); }
+.shot { margin:18px 0; border:1px solid var(--border); border-radius:10px; overflow:hidden; background:var(--bg-card); box-shadow:var(--shadow-md); }
+.shot img { display:block; width:100%; height:auto; }
+.shot-caption { padding:10px 16px; background:var(--bg-surface); border-top:1px solid var(--border-soft); font-size:.82rem; color:var(--text-secondary); display:flex; align-items:center; gap:8px; }
+.shot-caption strong { color:var(--text-primary); }
+kbd { display:inline-block; padding:2px 6px; background:var(--bg-surface); border:1px solid var(--border); border-bottom-width:2px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:.78rem; color:var(--text-primary); font-weight:600; }
+.steps { counter-reset:step; list-style:none; margin:18px 0; padding:0; }
+.steps > li { counter-increment:step; position:relative; padding-left:48px; margin-bottom:20px; min-height:36px; }
+.steps > li::before { content:counter(step); position:absolute; left:0; top:0; width:32px; height:32px; background:var(--pink); color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.9rem; }
+.badge-i { display:inline-block; padding:2px 8px; background:var(--blue-dim); color:var(--blue); border-radius:4px; font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.03em; vertical-align:middle; }
+.badge-g { background:var(--green-dim); color:var(--green); }
+.badge-o { background:var(--orange-dim); color:var(--orange); }
+.badge-r { background:var(--red-dim); color:var(--red); }
+.badge-p { background:var(--purple-dim); color:var(--purple); }
+footer { margin-top:60px; padding:32px 40px; border-top:1px solid var(--border); background:var(--bg-card); text-align:center; color:var(--text-muted); font-size:.85rem; }
+footer .row { display:flex; justify-content:space-between; align-items:center; max-width:1280px; margin:0 auto; flex-wrap:wrap; gap:12px; }
+footer a { color:var(--pink); text-decoration:none; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="hero-breadcrumb"><span class="dot"></span><span>Renostter CRM · Documentação</span></div>
+    <h1>Guia de Uso — Leads (CRM Pipeline)</h1>
+    <p class="subtitle">Gestão de leads com scoring automático, funil de 5 etapas, segmentação por origem e conversão para cliente.</p>
+    <div class="hero-meta">
+      <div class="meta-chip"><span class="icon">🎯</span> <strong>Módulo:</strong> Leads / CRM</div>
+      <div class="meta-chip"><span class="icon">✅</span> <strong>Status:</strong> 100% operacional</div>
+      <div class="meta-chip"><span class="icon">📅</span> <strong>Versão:</strong> 1.0 (Jul/2026)</div>
+      <div class="meta-chip"><span class="icon">📊</span> <strong>Engine:</strong> Scoring 0-100 automático</div>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="toc" id="toc">
+    <div class="toc-title">Sumário</div>
+    <ul>
+      <li><a href="#visao-geral">1. Visão geral</a></li>
+      <li><a href="#funil">2. O funil de 5 etapas</a></li>
+      <li><a href="#scoring">3. Engine de scoring</a></li>
+      <li><a href="#acesso">4. Acesso rápido</a></li>
+      <li><a href="#abas">5. As 3 abas</a></li>
+      <li><a href="#todos" class="sub">5.1 Todos os Leads</a></li>
+      <li><a href="#origem" class="sub">5.2 Por Origem</a></li>
+      <li><a href="#pontuacao" class="sub">5.3 Por Pontuação</a></li>
+      <li><a href="#criar">6. Como criar um lead</a></li>
+      <li><a href="#converter">7. Como converter lead em cliente</a></li>
+      <li><a href="#praticas">8. Boas práticas</a></li>
+      <li><a href="#api">9. API reference</a></li>
+    </ul>
+  </nav>
+
+  <main class="content">
+
+    <h2 id="visao-geral"><span class="num">1</span>Visão geral</h2>
+    <p>O módulo de <strong>Leads</strong> é a porta de entrada do funil de vendas. Captura potenciais clientes, qualifica via scoring automático, e move através do pipeline até virar cliente (que então alimenta os módulos de Cotação, Contratos e PMOC).</p>
+
+    <h3>Por que existe</h3>
+    <p>Antes deste módulo, leads chegavam por whatsapp, formulário do site, indicação, ligação fria e ficavam em uma planilha compartilhada. Problemas:</p>
+    <ul>
+      <li>Sem rastreio de origem → impossível saber qual canal traz mais resultado</li>
+      <li>Sem qualificação objetiva → leads ruins tomam tempo do vendedor</li>
+      <li>Sem funil visível → gerente não sabe onde cada lead está</li>
+      <li>Sem alertas de follow-up → leads esfriam</li>
+    </ul>
+    <p>O módulo resolve com: captura multi-canal, scoring 0-100 baseado em sinais objetivos, funil visual, follow-up automático, e conversão 1-clique para cliente.</p>
+
+    <h3>Quem usa</h3>
+    <ul>
+      <li><strong>SDR (pré-vendas)</strong> — cadastra leads, faz primeiro contato, qualifica</li>
+      <li><strong>Vendedor</strong> — pega leads qualificados, conduz negociação, fecha venda</li>
+      <li><strong>Gerente comercial</strong> — acompanha funil, identifica gargalos, treina equipe</li>
+      <li><strong>Marketing</strong> — analisa performance por origem, otimiza canais</li>
+    </ul>
+
+    <h2 id="funil"><span class="num">2</span>O funil de 5 etapas</h2>
+    <p>Todo lead passa por 5 status sequenciais. A passagem é <strong>automática</strong> baseada em score e em ações do vendedor.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Status</th><th>O que significa</th><th>Critério para entrar</th><th>Próximo passo</th></tr></thead>
+        <tbody>
+          <tr><td><span class="badge-i">Novo</span></td><td>Acabou de chegar, sem contato</td><td>Cadastro inicial</td><td>SDR faz primeiro contato em &lt; 24h</td></tr>
+          <tr><td><span class="badge-i badge-p">Qualificado</span></td><td>Tem fit (porte, segmento, orçamento)</td><td>Score ≥ 60 OU análise manual do SDR</td><td>Passa para Vendedor</td></tr>
+          <tr><td><span class="badge-i" style="background:var(--blue-dim);color:var(--blue)">Proposta</span></td><td>Recebeu cotação</td><td>Vendedor criou cotação vinculada</td><td>Aguarda decisão do lead</td></tr>
+          <tr><td><span class="badge-i badge-o">Negociação</span></td><td>Lead pediu ajustes / contra-proposta</td><td>Marcado manualmente</td><td>Fechar ou descartar</td></tr>
+          <tr><td><span class="badge-i badge-g">Ganho</span></td><td>Virou cliente (fechou venda)</td><td>Cotação aprovada</td><td>Cliente entra no módulo Clientes</td></tr>
+          <tr><td><span class="badge-i badge-r">Perdido</span></td><td>Recusou ou sumiu</td><td>Marcado manualmente</td><td>Reativar em 3-6 meses</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout info">
+      <div class="callout-icon">ℹ️</div>
+      <div class="callout-body">
+        <div class="callout-title">Conexão com outros módulos</div>
+        <p>• <strong>Lead qualificado</strong> + <strong>Cotação criada com lead_id</strong> + <strong>Aprovação</strong> = <strong>Cliente criado automaticamente</strong><br>
+        • Lead vira cliente quando cotação é aprovada (status muda para <code>ganho</code> e <code>converted_to_cliente_id</code> é preenchido)</p>
+      </div>
+    </div>
+
+    <h2 id="scoring"><span class="num">3</span>Engine de scoring (0-100)</h2>
+    <p>O score é calculado <strong>automaticamente</strong> a cada atualização do lead, baseado em sinais objetivos. Quanto maior, mais "quente" o lead está.</p>
+
+    <h3>Sinais positivos (somam pontos)</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Sinal</th><th>Pontos</th><th>Como é detectado</th></tr></thead>
+        <tbody>
+          <tr><td>Veio de WhatsApp (alta conversão)</td><td>+15</td><td>Origem = whatsapp</td></tr>
+          <tr><td>Veio de indicação de cliente</td><td>+20</td><td>Origem = indicacao</td></tr>
+          <tr><td>Veio de evento/feira</td><td>+10</td><td>Origem = evento</td></tr>
+          <tr><td>Tem e-mail corporativo</td><td>+5</td><td>E-mail contém domínio da empresa</td></tr>
+          <tr><td>Tem telefone preenchido</td><td>+5</td><td>Telefone não vazio</td></tr>
+          <tr><td>Empresa de porte médio/grande</td><td>+10</td><td>Segmento detectado via CNPJ</td></tr>
+          <tr><td>Já é cliente em outro produto</td><td>+15</td><td>Cliente existe com mesmo CNPJ</td></tr>
+          <tr><td>Urgência explícita ("preciso pra ontem")</td><td>+10</td><td>Análise de texto nas observações</td></tr>
+          <tr><td>Orçamento declarado &gt; R$ 5.000</td><td>+10</td><td>Campo "orcamento_estimado"</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Sinais negativos (subtraem pontos)</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Sinal</th><th>Pontos</th><th>Como é detectado</th></tr></thead>
+        <tbody>
+          <tr><td>Só tem e-mail genérico (gmail/hotmail)</td><td>-5</td><td>Domínio não-corporativo</td></tr>
+          <tr><td>Sem telefone</td><td>-5</td><td>Campo vazio</td></tr>
+          <tr><td>Sem empresa</td><td>-10</td><td>Campo vazio</td></tr>
+          <tr><td>Já recusou cotação anterior</td><td>-15</td><td>Histórico de cotações rejeitadas</td></tr>
+          <tr><td>Não responde há +30 dias</td><td>-20</td><td>Última interação &gt; 30 dias</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Faixas de score</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Score</th><th>Faixa</th><th>Ação recomendada</th></tr></thead>
+        <tbody>
+          <tr><td>0-29</td><td><span class="badge-i badge-r">Frio</span></td><td>Nutrição de conteúdo (e-mail marketing, espera)</td></tr>
+          <tr><td>30-59</td><td><span class="badge-i badge-o">Morno</span></td><td>SDR faz primeiro contato, qualifica</td></tr>
+          <tr><td>60-79</td><td><span class="badge-i badge-p">Qualificado</span></td><td>Passa para Vendedor (critério: score ≥ 60)</td></tr>
+          <tr><td>80-100</td><td><span class="badge-i badge-g">Quente</span></td><td>Prioridade alta, atende em &lt; 4h</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="acesso"><span class="num">4</span>Acesso rápido</h2>
+    <p>Para abrir o módulo:</p>
+    <ol>
+      <li><strong>Sidebar</strong> → menu <em>Gestão</em> → <em>Leads</em></li>
+      <li><strong>URL direta</strong>: <code>http://localhost:3000/crm/admin/leads.html</code></li>
+      <li><strong>PWA técnico</strong> tem um botão "Adicionar Lead" também</li>
+    </ol>
+
+    <div class="shot">
+      <img src="assets/guia-leads-1-lista.png" alt="Lista de leads"/>
+      <div class="shot-caption"><strong>Figura 1.</strong> Tela inicial — KPIs no topo (Total, Novos, Qualificados, Convertidos, Taxa), funil visual, filtros e tabela de leads.</div>
+    </div>
+
+    <h2 id="abas"><span class="num">5</span>As 3 abas do módulo</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Aba</th><th>O que mostra</th><th>Quando usar</th></tr></thead>
+        <tbody>
+          <tr><td><strong>🎯 Todos Leads</strong></td><td>Lista geral com todos os status + busca/filtros</td><td>Operação do dia-a-dia</td></tr>
+          <tr><td><strong>📡 Por Origem</strong></td><td>Agrupado por canal (whatsapp, site, evento, etc)</td><td>Análise de marketing, ROI por canal</td></tr>
+          <tr><td><strong>📊 Por Pontuação</strong></td><td>Ordenado por score (maior primeiro)</td><td>Priorização — atender os mais quentes primeiro</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 id="todos">5.1 Todos os Leads</h3>
+    <p>Visão geral. Lista todos os leads com filtros por status, origem e busca textual (nome, e-mail, empresa).</p>
+
+    <h3 id="origem">5.2 Por Origem</h3>
+    <p>Análise de canal de aquisição. Cada bloco mostra: total de leads daquele canal, taxa de conversão e ticket médio convertido.</p>
+
+    <div class="shot">
+      <img src="assets/guia-leads-2-origem.png" alt="Leads por origem"/>
+      <div class="shot-caption"><strong>Figura 2.</strong> Aba Por Origem — leads agrupados por canal. Use para decidir onde investir marketing.</div>
+    </div>
+
+    <h3 id="pontuacao">5.3 Por Pontuação</h3>
+    <p>Leads ordenados do maior score para o menor. Permite ao vendedor focar nos leads mais quentes primeiro.</p>
+
+    <h2 id="criar"><span class="num">6</span>Como criar um lead</h2>
+    <ol class="steps">
+      <li>Clique <kbd>+ Novo Lead</kbd> no canto superior direito</li>
+      <li>Preencha o <strong>nome</strong> (obrigatório) — pode ser nome completo ou "A definir"</li>
+      <li>Selecione a <strong>origem</strong> (obrigatório) — sistema já calcula o score parcial</li>
+      <li>Preencha <strong>e-mail</strong> e <strong>telefone</strong> se tiver (cada um +5 pontos)</li>
+      <li>Preencha a <strong>empresa</strong> se souber (+10 pontos)</li>
+      <li>Adicione <strong>observações</strong> com sinais que o sistema detecta (ex: "preciso urgente")</li>
+      <li>Defina o <strong>status inicial</strong> (geralmente "novo")</li>
+      <li>Salve — score é calculado automaticamente</li>
+    </ol>
+
+    <div class="callout tip">
+      <div class="callout-icon">💡</div>
+      <div class="callout-body">
+        <div class="callout-title">Dica — capture o lead com dados ricos desde o início</div>
+        <p>Mesmo que você só tenha o telefone, preencha tudo que souber. Quanto mais campos, mais alto o score, melhor a priorização. Use o campo <em>observações</em> para anotar contexto da primeira conversa (palavras-chave como "urgente", "orçamento aprovado" disparam pontos extras).</p>
+      </div>
+    </div>
+
+    <h2 id="converter"><span class="num">7</span>Como converter lead em cliente</h2>
+    <p>A forma mais rápida é via cotação. Quando o lead recebe uma cotação e <strong>aprovou</strong>, o sistema automaticamente:</p>
+    <ol class="steps">
+      <li>Cria um <strong>cliente</strong> no módulo Clientes (com dados do lead)</li>
+      <li>Vincula o <code>cliente_id</code> na cotação</li>
+      <li>Muda o status do lead para <code>ganho</code></li>
+      <li>Preenche <code>converted_to_cliente_id</code> e <code>conversion_date</code></li>
+    </ol>
+
+    <p>Manual: na lista, clique no <strong>botão verde ✓</strong> na linha do lead (se for um lead qualificado sem cotação).</p>
+
+    <h2 id="praticas"><span class="num">8</span>Boas práticas</h2>
+
+    <h3>✅ Faça</h3>
+    <ul>
+      <li><strong>Sempre preencha a origem</strong> — sem ela, o score não calcula e o funil fica cego</li>
+      <li><strong>Atualize o status ao longo do funil</strong> — vendedor muda de "qualificado" para "proposta" quando cria cotação</li>
+      <li><strong>Use observações ricas</strong> — anote contexto que humanos entendem (ex: "Cliente quer comparar com 2 concorrentes")</li>
+      <li><strong>Qualifique em até 48h</strong> — leads quentes viram frios rápido</li>
+      <li><strong>Revise leads &gt; 60 dias sem interação</strong> — marcar como "perdido" ou reativar</li>
+    </ul>
+
+    <h3>❌ Evite</h3>
+    <ul>
+      <li><strong>Não pule o status "qualificado"</strong> — leva lead direto de novo para proposta sem scoring</li>
+      <li><strong>Não delete leads perdidos</strong> — mantenha histórico para análise de churn</li>
+      <li><strong>Não confie 100% no score</strong> — use como filtro, mas valide com conversa humana</li>
+    </ul>
+
+    <h2 id="api"><span class="num">9</span>API reference (resumo)</h2>
+
+    <h3>GET /api/leads</h3>
+    <p>Lista leads com filtros opcionais: <code>status</code>, <code>origem</code>, <code>search</code>, <code>sort</code>, <code>limit</code>.</p>
+
+    <h3>POST /api/leads</h3>
+    <p>Cria novo lead (com scoring automático).</p>
+    <pre><code>POST /api/leads
+{
+  <span class="st">"nome"</span>: <span class="st">"João Silva"</span>,
+  <span class="st">"email"</span>: <span class="st">"joao@empresa.com.br"</span>,
+  <span class="st">"telefone"</span>: <span class="st">"(11) 99876-5432"</span>,
+  <span class="st">"empresa"</span>: <span class="st">"Empresa XYZ"</span>,
+  <span class="st">"origem"</span>: <span class="st">"whatsapp"</span>,
+  <span class="st">"observacoes"</span>: <span class="st">"Cliente precisa urgente, orçamento aprovado"</span>,
+  <span class="st">"orcamento_estimado"</span>: <span class="nm">8000</span>
+}</code></pre>
+
+    <h3>GET /api/leads/:id</h3>
+    <p>Detalhe completo do lead + histórico de interações.</p>
+
+    <h3>PUT /api/leads/:id</h3>
+    <p>Atualiza dados. Score é recalculado se mudar nome, e-mail, telefone, empresa, origem, observações.</p>
+
+    <h3>DELETE /api/leads/:id</h3>
+    <p>Remove lead (use com cuidado — prefira marcar como "perdido").</p>
+
+    <h3>GET /api/leads/stats</h3>
+    <p>KPIs: total, novos (últimos 30d), qualificados, taxa de conversão, score médio, leads por origem.</p>
+    <pre><code>{
+  <span class="st">"total"</span>: <span class="nm">147</span>,
+  <span class="st">"novos_30d"</span>: <span class="nm">23</span>,
+  <span class="st">"qualificados"</span>: <span class="nm">38</span>,
+  <span class="st">"convertidos"</span>: <span class="nm">15</span>,
+  <span class="st">"taxa_conversao"</span>: <span class="nm">10.2</span>,
+  <span class="st">"score_medio"</span>: <span class="nm">52.3</span>
+}</code></pre>
+
+    <h3>GET /api/leads/origins</h3>
+    <p>Performance por canal de aquisição. Use para decidir onde investir marketing.</p>
+
+    <h3>GET /api/leads/statuses</h3>
+    <p>Lista os status válidos (para popular dropdowns).</p>
+
+    <hr>
+
+    <div class="callout tip">
+      <div class="callout-icon">📚</div>
+      <div class="callout-body">
+        <div class="callout-title">Documentos relacionados</div>
+        <p>• <a href="README.md" style="color:var(--pink)">README geral</a> · <a href="guia-cotacao.html" style="color:var(--pink)">Guia de Cotação</a> · <a href="guia-chamados.html" style="color:var(--pink)">Guia de Chamados</a><br>
+        • <a href="arquitetura-erp.html" style="color:var(--pink)">Arquitetura do ERP</a> · <a href="ANALISE-FLUXO-ERP.md" style="color:var(--pink)">Análise de Fluxo ERP</a></p>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<footer>
+  <div class="row">
+    <div>Renostter Climatização &amp; Manutenção HVAC · contato@renostter.com.br · (11) 9999-9999</div>
+    <div>v1.0 · 22/07/2026 · <a href="README.md">Índice</a> · <a href="guia-cotacao.html">Cotação</a> · <a href="guia-chamados.html">Chamados</a></div>
+  </div>
+</footer>
+
+<script>
+const tocLinks = document.querySelectorAll('.toc a');
+const sections = Array.from(tocLinks).map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    const id = '#' + entry.target.id;
+    const link = document.querySelector('.toc a[href="' + id + '"]');
+    if (link && entry.isIntersecting) {
+      tocLinks.forEach(l => l.classList.remove('active'));
+      link.classList.add('active');
+    }
+  });
+}, { rootMargin: '-20% 0px -70% 0px' });
+sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>

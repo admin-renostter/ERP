@@ -1,0 +1,26 @@
+{
+  "name": "Renostter — App Técnico",
+  "short_name": "Renostter Tec",
+  "description": "Aplicativo para técnicos de campo — manutenção PMOC e chamados",
+  "start_url": "/tecnico/",
+  "display": "standalone",
+  "background_color": "#0D1117",
+  "theme_color": "#00AEEF",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "../assets/logo-crm.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "../assets/logo-crm.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "lang": "pt-BR"
+}

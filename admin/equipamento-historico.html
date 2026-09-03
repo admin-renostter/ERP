@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<title>Histórico do Equipamento | Renostter CRM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../css/global.css" />
+<style>
+.eq-header {
+  background: linear-gradient(135deg, var(--bg-card), var(--bg-surface));
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 16px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 20px;
+  align-items: center;
+}
+.eq-info { display: flex; flex-direction: column; gap: 8px; }
+.eq-title { font-size: 1.4rem; font-weight: 800; line-height: 1.2; }
+.eq-subtitle { color: var(--text-secondary); font-size: 0.85rem; }
+.eq-meta { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 6px; }
+.eq-meta-item { display: inline-flex; align-items: center; gap: 5px; font-size: 0.75rem; color: var(--text-secondary); }
+.eq-meta-item strong { color: var(--text-primary); font-weight: 600; }
+.eq-status { padding: 6px 12px; border-radius: 50px; font-size: 0.78rem; font-weight: 700; }
+.eq-status.operacional { background: var(--green-dim); color: var(--green); }
+.eq-status.manutencao { background: var(--orange-dim); color: var(--orange); }
+.eq-status.parado { background: var(--red-dim); color: var(--red); }
+.eq-status.inativo { background: rgba(255,255,255,0.06); color: var(--text-muted); }
+
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 14px 18px; }
+.stat-card .label { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+.stat-card .value { font-size: 1.6rem; font-weight: 800; margin-top: 4px; line-height: 1.1; }
+.stat-card .sub { font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; }
+.stat-card.blue .value { color: var(--blue); }
+.stat-card.green .value { color: var(--green); }
+.stat-card.orange .value { color: var(--orange); }
+.stat-card.red .value { color: var(--red); }
+.stat-card.purple .value { color: var(--purple); }
+
+.content-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+@media (max-width: 1024px) { .content-grid { grid-template-columns: 1fr; } }
+
+.timeline-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+.timeline-card h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+
+.timeline { position: relative; padding-left: 28px; }
+.timeline::before { content: ""; position: absolute; left: 10px; top: 8px; bottom: 8px; width: 2px; background: var(--border); border-radius: 1px; }
+.tl-item { position: relative; padding-bottom: 18px; }
+.tl-item::before { content: ""; position: absolute; left: -22px; top: 4px; width: 12px; height: 12px; border-radius: 50%; background: var(--bg); border: 2px solid var(--blue); }
+.tl-item.manutencao::before { border-color: var(--blue); }
+.tl-item.chamado::before { border-color: var(--orange); }
+.tl-item.garantia::before { border-color: var(--purple); }
+.tl-item-header { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.tl-item-title { font-weight: 600; font-size: 0.88rem; }
+.tl-item-date { font-size: 0.72rem; color: var(--text-muted); }
+.tl-item-meta { display: flex; gap: 8px; margin-top: 4px; flex-wrap: wrap; align-items: center; }
+.tl-item-detail { font-size: 0.78rem; color: var(--text-secondary); margin-top: 4px; }
+.tl-tipo-badge { font-size: 0.68rem; font-weight: 700; padding: 2px 7px; border-radius: 50px; text-transform: uppercase; letter-spacing: 0.04em; }
+.tl-tipo-badge.manutencao { background: var(--blue-dim); color: var(--blue); }
+.tl-tipo-badge.chamado { background: var(--orange-dim); color: var(--orange); }
+.tl-tipo-badge.garantia { background: var(--purple-dim); color: var(--purple); }
+
+.side-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+.side-card h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.side-card-list { display: flex; flex-direction: column; gap: 8px; }
+.side-card-item { padding: 10px 12px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: 8px; font-size: 0.8rem; }
+.side-card-item .meta { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
+
+.badge { display: inline-block; padding: 2px 8px; border-radius: 50px; font-size: 0.7rem; font-weight: 600; }
+.badge-green { background: var(--green-dim); color: var(--green); }
+.badge-orange { background: var(--orange-dim); color: var(--orange); }
+.badge-red { background: var(--red-dim); color: var(--red); }
+.badge-gray { background: rgba(255,255,255,0.06); color: var(--text-secondary); }
+.badge-blue { background: var(--blue-dim); color: var(--blue); }
+
+.empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); }
+.spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media print {
+  .sidebar, .topbar, .no-print { display: none; }
+  .main-content { margin-left: 0; }
+  .timeline-card, .side-card { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+<div class="app-layout">
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <img src="../assets/logo-crm.png" alt="Renostter CRM" style="max-height:52px;object-fit:contain">
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Principal</div>
+    <a class="nav-item" href="dashboard.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span>Dashboard</span></a>
+    <a class="nav-item" href="financeiro.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span>Financeiro</span></a>
+    <a class="nav-item" href="cobrancas.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg><span>Cobranças</span></a>
+    <div class="nav-section-label">Gestão</div>
+    <a class="nav-item" href="clients.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><span>Clientes</span></a>
+    <a class="nav-item" href="leads.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.39a2 2 0 0 1 1.98-2.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span>Leads</span></a>
+    <a class="nav-item" href="contracts.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>Contratos</span></a>
+    <a class="nav-item" href="tickets.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><span>Chamados</span></a>
+    <div class="nav-section-label">Operacional</div>
+    <a class="nav-item" href="dispatch.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg><span>Dispatch</span></a>
+    <a class="nav-item" href="garantia.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><span>Garantia</span></a>
+    <a class="nav-item" href="pmoc.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg><span>PMOC</span></a>
+    <div class="nav-section-label">Análise</div>
+    <a class="nav-item" href="reports.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>Relatórios</span></a>
+  </nav>
+</aside>
+
+<div class="main-content">
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="hamburger btn btn-ghost btn-icon" id="hamburger"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <span class="page-title">Histórico do Equipamento</span>
+    </div>
+    <div class="topbar-right">
+      <button class="btn btn-ghost btn-sm no-print" onclick="window.print()" style="display:inline-flex;align-items:center;gap:6px">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Imprimir
+      </button>
+    </div>
+  </div>
+
+  <div class="page-body" id="pageBody">
+    <div id="loadingState" class="empty-state">
+      <div class="spinner"></div>
+      <div>Carregando histórico do equipamento...</div>
+    </div>
+
+    <div id="content" style="display:none">
+
+      <!-- HEADER DO EQUIPAMENTO -->
+      <div class="eq-header">
+        <div class="eq-info">
+          <div class="eq-title" id="eqTitle">—</div>
+          <div class="eq-subtitle" id="eqSubtitle">—</div>
+          <div class="eq-meta" id="eqMeta"></div>
+        </div>
+        <div class="eq-status" id="eqStatus">—</div>
+      </div>
+
+      <!-- STATS -->
+      <div class="stats-grid" id="statsGrid"></div>
+
+      <!-- CONTEÚDO PRINCIPAL: TIMELINE + SIDEBAR -->
+      <div class="content-grid">
+
+        <!-- TIMELINE UNIFICADA -->
+        <div class="timeline-card">
+          <h3>📅 Linha do Tempo Completa</h3>
+          <div class="timeline" id="timeline">
+            <div class="empty-state">Carregando eventos...</div>
+          </div>
+        </div>
+
+        <!-- SIDEBAR: PEÇAS USADAS + GARANTIA -->
+        <div>
+
+          <!-- PEÇAS USADAS -->
+          <div class="side-card">
+            <h3>🔩 Peças Utilizadas</h3>
+            <div class="side-card-list" id="pecasList">
+              <div class="empty-state" style="padding:20px 0">Carregando...</div>
+            </div>
+          </div>
+
+          <!-- GARANTIA -->
+          <div class="side-card">
+            <h3>🛡️ Histórico de Garantia</h3>
+            <div class="side-card-list" id="garantiaList">
+              <div class="empty-state" style="padding:20px 0">Carregando...</div>
+            </div>
+          </div>
+
+          <!-- MANUTENÇÕES DETALHADAS -->
+          <div class="side-card">
+            <h3>🔧 Próximas Manutenções</h3>
+            <div class="side-card-list" id="manutList">
+              <div class="empty-state" style="padding:20px 0">Carregando...</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+const BASE = '/api';
+const urlParams = new URLSearchParams(window.location.search);
+const equipId = urlParams.get('id');
+
+document.addEventListener('DOMContentLoaded', () => {
+  initSidebar();
+  if (!equipId) {
+    document.getElementById('loadingState').innerHTML = '<div style="color:var(--red)">❌ ID do equipamento não informado. Use ?id=EQUIP_ID</div>';
+    return;
+  }
+  loadHistorico();
+});
+
+function initSidebar() {
+  const hamburger = document.getElementById('hamburger');
+  const sidebar = document.getElementById('sidebar');
+  hamburger?.addEventListener('click', () => sidebar?.classList.toggle('collapsed'));
+}
+
+async function loadHistorico() {
+  try {
+    const r = await fetch(`${BASE}/equipamentos/${equipId}/historico`);
+    const j = await r.json();
+    if (!j.success) throw new Error(j.error);
+
+    const d = j.data;
+    renderEquipamento(d.equipamento);
+    renderStats(d.stats);
+    renderTimeline(d.eventos);
+    renderPecas(d.pecas_usadas, d.custo_pecas_total);
+    renderGarantia(d.garantia);
+    renderManutFuturas(d.manutencoes);
+
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('content').style.display = 'block';
+  } catch (e) {
+    console.error('Erro:', e);
+    document.getElementById('loadingState').innerHTML = `<div style="color:var(--red)">❌ ${e.message}</div>`;
+  }
+}
+
+function renderEquipamento(eq) {
+  const statusClass = (eq.status_equipamento || 'Operacional').toLowerCase()
+    .replace('ç', 'c').replace('ã', 'a').replace('é', 'e').replace('ó', 'o');
+  document.getElementById('eqTitle').innerHTML = `❄️ ${esc(eq.marca || '—')} ${esc(eq.modelo || '—')}`;
+
+  const local = eq.local_instalacao ? `📍 ${eq.local_instalacao}` : '';
+  const cliente = eq.cliente_fantasia || eq.cliente_nome || '—';
+  document.getElementById('eqSubtitle').textContent = `Cliente: ${cliente} • ${local}`;
+
+  const statusEl = document.getElementById('eqStatus');
+  statusEl.className = `eq-status ${statusClass}`;
+  statusEl.textContent = eq.status_equipamento || '—';
+
+  const meta = [];
+  if (eq.numero_serie) meta.push(`<span class="eq-meta-item">🔢 Série: <strong>${esc(eq.numero_serie)}</strong></span>`);
+  if (eq.potencia_btu) meta.push(`<span class="eq-meta-item">⚡ <strong>${eq.potencia_btu.toLocaleString('pt-BR')} BTU</strong></span>`);
+  if (eq.regime_servico) meta.push(`<span class="eq-meta-item">🔧 <strong>${esc(eq.regime_servico)}</strong></span>`);
+  if (eq.data_instalacao) meta.push(`<span class="eq-meta-item">📅 Instalado: <strong>${formatDate(eq.data_instalacao)}</strong></span>`);
+  document.getElementById('eqMeta').innerHTML = meta.join('');
+}
+
+function renderStats(s) {
+  const cards = [
+    { label: 'Manutenções', value: s.total_manutencoes, sub: `${s.manutencoes_concluidas} concluídas`, cls: 'blue', icon: '🔧' },
+    { label: 'Pendentes', value: s.manutencoes_pendentes, sub: s.proxima_manutencao ? `próxima: ${formatDate(s.proxima_manutencao)}` : '—', cls: 'orange', icon: '⏳' },
+    { label: 'Chamados/OS', value: s.total_chamados, sub: `${s.chamados_abertos} abertos`, cls: 'red', icon: '🎫' },
+    { label: 'Custo Peças', value: fmtCurrency(s.custo_total_pecas), sub: 'total histórico', cls: 'green', icon: '💰' },
+    { label: 'Idade', value: s.idade_anos != null ? `${s.idade_anos}a` : '—', sub: s.data_instalacao ? formatDate(s.data_instalacao) : 'sem data', cls: 'purple', icon: '📆' },
+    { label: 'Intervalo Médio', value: s.intervalo_medio_dias != null ? `${s.intervalo_medio_dias}d` : '—', sub: 'entre manutenções', cls: 'blue', icon: '🔁' }
+  ];
+  document.getElementById('statsGrid').innerHTML = cards.map(c => `
+    <div class="stat-card ${c.cls}">
+      <div class="label">${c.icon} ${c.label}</div>
+      <div class="value">${c.value}</div>
+      <div class="sub">${c.sub}</div>
+    </div>`).join('');
+}
+
+function renderTimeline(eventos) {
+  if (!eventos.length) {
+    document.getElementById('timeline').innerHTML = '<div class="empty-state" style="padding:30px 0">Nenhum evento registrado ainda</div>';
+    return;
+  }
+  document.getElementById('timeline').innerHTML = eventos.map(e => {
+    const tipoLabel = e.tipo === 'manutencao' ? 'Manutenção' : e.tipo === 'chamado' ? 'Chamado' : 'Garantia';
+    return `
+    <div class="tl-item ${e.tipo}">
+      <div class="tl-item-header">
+        <div>
+          <span class="tl-tipo-badge ${e.tipo}">${tipoLabel}</span>
+          <span class="tl-item-title" style="margin-left:8px">${esc(e.titulo)}</span>
+        </div>
+        <span class="tl-item-date">${formatDateTime(e.data)}</span>
+      </div>
+      <div class="tl-item-meta">
+        ${e.status ? `<span class="badge ${getStatusClass(e.status)}">${esc(e.status)}</span>` : ''}
+        ${e.tecnico ? `<span style="font-size:0.72rem;color:var(--text-muted)">👤 ${esc(e.tecnico)}</span>` : ''}
+        ${e.meta?.num ? `<span style="font-size:0.72rem;color:var(--text-muted)">#${esc(e.meta.num)}</span>` : ''}
+        ${e.meta?.total_checklist != null ? `<span style="font-size:0.72rem;color:var(--text-muted)">✓ ${e.meta.checklist_ok}/${e.meta.total_checklist} checklist</span>` : ''}
+      </div>
+      ${e.detalhe ? `<div class="tl-item-detail">${esc(e.detalhe)}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function renderPecas(pecas, total) {
+  if (!pecas.length) {
+    document.getElementById('pecasList').innerHTML = '<div class="empty-state" style="padding:20px 0">Nenhuma peça registrada</div>';
+    return;
+  }
+  const html = pecas.map(p => `
+    <div class="side-card-item">
+      <div style="display:flex;justify-content:space-between;align-items:start;gap:8px">
+        <div>
+          <div style="font-weight:600">${esc(p.peca_nome || '—')}</div>
+          <div class="meta">SKU: ${esc(p.peca_sku || '—')} • Qtd: ${p.qtd || 0}</div>
+        </div>
+        <div style="font-weight:700;color:var(--text-primary);font-size:0.85rem">${fmtCurrency(p.custo_total)}</div>
+      </div>
+    </div>
+  `).join('');
+  document.getElementById('pecasList').innerHTML = html +
+    `<div class="side-card-item" style="background:var(--blue-dim);border-color:var(--blue)">
+      <div style="display:flex;justify-content:space-between;font-weight:700">
+        <span>Total investido</span>
+        <span style="color:var(--blue)">${fmtCurrency(total)}</span>
+      </div>
+    </div>`;
+}
+
+function renderGarantia(garantia) {
+  if (!garantia.length) {
+    document.getElementById('garantiaList').innerHTML = '<div class="empty-state" style="padding:20px 0">Nenhuma garantia registrada</div>';
+    return;
+  }
+  document.getElementById('garantiaList').innerHTML = garantia.map(g => `
+    <div class="side-card-item">
+      <div style="font-weight:600">${esc(g.evento || g.tipo_evento || 'Evento de garantia')}</div>
+      <div class="meta">📅 ${formatDate(g.created_at)}${g.chamado_num ? ' • #' + esc(g.chamado_num) : ''}</div>
+      ${g.observacoes ? `<div class="meta" style="margin-top:4px">${esc(g.observacoes)}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+function renderManutFuturas(manuts) {
+  const futuras = manuts.filter(m => m.status === 'Pendente').slice(0, 5);
+  if (!futuras.length) {
+    document.getElementById('manutList').innerHTML = '<div class="empty-state" style="padding:20px 0">Nenhuma manutenção pendente</div>';
+    return;
+  }
+  document.getElementById('manutList').innerHTML = futuras.map(m => `
+    <div class="side-card-item">
+      <div style="display:flex;justify-content:space-between;align-items:start;gap:8px">
+        <div>
+          <div style="font-weight:600">${esc(m.tipo || 'Manutenção')}</div>
+          <div class="meta">📅 ${formatDate(m.data_programada || m.proxima_data)}</div>
+        </div>
+        <span class="badge ${getStatusClass(m.status)}">${esc(m.status)}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function getStatusClass(s) {
+  if (!s) return 'badge-gray';
+  const l = s.toLowerCase();
+  if (['concluida', 'concluido', 'concluída', 'resolvido', 'fechado', 'pago', 'ativo', 'operacional'].includes(l)) return 'badge-green';
+  if (['pendente', 'aberto', 'aguardando', 'andamento'].includes(l)) return 'badge-orange';
+  if (['cancelado', 'parado', 'vencido', 'inativo'].includes(l)) return 'badge-red';
+  return 'badge-gray';
+}
+
+function formatDate(iso) {
+  if (!iso) return '—';
+  try { return new Date(iso).toLocaleDateString('pt-BR'); } catch { return '—'; }
+}
+function formatDateTime(iso) {
+  if (!iso) return '—';
+  try { return new Date(iso).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }); } catch { return '—'; }
+}
+function fmtCurrency(v) {
+  return 'R$ ' + (v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function esc(s) { return s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : ''; }
+</script>
+</body>
+</html>

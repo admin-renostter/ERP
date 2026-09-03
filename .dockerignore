@@ -1,0 +1,72 @@
+# ─────────────────────────────────────────────────────────────────────
+# .dockerignore — Renostter CRM
+# ─────────────────────────────────────────────────────────────────────
+
+# Dependências (são instaladas no Docker)
+node_modules/
+**/node_modules/
+
+# Backups e logs
+BACKUPS/
+backups/
+logs/
+*.log
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Arquivos de ambiente
+.env
+.env.local
+.env.*.local
+**/.env
+
+# Banco local (NUNCA commitar)
+cora-api/cora.sqlite
+cora-api/cora.sqlite-shm
+cora-api/cora.sqlite-wal
+*.db
+*.sqlite
+*.sqlite3
+
+# Backups automáticos de DB
+BACKUPS/*.sqlite
+BACKUPS/*.db
+BACKUPS/*.sql
+
+# Certificados Cora (sensíveis)
+cora-api/certificate.pem
+cora-api/private-key.key
+cora-api/*.pem
+cora-api/*.key
+cora-api/*.p12
+cora-api/*.pfx
+
+# Uploads de usuários (cresce muito, vai em volume)
+cora-api/uploads/
+admin/uploads/
+
+# Arquivos temporários e de build
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Documentação gerada (manter no repo mas não no docker)
+SPRINT-*.md
+BACKUPS/
+
+# Testes e exemplos
+test-results/
+playwright-report/
+.nyc_output/
+
+# Cobertura
+coverage/
+*.lcov

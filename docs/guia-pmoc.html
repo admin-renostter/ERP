@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="robots" content="noindex, nofollow"/>
+<title>Guia de Uso — PMOC | Renostter CRM</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+:root { --bg-base:#0d1117; --bg-card:#161b22; --bg-surface:#1c2129; --bg-hover:#21262d; --border:#30363d; --border-soft:rgba(255,255,255,0.06); --text-primary:#e6edf3; --text-secondary:#8b949e; --text-muted:#6b7280; --blue:#00AEEF; --blue-dim:rgba(0,174,239,0.12); --green:#22c55e; --green-dim:rgba(34,197,94,0.12); --orange:#f59e0b; --orange-dim:rgba(245,158,11,0.12); --red:#ef4444; --red-dim:rgba(239,68,68,0.12); --purple:#8b5cf6; --purple-dim:rgba(139,92,246,0.12); --shadow-md:0 4px 16px rgba(0,0,0,0.3); }
+* { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-behavior:smooth; }
+body { font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif; background:var(--bg-base); color:var(--text-primary); line-height:1.65; font-size:15px; }
+code, .mono { font-family:'JetBrains Mono',Consolas,monospace; font-size:.88em; }
+.hero { background:linear-gradient(135deg,#0d1117 0%,#0a1a2e 50%,#0d1117 100%); border-bottom:1px solid var(--border); padding:60px 40px 50px; position:relative; overflow:hidden; }
+.hero::before { content:''; position:absolute; top:-50%; right:-10%; width:600px; height:600px; background:radial-gradient(circle,var(--blue-dim) 0%,transparent 60%); pointer-events:none; }
+.hero-inner { max-width:1280px; margin:0 auto; position:relative; z-index:1; }
+.hero-breadcrumb { display:inline-flex; align-items:center; gap:8px; padding:6px 14px; background:var(--bg-card); border:1px solid var(--border); border-radius:50px; font-size:.75rem; color:var(--text-secondary); margin-bottom:24px; }
+.hero-breadcrumb .dot { width:6px; height:6px; border-radius:50%; background:var(--green); box-shadow:0 0 8px var(--green); }
+.hero h1 { font-size:2.6rem; font-weight:800; margin-bottom:14px; background:linear-gradient(90deg,#fff 0%,var(--blue) 100%); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; letter-spacing:-.02em; }
+.hero .subtitle { color:var(--text-secondary); font-size:1.1rem; max-width:720px; margin-bottom:28px; }
+.hero-meta { display:flex; gap:14px; flex-wrap:wrap; }
+.meta-chip { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; font-size:.8rem; color:var(--text-secondary); }
+.meta-chip strong { color:var(--text-primary); font-weight:600; }
+.meta-chip .icon { font-size:1rem; }
+.layout { max-width:1280px; margin:0 auto; padding:40px; display:grid; grid-template-columns:240px 1fr; gap:50px; }
+@media (max-width:900px) { .layout { grid-template-columns:1fr; padding:24px; } .toc { position:static !important; } }
+.toc { position:sticky; top:24px; align-self:start; max-height:calc(100vh - 48px); overflow-y:auto; padding-right:12px; }
+.toc-title { font-size:.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.08em; margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--border-soft); }
+.toc ul { list-style:none; }
+.toc li { margin-bottom:2px; }
+.toc a { display:block; padding:6px 10px; color:var(--text-secondary); text-decoration:none; font-size:.83rem; border-radius:6px; border-left:2px solid transparent; transition:all .15s; }
+.toc a:hover { color:var(--text-primary); background:var(--bg-card); }
+.toc a.active { color:var(--blue); border-left-color:var(--blue); background:var(--blue-dim); }
+.toc .sub { padding-left:24px; font-size:.78rem; }
+.content { min-width:0; }
+h2 { font-size:1.75rem; font-weight:700; margin:56px 0 20px; padding-bottom:12px; border-bottom:1px solid var(--border); letter-spacing:-.01em; scroll-margin-top:24px; }
+h2:first-of-type { margin-top:0; }
+h2 .num { display:inline-block; width:36px; height:36px; line-height:36px; text-align:center; background:var(--blue-dim); color:var(--blue); border-radius:8px; font-size:1.1rem; font-weight:800; margin-right:12px; vertical-align:middle; }
+h3 { font-size:1.2rem; font-weight:700; margin:32px 0 12px; color:var(--text-primary); }
+h4 { font-size:1rem; font-weight:700; margin:20px 0 8px; color:var(--text-primary); }
+p { margin-bottom:14px; color:var(--text-secondary); }
+strong { color:var(--text-primary); font-weight:600; }
+ul, ol { margin:0 0 14px 24px; color:var(--text-secondary); }
+li { margin-bottom:4px; }
+hr { border:none; border-top:1px solid var(--border-soft); margin:40px 0; }
+.callout { display:flex; gap:14px; padding:16px 18px; background:var(--bg-card); border:1px solid var(--border); border-left:4px solid var(--blue); border-radius:8px; margin:18px 0; }
+.callout-icon { font-size:1.3rem; flex-shrink:0; line-height:1; padding-top:2px; }
+.callout-body { flex:1; }
+.callout-title { font-weight:700; color:var(--text-primary); margin-bottom:4px; font-size:.92rem; }
+.callout-body p:last-child { margin-bottom:0; font-size:.92rem; }
+.callout.tip { border-left-color:var(--green); background:linear-gradient(90deg,var(--green-dim),var(--bg-card) 30%); }
+.callout.warn { border-left-color:var(--orange); background:linear-gradient(90deg,var(--orange-dim),var(--bg-card) 30%); }
+.callout.danger { border-left-color:var(--red); background:linear-gradient(90deg,var(--red-dim),var(--bg-card) 30%); }
+.callout.info { border-left-color:var(--blue); }
+pre { background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:14px 16px; overflow-x:auto; font-size:.85rem; line-height:1.55; margin:12px 0; }
+pre code { color:var(--text-primary); }
+.kw { color:#ff7b72; } .fn { color:#d2a8ff; } .st { color:#a5d6ff; } .nm { color:#79c0ff; } .cm { color:var(--text-muted); font-style:italic; }
+.table-wrap { border:1px solid var(--border); border-radius:8px; overflow:hidden; margin:14px 0; }
+table { width:100%; border-collapse:collapse; font-size:.88rem; }
+thead { background:var(--bg-surface); }
+th { text-align:left; padding:10px 14px; font-weight:700; font-size:.72rem; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.05em; border-bottom:1px solid var(--border); }
+td { padding:10px 14px; border-bottom:1px solid var(--border-soft); color:var(--text-primary); vertical-align:top; }
+tbody tr:last-child td { border-bottom:none; }
+tbody tr:hover { background:var(--bg-hover); }
+td code { background:var(--bg-surface); padding:2px 6px; border-radius:4px; font-size:.82rem; color:var(--text-primary); }
+.shot { margin:18px 0; border:1px solid var(--border); border-radius:10px; overflow:hidden; background:var(--bg-card); box-shadow:var(--shadow-md); }
+.shot img { display:block; width:100%; height:auto; }
+.shot-caption { padding:10px 16px; background:var(--bg-surface); border-top:1px solid var(--border-soft); font-size:.82rem; color:var(--text-secondary); display:flex; align-items:center; gap:8px; }
+.shot-caption strong { color:var(--text-primary); }
+kbd { display:inline-block; padding:2px 6px; background:var(--bg-surface); border:1px solid var(--border); border-bottom-width:2px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:.78rem; color:var(--text-primary); font-weight:600; }
+.steps { counter-reset:step; list-style:none; margin:18px 0; padding:0; }
+.steps > li { counter-increment:step; position:relative; padding-left:48px; margin-bottom:20px; min-height:36px; }
+.steps > li::before { content:counter(step); position:absolute; left:0; top:0; width:32px; height:32px; background:var(--blue); color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.9rem; }
+.badge-i { display:inline-block; padding:2px 8px; background:var(--blue-dim); color:var(--blue); border-radius:4px; font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.03em; vertical-align:middle; }
+.badge-g { background:var(--green-dim); color:var(--green); }
+.badge-o { background:var(--orange-dim); color:var(--orange); }
+.badge-r { background:var(--red-dim); color:var(--red); }
+.badge-p { background:var(--purple-dim); color:var(--purple); }
+footer { margin-top:60px; padding:32px 40px; border-top:1px solid var(--border); background:var(--bg-card); text-align:center; color:var(--text-muted); font-size:.85rem; }
+footer .row { display:flex; justify-content:space-between; align-items:center; max-width:1280px; margin:0 auto; flex-wrap:wrap; gap:12px; }
+footer a { color:var(--blue); text-decoration:none; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="hero-breadcrumb"><span class="dot"></span><span>Renostter CRM · Documentação</span></div>
+    <h1>Guia de Uso — PMOC</h1>
+    <p class="subtitle">Plano de Manutenção, Operação e Controle. Como gerenciar a agenda de manutenções preventivas, executar checklists e gerar relatórios de conformidade (ABNT NBR 16020).</p>
+    <div class="hero-meta">
+      <div class="meta-chip"><span class="icon">❄️</span> <strong>Módulo:</strong> PMOC</div>
+      <div class="meta-chip"><span class="icon">✅</span> <strong>Status:</strong> 100% operacional</div>
+      <div class="meta-chip"><span class="icon">📅</span> <strong>Versão:</strong> 1.0 (Jul/2026)</div>
+      <div class="meta-chip"><span class="icon">📜</span> <strong>Norma:</strong> ABNT NBR 16020</div>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="toc" id="toc">
+    <div class="toc-title">Sumário</div>
+    <ul>
+      <li><a href="#visao-geral">1. Visão geral</a></li>
+      <li><a href="#o-que-e-pmoc">2. O que é PMOC</a></li>
+      <li><a href="#acesso">3. Acesso rápido</a></li>
+      <li><a href="#abas">4. As 4 abas do módulo</a></li>
+      <li><a href="#agenda" class="sub">4.1 Agenda PMOC</a></li>
+      <li><a href="#checklist" class="sub">4.2 Checklist</a></li>
+      <li><a href="#equipamentos" class="sub">4.3 Equipamentos</a></li>
+      <li><a href="#relatorio" class="sub">4.4 Relatório NBR 16020</a></li>
+      <li><a href="#periodicidade">5. Periodicidades</a></li>
+      <li><a href="#workflow">6. Workflow típico</a></li>
+      <li><a href="#praticas">7. Boas práticas</a></li>
+      <li><a href="#api">8. API reference</a></li>
+    </ul>
+  </nav>
+
+  <main class="content">
+
+    <h2 id="visao-geral"><span class="num">1</span>Visão geral</h2>
+    <p>O módulo de <strong>PMOC (Plano de Manutenção, Operação e Controle)</strong> é o coração da conformidade legal da Renostter. Segundo a <strong>ABNT NBR 16020</strong> e a <strong>Portaria GM/MS 3.523/1998</strong>, todo sistema de ar-condicionado com capacidade ≥ 60.000 BTU (ou 5TR) deve ter um PMOC ativo, com manutenções preventivas periódicas registradas e auditáveis.</p>
+
+    <h3>Por que existe</h3>
+    <p>Antes deste módulo, o controle era em planilhas: técnico ia ao local, marcava no Excel, e ninguém auditava. Risco de:</p>
+    <ul>
+      <li>Esquecer de manutenção → falha do equipamento → cliente insatisfeito</li>
+      <li>Multa da vigilância sanitária (R$ 2.000 a R$ 1,5M em casos graves)</li>
+      <li>Perda de contrato PMOC com o cliente (R$ 300-2.000/mês)</li>
+    </ul>
+    <p>O módulo resolve com: agenda automática por periodicidade, checklists por tipo de manutenção, alertas de vencimento, e relatório ABNT pronto pra apresentar à fiscalização.</p>
+
+    <h3>Quem usa</h3>
+    <ul>
+      <li><strong>Técnico de campo</strong> — executa manutenções, marca checklist, anexa fotos</li>
+      <li><strong>Engenheiro / RT</strong> — assina ART, gera relatório para o cliente, planeja agenda</li>
+      <li><strong>Gerente de operações</strong> — acompanha conformidade, aloca técnicos</li>
+      <li><strong>Auditor / Fiscalizador</strong> — recebe o relatório PDF/HTML em formato padrão NBR 16020</li>
+    </ul>
+
+    <h2 id="o-que-e-pmoc"><span class="num">2</span>O que é PMOC (na prática)</h2>
+
+    <p>Um PMOC não é só "trocar filtro". É um <strong>plano documentado</strong> que cobre:</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Etapa</th><th>O que é</th><th>Frequência</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Limpeza</strong></td><td>Filtros, serpentinas, turbinas, dreno</td><td>Mensal ou trimestral</td></tr>
+          <tr><td><strong>Verificação elétrica</strong></td><td>Tensão, corrente, isolação, aterramento</td><td>Trimestral</td></tr>
+          <tr><td><strong>Verificação mecânica</strong></td><td>Vibração, ruído, pressão de gás, temperatura</td><td>Trimestral</td></tr>
+          <tr><td><strong>Medição de qualidade do ar</strong></td><td>Partículas, umidade, temperatura, CO₂</td><td>Semestral</td></tr>
+          <tr><td><strong>Análise microbiológica</strong></td><td>Coleta e análise em laboratório (legionella)</td><td>Anual</td></tr>
+          <tr><td><strong>Verificação de segurança</strong></td><td>Extintores, rotas de fuga, sinalização</td><td>Semestral</td></tr>
+          <tr><td><strong>Documentação</strong></td><td>Registro em livro ou sistema, ART do RT</td><td>Por execução</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout warn">
+      <div class="callout-icon">⚠</div>
+      <div class="callout-body">
+        <div class="callout-title">Obrigação legal</div>
+        <p>A <strong>Portaria GM/MS 3.523/1998</strong> e a <strong>ABNT NBR 16020:2012</strong> determinam que todo sistema de climatização com capacidade ≥ 60.000 BTU deve manter um PMOC ativo e auditável. A <strong>Resolução RE 09/2003 da ANVISA</strong> define os parâmetros de qualidade do ar interior. Multas: R$ 2.000 a R$ 1.500.000 (Lei 6.437/1977).</p>
+      </div>
+    </div>
+
+    <h2 id="acesso"><span class="num">3</span>Acesso rápido</h2>
+    <p>Para abrir o módulo:</p>
+    <ol>
+      <li><strong>Sidebar</strong> → menu <em>Operacional</em> → <em>PMOC</em></li>
+      <li><strong>URL direta</strong>: <code>http://localhost:3000/crm/admin/pmoc.html</code></li>
+      <li><strong>PWA técnico</strong> (<code>tecnico/index.html</code>) — mostra agenda do dia para o técnico logado</li>
+    </ol>
+
+    <div class="shot">
+      <img src="assets/guia-pmoc-1-lista.png" alt="Tela principal do PMOC"/>
+      <div class="shot-caption"><strong>Figura 1.</strong> Tela inicial do PMOC — banner de obrigatoriedade, KPIs de conformidade e lista de equipamentos monitorados.</div>
+    </div>
+
+    <h2 id="abas"><span class="num">4</span>As 4 abas do módulo</h2>
+    <p>O módulo PMOC é organizado em 4 abas. Cada uma tem uma responsabilidade clara:</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Aba</th><th>O que faz</th><th>Quando usar</th></tr></thead>
+        <tbody>
+          <tr><td><strong>📅 Agenda PMOC</strong></td><td>Lista de manutenções agendadas, vencidas, executadas</td><td>Todo dia — ver o que precisa ser feito</td></tr>
+          <tr><td><strong>📋 Checklist</strong></td><td>Editor de itens verificados em cada tipo (Trimestral, Semestral, Anual)</td><td>Configuração inicial + quando muda norma</td></tr>
+          <tr><td><strong>🔧 Equipamentos</strong></td><td>Cadastro dos equipamentos HVAC monitorados</td><td>Quando cliente novo ou troca equipamento</td></tr>
+          <tr><td><strong>📊 Relatório NBR 16020</strong></td><td>Geração de relatório consolidado para fiscalização</td><td>Quando cliente pede ou fiscalização visita</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 id="agenda">4.1 Agenda PMOC</h3>
+    <p>A agenda é o coração operacional. Mostra todas as manutenções (passadas, hoje, futuras) com filtros por status.</p>
+
+    <div class="shot">
+      <img src="assets/guia-pmoc-2-agenda.png" alt="Agenda PMOC"/>
+      <div class="shot-caption"><strong>Figura 2.</strong> Aba Agenda — lista de manutenções com filtros (pendente, concluída, vencida) e ações rápidas.</div>
+    </div>
+
+    <h4>Status de uma manutenção</h4>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Status</th><th>Quando</th><th>Ação</th></tr></thead>
+        <tbody>
+          <tr><td><span class="badge-i">Pendente</span></td><td>Agendada mas ainda não executada</td><td>Executar (clica na linha) ou reagendar</td></tr>
+          <tr><td><span class="badge-i badge-g">Concluída</span></td><td>Foi executada, checklist marcado</td><td>(nenhuma, ver histórico)</td></tr>
+          <tr><td><span class="badge-i badge-r">Vencida</span></td><td>Data passou e não foi executada</td><td>Executar urgente ou justificar</td></tr>
+          <tr><td><span class="badge-i badge-o">Reagendada</span></td><td>Data original foi movida</td><td>Ver novo prazo</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>Como executar uma manutenção</h4>
+    <ol class="steps">
+      <li>Na agenda, clique na linha da manutenção <strong>Pendente</strong></li>
+      <li>O modal abre com: dados do cliente, equipamento, checklist específico do tipo (Trimestral/Semestral/Anual)</li>
+      <li>Marque cada item do checklist (✓ Conforme, ✗ Não conforme, — N/A)</li>
+      <li>Adicione observações por item (ex: "Filtro sujo, trocado")</li>
+      <li>Anexe fotos (opcional mas recomendado)</li>
+      <li>Adicione observações gerais (ex: "Pressão de gás OK, 12 psi")</li>
+      <li>Clique <kbd>💾 Salvar Manutenção</kbd></li>
+    </ol>
+
+    <div class="callout tip">
+      <div class="callout-icon">💡</div>
+      <div class="callout-body">
+        <div class="callout-title">Dica — use fotos como evidência</div>
+        <p>O checklist fica auditável se tiver foto do filtro limpo, do display de temperatura, do gás no manômetro. Anexe sempre que possível — facilita na fiscalização.</p>
+      </div>
+    </div>
+
+    <h3 id="checklist">4.2 Checklist (itens por tipo)</h3>
+    <p>O checklist define o que é verificado em cada manutenção. Vem pré-populado com itens padrão da NBR 16020, mas pode ser customizado por cliente.</p>
+
+    <h4>Tipos de manutenção padrão</h4>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Tipo</th><th>Frequência</th><th>Itens típicos</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Mensal</strong></td><td>1x/mês</td><td>Filtros, dreno, temperatura</td></tr>
+          <tr><td><strong>Trimestral</strong></td><td>4x/ano</td><td>Limpeza serpentinas, verificação elétrica, pressão de gás</td></tr>
+          <tr><td><strong>Semestral</strong></td><td>2x/ano</td><td>Medição de qualidade do ar, análise microbiológica simples</td></tr>
+          <tr><td><strong>Anual</strong></td><td>1x/ano</td><td>Análise microbiológica completa, calibração de sensores, ART</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 id="equipamentos">4.3 Equipamentos</h3>
+    <p>Cadastro de todo equipamento HVAC que precisa de manutenção preventiva. Cada equipamento tem:</p>
+    <ul>
+      <li><strong>Dados técnicos</strong>: marca, modelo, série, BTU, tipo (split, VRF, chiller, self-contained)</li>
+      <li><strong>Localização</strong>: cliente, endereço, sala/andar, coordenadas GPS</li>
+      <li><strong>PMOC obrigatório</strong>: <code>sim</code> se ≥ 60.000 BTU (exigência legal)</li>
+      <li><strong>Periodicidade</strong>: mensal, trimestral, semestral, anual (ou custom)</li>
+      <li><strong>Próxima manutenção</strong>: data calculada automaticamente a partir da última execução</li>
+    </ul>
+
+    <div class="shot">
+      <img src="assets/guia-pmoc-3-equipamentos.png" alt="Equipamentos PMOC"/>
+      <div class="shot-caption"><strong>Figura 3.</strong> Aba Equipamentos — lista filtrável (PMOC obrigatório, sem PMOC, todos) com ações de editar/visualizar histórico.</div>
+    </div>
+
+    <h4>Como cadastrar equipamento</h4>
+    <ol class="steps">
+      <li>Na aba <em>Equipamentos</em>, clique <kbd>+ Novo Equipamento</kbd></li>
+      <li>Selecione o <strong>cliente</strong> (o sistema puxa endereço)</li>
+      <li>Preencha dados técnicos: marca, modelo, número de série, BTU/h, tipo</li>
+      <li>Marque <strong>PMOC Obrigatório</strong> se ≥ 60.000 BTU</li>
+      <li>Defina a <strong>periodicidade</strong> (trimestral é o padrão mais comum)</li>
+      <li>Salve — o sistema agenda a primeira manutenção</li>
+    </ol>
+
+    <h3 id="relatorio">4.4 Relatório NBR 16020</h3>
+    <p>Gera o relatório de conformidade no formato exigido pela norma. Use quando:</p>
+    <ul>
+      <li>Cliente pede comprovação de conformidade</li>
+      <li>Fiscalização sanitária visita o local</li>
+      <li>Auditoria interna / externa</li>
+      <li>Renovação de contrato PMOC</li>
+    </ul>
+
+    <div class="shot">
+      <img src="assets/guia-pmoc-4-relatorio.png" alt="Relatório PMOC"/>
+      <div class="shot-caption"><strong>Figura 4.</strong> Aba Relatório — selecione o cliente, escolha o período e o sistema compila o relatório com todos os equipamentos, manutenções executadas e conformidade por item.</div>
+    </div>
+
+    <h4>O que o relatório inclui</h4>
+    <ul>
+      <li>Identificação do cliente (Razão Social, CNPJ, endereço)</li>
+      <li>Lista de todos os equipamentos monitorados (com BTU e tipo)</li>
+      <li>Histórico de manutenções executadas no período (data, tipo, técnico, checklist)</li>
+      <li>Conformidade por item (percentual de ✓)</li>
+      <li>ART do Responsável Técnico (número, data, assinatura digital)</li>
+      <li>Indicadores de qualidade do ar (se medidos)</li>
+    </ul>
+
+    <h2 id="periodicidade"><span class="num">5</span>Periodicidades</h2>
+    <p>Conforme a <strong>ABNT NBR 16020</strong> e o <strong>Regulamento Técnico GM/MS 3.523/1998</strong>:</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Capacidade</th><th>Frequência mínima</th><th>Observações</th></tr></thead>
+        <tbody>
+          <tr><td>≥ 5 TR (60k BTU)</td><td>Trimestral</td><td>PMOC obrigatório por lei</td></tr>
+          <tr><td>2–5 TR (24-60k BTU)</td><td>Semestral</td><td>Boa prática, exigido em algumas prefeituras</td></tr>
+          <tr><td>&lt; 2 TR (24k BTU)</td><td>Anual</td><td>Manutenção preventiva recomendada</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout info">
+      <div class="callout-icon">ℹ️</div>
+      <div class="callout-body">
+        <div class="callout-title">Como o sistema calcula a próxima data</div>
+        <p>Quando uma manutenção é concluída, o sistema agenda a próxima baseada na periodicidade do equipamento (ex: trimestral → +3 meses). Se você agendar manualmente, sobrescreve o cálculo automático.</p>
+      </div>
+    </div>
+
+    <h2 id="workflow"><span class="num">6</span>Workflow típico</h2>
+    <p>Ciclo de uma manutenção preventiva PMOC:</p>
+
+    <ol class="steps">
+      <li><strong>Setup inicial</strong> — cadastra cliente, equipamentos e periodicidades</li>
+      <li><strong>Sistema agenda</strong> — primeira manutenção é criada automaticamente</li>
+      <li><strong>Notificação</strong> — D-3 dias, técnico recebe alerta no PWA ou e-mail</li>
+      <li><strong>Execução</strong> — técnico vai ao local, segue checklist, marca itens, anexa fotos</li>
+      <li><strong>Conclusão</strong> — sistema salva manutenção, agenda próxima</li>
+      <li><strong>Conformidade</strong> — KPI atualizado em tempo real no BI</li>
+      <li><strong>Relatório</strong> — ao final do período, gera relatório NBR 16020 para o cliente</li>
+    </ol>
+
+    <h2 id="praticas"><span class="num">7</span>Boas práticas</h2>
+
+    <h3>✅ Faça</h3>
+    <ul>
+      <li><strong>Marque TODOS os itens do checklist</strong> — itens em branco não contam como conformes</li>
+      <li><strong>Anexe fotos do antes/depois</strong> — vira evidência em caso de fiscalização</li>
+      <li><strong>Use observações técnicas</strong> — anote pressões, temperaturas, medições (auditável depois)</li>
+      <li><strong>Configure alertas de vencimento</strong> (D-7 e D-1) para não perder prazo</li>
+      <li><strong>Revise a lista de equipamentos</strong> quando cliente troca aparelho (remove antigo, cadastra novo)</li>
+      <li><strong>Treine os técnicos no checklist</strong> — uniformidade é chave para auditoria</li>
+    </ul>
+
+    <h3>❌ Evite</h3>
+    <ul>
+      <li><strong>Não marque item sem verificar</strong> — pode invalidar ART</li>
+      <li><strong>Não pule manutenções</strong> — sistema detecta e bloqueia geração de relatório</li>
+      <li><strong>Não altere data retroativa</strong> sem justificativa — fica marcado como "atrasado"</li>
+      <li><strong>Não esqueça da ART</strong> — sem RT registrado, relatório NBR 16020 é inválido</li>
+    </ul>
+
+    <h2 id="api"><span class="num">8</span>API reference (resumo)</h2>
+    <p>Endpoints REST do PMOC:</p>
+
+    <h3>GET /api/pmoc/equipamentos</h3>
+    <p>Lista todos os equipamentos com filtros opcionais (pmoc_obrigatorio, cliente_id, search).</p>
+
+    <h3>POST /api/pmoc/equipamentos</h3>
+    <p>Cadastra novo equipamento.</p>
+    <pre><code>POST /api/pmoc/equipamentos
+{
+  <span class="st">"cliente_id"</span>: <span class="st">"&lt;uuid&gt;"</span>,
+  <span class="st">"marca"</span>: <span class="st">"Carrier"</span>,
+  <span class="st">"modelo"</span>: <span class="st">"X-Power 60k"</span>,
+  <span class="st">"serie"</span>: <span class="st">"XP-2024-001"</span>,
+  <span class="st">"potencia_btu"</span>: <span class="nm">60000</span>,
+  <span class="st">"tipo"</span>: <span class="st">"split_piso_teto"</span>,
+  <span class="st">"pmoc_obrigatorio"</span>: <span class="nm">true</span>,
+  <span class="st">"periodicidade"</span>: <span class="st">"trimestral"</span>,
+  <span class="st">"localizacao"</span>: <span class="st">"Sala TI - 2º andar"</span>
+}</code></pre>
+
+    <h3>GET /api/pmoc/agenda?status=pendente</h3>
+    <p>Lista manutenções agendadas. Filtros: <code>status</code> (pendente, concluida, vencida), <code>tecnico_id</code>, <code>periodo</code> (proximos_7_dias, este_mes).</p>
+
+    <h3>POST /api/pmoc/manutencoes</h3>
+    <p>Registra uma manutenção executada.</p>
+    <pre><code>POST /api/pmoc/manutencoes
+{
+  <span class="st">"equipamento_id"</span>: <span class="st">"&lt;uuid&gt;"</span>,
+  <span class="st">"tipo"</span>: <span class="st">"trimestral"</span>,
+  <span class="st">"data_execucao"</span>: <span class="st">"2026-07-21"</span>,
+  <span class="st">"tecnico_id"</span>: <span class="st">"&lt;uuid&gt;"</span>,
+  <span class="st">"checklist"</span>: [
+    {<span class="st">"item"</span>: <span class="st">"Filtro de ar limpo"</span>, <span class="st">"status"</span>: <span class="st">"conforme"</span>, <span class="st">"obs"</span>: <span class="st">"Filtro trocado"</span>},
+    {<span class="st">"item"</span>: <span class="st">"Pressão de gás"</span>, <span class="st">"status"</span>: <span class="st">"conforme"</span>, <span class="st">"obs"</span>: <span class="st">"12 psi"</span>}
+  ],
+  <span class="st">"fotos"</span>: [<span class="st">"https://..."</span>, <span class="st">"https://..."</span>],
+  <span class="st">"observacoes_gerais"</span>: <span class="st">"Manutenção executada sem intercorrências"</span>
+}</code></pre>
+
+    <h3>GET /api/pmoc/relatorio?cliente_id=&lt;uuid&gt;&periodo=2026-01-01_2026-12-31</h3>
+    <p>Gera o relatório consolidado no formato NBR 16020. Retorna HTML pronto para impressão ou PDF.</p>
+
+    <h3>GET /api/pmoc/conformidade</h3>
+    <p>KPIs agregados (taxa de conformidade, manutenções no prazo, vencidas). Alimenta o BI Dashboard.</p>
+
+    <hr>
+
+    <div class="callout tip">
+      <div class="callout-icon">📚</div>
+      <div class="callout-body">
+        <div class="callout-title">Documentos relacionados</div>
+        <p>• <a href="README.md" style="color:var(--blue)">README geral</a> · <a href="guia-cotacao.html" style="color:var(--blue)">Guia de Cotação</a><br>
+        • <a href="arquitetura-erp.html" style="color:var(--blue)">Arquitetura do ERP</a></p>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<footer>
+  <div class="row">
+    <div>Renostter Climatização &amp; Manutenção HVAC · contato@renostter.com.br · (11) 9999-9999</div>
+    <div>v1.0 · 21/07/2026 · <a href="README.md">Índice</a> · <a href="guia-cotacao.html">Cotação</a></div>
+  </div>
+</footer>
+
+<script>
+const tocLinks = document.querySelectorAll('.toc a');
+const sections = Array.from(tocLinks).map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    const id = '#' + entry.target.id;
+    const link = document.querySelector('.toc a[href="' + id + '"]');
+    if (link && entry.isIntersecting) {
+      tocLinks.forEach(l => l.classList.remove('active'));
+      link.classList.add('active');
+    }
+  });
+}, { rootMargin: '-20% 0px -70% 0px' });
+sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>

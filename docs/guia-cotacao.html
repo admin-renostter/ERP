@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="robots" content="noindex, nofollow"/>
+<title>Guia de Uso — Cotação & Dimensionamento HVAC | Renostter CRM</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg-base: #0d1117;
+  --bg-card: #161b22;
+  --bg-surface: #1c2129;
+  --bg-hover: #21262d;
+  --border: #30363d;
+  --border-soft: rgba(255,255,255,0.06);
+  --text-primary: #e6edf3;
+  --text-secondary: #8b949e;
+  --text-muted: #6b7280;
+  --blue: #00AEEF;
+  --blue-dim: rgba(0,174,239,0.12);
+  --green: #22c55e;
+  --green-dim: rgba(34,197,94,0.12);
+  --orange: #f59e0b;
+  --orange-dim: rgba(245,158,11,0.12);
+  --red: #ef4444;
+  --red-dim: rgba(239,68,68,0.12);
+  --purple: #8b5cf6;
+  --purple-dim: rgba(139,92,246,0.12);
+  --pink: #ec4899;
+  --pink-dim: rgba(236,72,153,0.12);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.4);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.3);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  line-height: 1.65;
+  font-size: 15px;
+}
+code, .mono { font-family: 'JetBrains Mono', Consolas, monospace; font-size: 0.88em; }
+
+/* ═══ HEADER ═══ */
+.hero {
+  background: linear-gradient(135deg, #0d1117 0%, #0a1a2e 50%, #0d1117 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 60px 40px 50px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -10%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, var(--blue-dim) 0%, transparent 60%);
+  pointer-events: none;
+}
+.hero-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+.hero-breadcrumb {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 50px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+}
+.hero-breadcrumb .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
+.hero h1 {
+  font-size: 2.6rem;
+  font-weight: 800;
+  margin-bottom: 14px;
+  background: linear-gradient(90deg, #fff 0%, var(--blue) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.02em;
+}
+.hero .subtitle {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  max-width: 720px;
+  margin-bottom: 28px;
+}
+.hero-meta {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.meta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+.meta-chip strong { color: var(--text-primary); font-weight: 600; }
+.meta-chip .icon { font-size: 1rem; }
+
+/* ═══ LAYOUT ═══ */
+.layout {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 40px;
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 50px;
+}
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; padding: 24px; }
+  .toc { position: static !important; }
+}
+
+/* ═══ TOC ═══ */
+.toc {
+  position: sticky;
+  top: 24px;
+  align-self: start;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  padding-right: 12px;
+}
+.toc-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.toc ul { list-style: none; }
+.toc li { margin-bottom: 2px; }
+.toc a {
+  display: block;
+  padding: 6px 10px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.83rem;
+  border-radius: 6px;
+  border-left: 2px solid transparent;
+  transition: all 0.15s;
+}
+.toc a:hover { color: var(--text-primary); background: var(--bg-card); }
+.toc a.active { color: var(--blue); border-left-color: var(--blue); background: var(--blue-dim); }
+.toc .sub { padding-left: 24px; font-size: 0.78rem; }
+
+/* ═══ CONTENT ═══ */
+.content { min-width: 0; }
+h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 56px 0 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  letter-spacing: -0.01em;
+  scroll-margin-top: 24px;
+}
+h2:first-of-type { margin-top: 0; }
+h2 .num {
+  display: inline-block;
+  width: 36px;
+  height: 36px;
+  line-height: 36px;
+  text-align: center;
+  background: var(--blue-dim);
+  color: var(--blue);
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 800;
+  margin-right: 12px;
+  vertical-align: middle;
+}
+h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 32px 0 12px;
+  color: var(--text-primary);
+}
+h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 20px 0 8px;
+  color: var(--text-primary);
+}
+p { margin-bottom: 14px; color: var(--text-secondary); }
+strong { color: var(--text-primary); font-weight: 600; }
+ul, ol { margin: 0 0 14px 24px; color: var(--text-secondary); }
+li { margin-bottom: 4px; }
+hr { border: none; border-top: 1px solid var(--border-soft); margin: 40px 0; }
+
+/* ═══ CARDS / BOXES ═══ */
+.callout {
+  display: flex;
+  gap: 14px;
+  padding: 16px 18px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--blue);
+  border-radius: 8px;
+  margin: 18px 0;
+}
+.callout-icon { font-size: 1.3rem; flex-shrink: 0; line-height: 1; padding-top: 2px; }
+.callout-body { flex: 1; }
+.callout-title { font-weight: 700; color: var(--text-primary); margin-bottom: 4px; font-size: 0.92rem; }
+.callout-body p:last-child { margin-bottom: 0; font-size: 0.92rem; }
+.callout.tip { border-left-color: var(--green); background: linear-gradient(90deg, var(--green-dim), var(--bg-card) 30%); }
+.callout.warn { border-left-color: var(--orange); background: linear-gradient(90deg, var(--orange-dim), var(--bg-card) 30%); }
+.callout.danger { border-left-color: var(--red); background: linear-gradient(90deg, var(--red-dim), var(--bg-card) 30%); }
+.callout.info { border-left-color: var(--blue); }
+
+/* ═══ CODE BLOCKS ═══ */
+pre {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  overflow-x: auto;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  margin: 12px 0;
+}
+pre code { color: var(--text-primary); }
+.kw { color: #ff7b72; }  /* keywords */
+.fn { color: #d2a8ff; }  /* functions */
+.st { color: #a5d6ff; }  /* strings */
+.nm { color: #79c0ff; }  /* numbers */
+.cm { color: var(--text-muted); font-style: italic; }  /* comments */
+.op { color: #ff7b72; }  /* operators */
+
+/* ═══ TABLES ═══ */
+.table-wrap {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 14px 0;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+thead {
+  background: var(--bg-surface);
+}
+th {
+  text-align: left;
+  padding: 10px 14px;
+  font-weight: 700;
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border);
+}
+td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-soft);
+  color: var(--text-primary);
+  vertical-align: top;
+}
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: var(--bg-hover); }
+td .badge {
+  display: inline-block;
+  padding: 2px 8px;
+  background: var(--blue-dim);
+  color: var(--blue);
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+}
+td code {
+  background: var(--bg-surface);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.82rem;
+  color: var(--text-primary);
+}
+
+/* ═══ SCREENSHOTS ═══ */
+.shot {
+  margin: 18px 0;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--bg-card);
+  box-shadow: var(--shadow-md);
+}
+.shot img { display: block; width: 100%; height: auto; }
+.shot-caption {
+  padding: 10px 16px;
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border-soft);
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.shot-caption strong { color: var(--text-primary); }
+
+/* ═══ KBD ═══ */
+kbd {
+  display: inline-block;
+  padding: 2px 6px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* ═══ STEPS ═══ */
+.steps {
+  counter-reset: step;
+  list-style: none;
+  margin: 18px 0;
+  padding: 0;
+}
+.steps > li {
+  counter-increment: step;
+  position: relative;
+  padding-left: 48px;
+  margin-bottom: 20px;
+  min-height: 36px;
+}
+.steps > li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 32px;
+  height: 32px;
+  background: var(--blue);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+/* ═══ BADGES inline ═══ */
+.badge-i {
+  display: inline-block;
+  padding: 2px 8px;
+  background: var(--blue-dim);
+  color: var(--blue);
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  vertical-align: middle;
+}
+.badge-g { background: var(--green-dim); color: var(--green); }
+.badge-o { background: var(--orange-dim); color: var(--orange); }
+.badge-r { background: var(--red-dim); color: var(--red); }
+.badge-p { background: var(--purple-dim); color: var(--purple); }
+
+/* ═══ FOOTER ═══ */
+footer {
+  margin-top: 60px;
+  padding: 32px 40px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-card);
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+footer .row { display: flex; justify-content: space-between; align-items: center; max-width: 1280px; margin: 0 auto; flex-wrap: wrap; gap: 12px; }
+footer a { color: var(--blue); text-decoration: none; }
+
+/* ═══ TOC scrollspy (highlight current section) ═══ */
+</style>
+</head>
+<body>
+
+<!-- ═══ HERO ═══ -->
+<header class="hero">
+  <div class="hero-inner">
+    <div class="hero-breadcrumb">
+      <span class="dot"></span>
+      <span>Renostter CRM · Documentação</span>
+    </div>
+    <h1>Guia de Uso — Cotação &amp; Dimensionamento HVAC</h1>
+    <p class="subtitle">Passo a passo completo do módulo de cotações: como criar, calcular carga térmica, gerar BOM automático, emitir PDF e gerenciar o pipeline de vendas.</p>
+    <div class="hero-meta">
+      <div class="meta-chip"><span class="icon">📦</span> <strong>Módulo:</strong> Cotação / Dimensionamento</div>
+      <div class="meta-chip"><span class="icon">🚀</span> <strong>Status:</strong> 100% operacional</div>
+      <div class="meta-chip"><span class="icon">📅</span> <strong>Versão:</strong> 1.0 (Jul/2026)</div>
+      <div class="meta-chip"><span class="icon">⏱</span> <strong>Tempo de leitura:</strong> ~12 min</div>
+    </div>
+  </div>
+</header>
+
+<!-- ═══ LAYOUT: TOC + CONTENT ═══ -->
+<div class="layout">
+
+  <!-- TOC -->
+  <nav class="toc" id="toc">
+    <div class="toc-title">Sumário</div>
+    <ul>
+      <li><a href="#visao-geral">1. Visão geral</a></li>
+      <li><a href="#acesso">2. Acesso rápido</a></li>
+      <li><a href="#conceitos">3. Conceitos fundamentais</a></li>
+      <li><a href="#wizard">4. Wizard passo a passo</a></li>
+      <li><a href="#btu" class="sub">4.1 Cálculo BTU</a></li>
+      <li><a href="#bom" class="sub">4.2 BOM automático</a></li>
+      <li><a href="#pdf" class="sub">4.3 PDF da proposta</a></li>
+      <li><a href="#workflow">5. Workflow típico</a></li>
+      <li><a href="#praticas">6. Boas práticas</a></li>
+      <li><a href="#troubleshooting">7. Troubleshooting</a></li>
+      <li><a href="#faq">8. FAQ</a></li>
+      <li><a href="#api">9. API reference</a></li>
+      <li><a href="#glossario">10. Glossário</a></li>
+    </ul>
+  </nav>
+
+  <!-- CONTENT -->
+  <main class="content">
+
+    <!-- ═══ 1. VISÃO GERAL ═══ -->
+    <h2 id="visao-geral"><span class="num">1</span>Visão geral</h2>
+    <p>O módulo de <strong>Cotação &amp; Dimensionamento HVAC</strong> permite que a Renostter crie propostas comerciais profissionais para clientes a partir de um dimensionamento técnico automático da carga térmica do ambiente.</p>
+
+    <h3>Por que existe</h3>
+    <p>Antes deste módulo, o cálculo de BTU era manual (planilha + calculadora) e a lista de materiais era copiada de uma proposta anterior — sujeito a erro e retrabalho. Agora, com 8 fatores técnicos + catálogo de equipamentos + BOM automático, o vendedor preenche um wizard de 4 passos e sai com:</p>
+    <ul>
+      <li>BTU calculado com norma técnica (base 600 BTU/m² para residencial, 700 comercial, 800 industrial, 1200 servidor, 1000 cozinha)</li>
+      <li>Equipamento sugerido do estoque (com fallback hardcoded se não houver)</li>
+      <li>Lista de materiais (BOM) com 11 itens típicos para BTU 30k</li>
+      <li>Precificação com margem de lucro editável (padrão 30%)</li>
+      <li>PDF profissional pronto para enviar ao cliente</li>
+    </ul>
+
+    <h3>Quem usa</h3>
+    <ul>
+      <li><strong>Vendedor / SDR</strong> — recebe lead qualificado, visita cliente, mede ambiente, gera cotação</li>
+      <li><strong>Engenheiro / Técnico</strong> — revisa cálculo, ajusta margem, valida BOM</li>
+      <li><strong>Gerente comercial</strong> — acompanha funil de vendas (Leads → Cotações → Receita) pelo BI</li>
+    </ul>
+
+    <h3>Como se encaixa no sistema</h3>
+    <div class="callout info">
+      <div class="callout-icon">🔗</div>
+      <div class="callout-body">
+        <div class="callout-title">Integrações nativas</div>
+        <p>• <strong>Leads</strong> — cotação pode ser vinculada a um lead qualificado e, na aprovação, o lead vira cliente automaticamente.<br>
+        • <strong>Estoque (inventory)</strong> — 24 itens HVAC já populados (8 equipamentos + 16 materiais); você pode adicionar mais.<br>
+        • <strong>BI Dashboard</strong> — cotações alimentam KPIs e gráficos de "Pipeline Cotações", "Mix de Equipamentos", "Funil de Vendas".<br>
+        • <strong>Cobrança (Cora)</strong> — após aprovação, você pode gerar contrato que vira cobrança recorrente.</p>
+      </div>
+    </div>
+
+    <!-- ═══ 2. ACESSO RÁPIDO ═══ -->
+    <h2 id="acesso"><span class="num">2</span>Acesso rápido</h2>
+    <p>Para abrir o módulo, três caminhos:</p>
+    <ol>
+      <li><strong>Sidebar</strong> → menu <em>Operacional</em> → <em>Cotações</em></li>
+      <li><strong>Dashboard</strong> → botão <em>BI</em> no topo (para ver os números agregados) ou <em>Cotações</em> na sidebar</li>
+      <li><strong>URL direta</strong>: <code>http://localhost:3000/crm/admin/cotacoes.html</code></li>
+    </ol>
+
+    <div class="shot">
+      <img src="assets/guia-lista.png" alt="Lista de cotações com KPIs e botão Nova Cotação"/>
+      <div class="shot-caption"><strong>Figura 1.</strong> Tela inicial — KPIs no topo, busca/filtro, lista de cotações existentes e botão <em>Nova Cotação</em> no canto superior direito.</div>
+    </div>
+
+    <!-- ═══ 3. CONCEITOS ═══ -->
+    <h2 id="conceitos"><span class="num">3</span>Conceitos fundamentais</h2>
+
+    <h3>3.1 O que é uma cotação</h3>
+    <p>Uma <strong>cotação</strong> é uma proposta comercial que combina 3 elementos:</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Elemento</th><th>O que é</th><th>Exemplo</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Dimensionamento</strong></td><td>Cálculo técnico da carga térmica (BTU) do ambiente</td><td>30.000 BTU para sala comercial 45m²</td></tr>
+          <tr><td><strong>Equipamento</strong></td><td>Aparelho de ar-condicionado que atende a carga</td><td>LG Dual Inverter 30.000 BTU</td></tr>
+          <tr><td><strong>BOM (Bill of Materials)</strong></td><td>Lista de materiais necessários para instalar</td><td>1 condensadora + 10m de tubo + disjuntor + …</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>3.2 Status de uma cotação</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Status</th><th>Quando</th><th>Pode avançar para</th></tr></thead>
+        <tbody>
+          <tr><td><span class="badge-i badge-g">Rascunho</span></td><td>Criada mas ainda não enviada</td><td>Enviada (botão ✓ na lista)</td></tr>
+          <tr><td><span class="badge-i" style="background:var(--blue-dim);color:var(--blue)">Enviada</span></td><td>PDF foi enviado ao cliente</td><td>Aprovada ou Rejeitada</td></tr>
+          <tr><td><span class="badge-i badge-g">Aprovada</span></td><td>Cliente aceitou, instalação agendada</td><td>Convertida (quando vira contrato)</td></tr>
+          <tr><td><span class="badge-i badge-r">Rejeitada</span></td><td>Cliente recusou</td><td>(final)</td></tr>
+          <tr><td><span class="badge-i badge-p">Convertida</span></td><td>Virou contrato recorrente (RMR)</td><td>(final)</td></tr>
+          <tr><td><span class="badge-i badge-o">Vencida</span></td><td>Validade (15 dias padrão) passou sem ação</td><td>(reativável para Enviada)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>3.3 O que é BTU</h3>
+    <p><strong>BTU/h</strong> (British Thermal Unit por hora) é a unidade que mede a capacidade de refrigeração. Quanto mais BTU, mais potente o aparelho. Para referência:</p>
+    <ul>
+      <li>7k BTU → dormitório pequeno (~10m²)</li>
+      <li>12k BTU → quarto (~15m²)</li>
+      <li>18k BTU → sala (~25m²)</li>
+      <li>24k BTU → sala grande ou escritório (~35m²)</li>
+      <li>30k BTU → dois ambientes ou comércio (~45m²)</li>
+      <li>36k BTU+ → industrial, restaurante, salão</li>
+    </ul>
+
+    <div class="callout warn">
+      <div class="callout-icon">⚠</div>
+      <div class="callout-body">
+        <div class="callout-title">Regra prática (mas o sistema é mais preciso)</div>
+        <p>BTU ≈ 600 × m² para residencial. Um erro comum é super-dimensionar (aparelho grande demais = ciclo curto, desumidifica mal e gasta mais energia). A engine aqui usa 8 fatores técnicos, não só área.</p>
+      </div>
+    </div>
+
+    <!-- ═══ 4. WIZARD PASSO A PASSO ═══ -->
+    <h2 id="wizard"><span class="num">4</span>Wizard passo a passo</h2>
+    <p>O fluxo de criação é um wizard de 4 etapas. Cada etapa tem validação; você não consegue avançar com dados incompletos.</p>
+
+    <h3 id="step1">4.1 Etapa 1 — Cliente/Lead</h3>
+    <div class="shot">
+      <img src="assets/guia-wizard-1-cliente.png" alt="Step 1 do wizard: selecionar cliente ou lead"/>
+      <div class="shot-caption"><strong>Figura 2.</strong> Step 1 — vincule um cliente existente, um lead qualificado, ou preencha o contato avulso. <em>Endereço da obra</em> aparece no PDF.</div>
+    </div>
+
+    <h4>Como preencher</h4>
+    <ol class="steps">
+      <li><strong>Selecione um cliente</strong> (se já é cliente Renostter) ou <strong>um lead qualificado</strong> — o sistema preenche contato e e-mail automaticamente.</li>
+      <li>Se não houver, <strong>preencha manualmente</strong>: nome do responsável, e-mail, telefone, endereço completo da obra.</li>
+      <li>Clique <kbd>Próximo →</kbd> para ir à Etapa 2.</li>
+    </ol>
+
+    <div class="callout tip">
+      <div class="callout-icon">💡</div>
+      <div class="callout-body">
+        <div class="callout-title">Dica — vincule sempre um Lead qualificado</div>
+        <p>Quando uma cotação é aprovada a partir de um <em>lead</em>, o sistema automaticamente: (1) muda o status do lead para <code>ganho</code>, (2) cria um cliente com os dados do lead, e (3) vincula a cotação ao novo cliente. Se você criar cotação avulsa, perde esse fluxo automatizado.</p>
+      </div>
+    </div>
+
+    <h3 id="step2">4.2 Etapa 2 — Ambiente (cálculo técnico)</h3>
+    <div class="shot">
+      <img src="assets/guia-wizard-2-ambiente.png" alt="Step 2 do wizard: características do ambiente"/>
+      <div class="shot-caption"><strong>Figura 3.</strong> Step 2 — preencha as características do ambiente. O sistema recalcula BTU automaticamente a cada alteração (debounce 300ms).</div>
+    </div>
+
+    <h4>Campos obrigatórios</h4>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Campo</th><th>Obrigatório</th><th>Exemplo / observações</th></tr></thead>
+        <tbody>
+          <tr><td>Tipo de ambiente</td><td>sim</td><td>residencial / comercial / industrial / servidor / cozinha</td></tr>
+          <tr><td>Área (m²)</td><td>sim</td><td>35 (a área real do cômodo)</td></tr>
+          <tr><td>Pé-direito (m)</td><td>não</td><td>padrão 2.8m. Use 3.0+ para galpões</td></tr>
+          <tr><td>Tipo de uso</td><td>não</td><td>leve (dormitório) / normal (sala) / intensivo (academia)</td></tr>
+          <tr><td>Nº de pessoas</td><td>não</td><td>cada pessoa adiciona ~600 BTU</td></tr>
+          <tr><td>Equipamentos elétricos</td><td>não</td><td>PCs, TVs, geladeiras (cada um ~400 BTU)</td></tr>
+          <tr><td>Janelas</td><td>não</td><td>cada janela grande adiciona ~800 BTU</td></tr>
+          <tr><td>Orientação solar</td><td>não</td><td>sul é melhor (menos sol), oeste é pior</td></tr>
+          <tr><td>Insolação</td><td>não</td><td>fraca / média / forte (variação de 1.0× a 1.20×)</td></tr>
+          <tr><td>Refrigerante</td><td>não</td><td>R-410A (padrão), R-32 (ecológico), R-22 (legado)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 id="step3">4.3 Etapa 3 — Cálculo (preview editável)</h3>
+    <div class="shot">
+      <img src="assets/guia-wizard-3-calculo.png" alt="Step 3 do wizard: resultado do dimensionamento"/>
+      <div class="shot-caption"><strong>Figura 4.</strong> Step 3 — você vê o BTU calculado, BTU recomendado (comercial padronizado), potência em kW e equipamento sugerido do estoque. Pode ajustar margem e custos antes de salvar.</div>
+    </div>
+
+    <h4>O que aparece</h4>
+    <ul>
+      <li><strong>BTU Calculado</strong> — a soma exata dos 8 fatores</li>
+      <li><strong>BTU Recomendado</strong> — arredondado para o próximo BTU comercial padronizado (ex: 26.350 → 30.000)</li>
+      <li><strong>Potência (kW)</strong> — consumo estimado (1 kW = 3.412 BTU/h)</li>
+      <li><strong>Equipamento Sugerido</strong> — o aparelho mais próximo ≥ BTU no estoque (ou fallback se não houver)</li>
+      <li><strong>Breakdown de custo</strong> — equipamento + instalação + mão-de-obra + margem = total</li>
+    </ul>
+
+    <h4>Campos editáveis nesta etapa</h4>
+    <ul>
+      <li><strong>Margem de Lucro (%)</strong> — padrão 30%. Use 20% para concorrências, 40% para clientes premium</li>
+      <li><strong>Custo Instalação (R$)</strong> — padrão R$ 800. Aumenta se a obra for longe ou tiver andaime</li>
+      <li><strong>Custo Equipamento (R$)</strong> — pré-preenchido com o do estoque. Edite se houver negociação com fornecedor</li>
+      <li><strong>Validade (dias)</strong> — padrão 15. Propostas maiores (corporativo) podem usar 30</li>
+    </ul>
+
+    <div class="callout tip">
+      <div class="callout-icon">💡</div>
+      <div class="callout-body">
+        <div class="callout-title">Dica — o cálculo atualiza em tempo real</div>
+        <p>Cada alteração em qualquer campo dispara um <em>autoCalcular</em> (debounce 300ms) que reconsulta a engine. Você vê o impacto imediatamente no breakdown.</p>
+      </div>
+    </div>
+
+    <h3 id="step4">4.4 Etapa 4 — Revisão e salvar</h3>
+    <div class="shot">
+      <img src="assets/guia-wizard-4-revisao.png" alt="Step 4 do wizard: revisão e salvar"/>
+      <div class="shot-caption"><strong>Figura 5.</strong> Step 4 — defina título da cotação, observações internas (não aparece no PDF) e clique <em>Salvar Cotação</em>.</div>
+    </div>
+
+    <h4>Antes de salvar</h4>
+    <ol class="steps">
+      <li>Defina um <strong>título descritivo</strong> (ex: <em>"Proposta Apartamento 35m² - Vila Olímpia"</em>). Aparece no PDF e na lista.</li>
+      <li>Adicione <strong>observações internas</strong> — não vai pro PDF, mas ajuda a equipe a entender o contexto.</li>
+      <li>Revise o <strong>resumo</strong> abaixo (gerado automaticamente).</li>
+      <li>Clique <kbd>💾 Salvar Cotação</kbd> para gravar como <em>rascunho</em>.</li>
+    </ol>
+
+    <h3 id="btu">4.5 Entendendo o cálculo BTU (8 fatores)</h3>
+    <p>A engine usa norma técnica similar à ABNT NBR 16401, com 8 fatores multiplicativos e aditivos:</p>
+
+    <pre><code>BTU = (área_m² × fator_base)
+    × fator_pe_direito
+    × fator_insolação
+    × fator_orientação_solar
+    + (pessoas × 600)
+    + (equipamentos × 400)
+    + (janelas × 800)
+    × fator_uso</code></pre>
+
+    <h4>Tabela de fatores base por tipo de ambiente</h4>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Tipo</th><th>BTU/m² base</th><th>Quando usar</th></tr></thead>
+        <tbody>
+          <tr><td>Residencial</td><td>600</td><td>Casas, apartamentos, dormitórios</td></tr>
+          <tr><td>Comercial</td><td>700</td><td>Lojas, escritórios, consultórios</td></tr>
+          <tr><td>Industrial</td><td>800</td><td>Galpões, fábricas, oficinas</td></tr>
+          <tr><td>Servidor</td><td>1200</td><td>Data centers, CPD, racks</td></tr>
+          <tr><td>Cozinha</td><td>1000</td><td>Cozinha industrial, restaurantes</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>Multiplicadores</h4>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Fator</th><th>Valor</th><th>Quando</th></tr></thead>
+        <tbody>
+          <tr><td>Pé-direito ≤ 2.5m</td><td>1.00</td><td>teto padrão residencial</td></tr>
+          <tr><td>Pé-direito 2.5–3.0m</td><td>1.05</td><td>teto um pouco mais alto</td></tr>
+          <tr><td>Pé-direito 3.0–3.5m</td><td>1.10</td><td>pé-direito alto (salas comerciais)</td></tr>
+          <tr><td>Pé-direito 3.5–4.0m</td><td>1.15</td><td>galpões pequenos</td></tr>
+          <tr><td>Pé-direito &gt; 4.0m</td><td>1.20</td><td>galpões industriais</td></tr>
+          <tr><td>Insolação nenhuma</td><td>1.00</td><td>sem janelas (raro)</td></tr>
+          <tr><td>Insolação fraca</td><td>1.05</td><td>janelas pequenas ou sombreadas</td></tr>
+          <tr><td>Insolação média</td><td>1.10</td><td>sol de meio período</td></tr>
+          <tr><td>Insolação forte</td><td>1.20</td><td>sol direto o dia todo</td></tr>
+          <tr><td>Orientação sul</td><td>1.00</td><td>menos sol (melhor)</td></tr>
+          <tr><td>Orientação leste</td><td>1.05</td><td>sol da manhã</td></tr>
+          <tr><td>Orientação norte</td><td>1.10</td><td>sol constante</td></tr>
+          <tr><td>Orientação oeste</td><td>1.15</td><td>sol da tarde (pior)</td></tr>
+          <tr><td>Uso leve</td><td>0.85</td><td>dormitório, home office</td></tr>
+          <tr><td>Uso normal</td><td>1.00</td><td>sala, loja</td></tr>
+          <tr><td>Uso intensivo</td><td>1.20</td><td>academia, cozinha, salão</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 id="bom">4.6 Entendendo o BOM automático</h3>
+    <p>O <strong>BOM (Bill of Materials)</strong> é a lista de materiais + acessórios necessários para instalar o equipamento. É gerado automaticamente baseado no BTU recomendado.</p>
+
+    <h4>Lógica de seleção (por faixa de BTU)</h4>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Item</th><th>BTU ≤ 18k</th><th>18k &lt; BTU &lt; 30k</th><th>BTU ≥ 30k</th></tr></thead>
+        <tbody>
+          <tr><td>Tubos de cobre</td><td>1/4" + 3/8"</td><td>1/4" + 1/2"</td><td>3/8" + 5/8"</td></tr>
+          <tr><td>Disjuntor</td><td>30A (DS-30A)</td><td>30A (DS-30A)</td><td>50A (DS-50A)</td></tr>
+          <tr><td>Cabo de alimentação</td><td>4mm² 15m (CB-AL-15)</td><td>6mm² 25m (CB-AL-25)</td><td>6mm² 25m (CB-AL-25) + extra</td></tr>
+          <tr><td>Suporte condensadora</td><td>9-24k (SP-1-4)</td><td>9-24k (SP-1-4)</td><td>30-60k (SP-2)</td></tr>
+          <tr><td>Gás refrigerante</td><td>R-410A 2kg (GF-2)</td><td>R-410A 5kg (GF-5)</td><td>R-410A 5kg (GF-5)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>Itens fixos do BOM (independem do BTU)</h4>
+    <ul>
+      <li>Dreno PVC 3m (DR-3M) — para coletor de condensado</li>
+      <li>Isolamento térmico 1/4"+3/8" (IS-CL-1) — para os tubos</li>
+      <li>Fita de aço perfurada 50m (FT-50) — para fixação</li>
+      <li>Conexões + porcas + anilhas (CN-1) — kit, sempre 2 unidades</li>
+    </ul>
+
+    <h4>Exemplo: cotação 30k BTU</h4>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Tipo</th><th>Item</th><th>Qtd</th><th>Unit.</th><th>Total</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>equipamento</td><td>LG Dual Inverter 30.000 BTU</td><td>1</td><td>R$ 7.299,00</td><td>R$ 7.299,00</td></tr>
+          <tr><td>2</td><td>material</td><td>Tubo de Cobre 5/8"</td><td>1</td><td>R$ 780,00</td><td>R$ 780,00</td></tr>
+          <tr><td>3</td><td>material</td><td>Disjuntor 50A</td><td>1</td><td>R$ 110,00</td><td>R$ 110,00</td></tr>
+          <tr><td>4</td><td>material</td><td>Cabo 6mm² 25m (PP)</td><td>1</td><td>R$ 320,00</td><td>R$ 320,00</td></tr>
+          <tr><td>5</td><td>material</td><td>Suporte Reforçado 30-60k</td><td>1</td><td>R$ 320,00</td><td>R$ 320,00</td></tr>
+          <tr><td>6</td><td>material</td><td>Dreno PVC 3m</td><td>1</td><td>R$ 50,00</td><td>R$ 50,00</td></tr>
+          <tr><td>7</td><td>material</td><td>Isolamento Térmico 1/4"+3/8"</td><td>1</td><td>R$ 85,00</td><td>R$ 85,00</td></tr>
+          <tr><td>8</td><td>material</td><td>Fita de Aço 50m</td><td>1</td><td>R$ 65,00</td><td>R$ 65,00</td></tr>
+          <tr><td>9</td><td>material</td><td>Gás R-410A 5kg</td><td>1</td><td>R$ 1.100,00</td><td>R$ 1.100,00</td></tr>
+          <tr><td>10</td><td>material</td><td>Conexões + Porcas</td><td>2</td><td>R$ 85,00</td><td>R$ 170,00</td></tr>
+          <tr><td>11</td><td>material</td><td>Cabo 6mm² 25m extra (>30k)</td><td>1</td><td>R$ 320,00</td><td>R$ 320,00</td></tr>
+          <tr><td colspan="4"><strong>Subtotal Materiais</strong></td><td colspan="2"><strong>R$ 10.619,00</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 id="pdf">4.7 PDF da proposta</h3>
+    <p>Ao salvar, a cotação tem um PDF pronto para enviar. Para gerar:</p>
+    <ol>
+      <li>Na <strong>lista de cotações</strong>, localize a cotação salva</li>
+      <li>Use a <strong>URL da API</strong>: <code>http://localhost:3000/api/cotacoes/&lt;id&gt;/pdf?format=pdf</code></li>
+      <li>O navegador abre o PDF inline (ou faz download se você adicionar <code>&amp;download=1</code>)</li>
+    </ol>
+
+    <div class="shot">
+      <img src="assets/guia-pdf-preview.png" alt="Preview do PDF gerado"/>
+      <div class="shot-caption"><strong>Figura 6.</strong> Preview do PDF da proposta — header com logo Renostter, dados da cotação, dimensionamento técnico, lista de materiais (BOM), breakdown de custo destacado em azul, condições comerciais e bloco de assinaturas.</div>
+    </div>
+
+    <h4>Como o PDF é gerado (por curiosidade)</h4>
+    <p>O backend gera HTML com CSS print-friendly, depois usa <strong>Playwright/Chromium</strong> para renderizar esse HTML como PDF binário (formato A4, margens 15mm, com cores). Se o Chromium falhar, faz fallback para o HTML puro (que pode ser salvo como PDF pelo próprio browser via <kbd>Ctrl</kbd>+<kbd>P</kbd>).</p>
+
+    <div class="callout info">
+      <div class="callout-icon">ℹ️</div>
+      <div class="callout-body">
+        <div class="callout-title">Dois formatos disponíveis</div>
+        <p><code>?format=pdf</code> (default) → PDF binário.<br>
+        <code>?format=html</code> → HTML print-friendly (fallback).</p>
+      </div>
+    </div>
+
+    <!-- ═══ 5. WORKFLOW ═══ -->
+    <h2 id="workflow"><span class="num">5</span>Workflow típico</h2>
+    <p>Da chegada do lead à aprovação da cotação:</p>
+
+    <ol class="steps">
+      <li><strong>Lead chega</strong> (whatsapp, site, indicação) — alguém cria no módulo <em>Leads</em> com pontuação inicial</li>
+      <li><strong>Qualificação</strong> — SDR faz contato, preenche dados, sistema calcula score. Lead com score ≥ 60 vira <em>qualificado</em></li>
+      <li><strong>Vendedor visita cliente</strong> — mede ambiente, anota características (área, pé-direito, janelas, orientação solar)</li>
+      <li><strong>Cria cotação</strong> — abre o wizard, vincula o lead (auto-preenche contato), preenche dados técnicos, revisa cálculo, salva como <em>rascunho</em></li>
+      <li><strong>Envia ao cliente</strong> — baixa o PDF ou usa a URL, manda por e-mail/whatsapp. Marca como <em>enviada</em> na lista (botão ✓)</li>
+      <li><strong>Cliente aprova</strong> — clica no botão <em>aprovar</em> na lista. Se veio de um lead, o sistema cria cliente automaticamente</li>
+      <li><strong>Gera contrato</strong> — botão "Gerar Contrato" cria um contrato recorrente (RMR) que vira cobrança mensal via Cora</li>
+    </ol>
+
+    <div class="callout tip">
+      <div class="callout-icon">🎯</div>
+      <div class="callout-body">
+        <div class="callout-title">Onde o BI mostra o progresso</div>
+        <p>O BI Dashboard (admin/bi.html) tem um card <em>Funil de Vendas</em> com 5 etapas: <strong>Leads Captados → Qualificados → Cotações Criadas → Aprovadas/Convertidas → Pipeline Aprovado</strong>. Acompanhe em tempo real.</p>
+      </div>
+    </div>
+
+    <!-- ═══ 6. BOAS PRÁTICAS ═══ -->
+    <h2 id="praticas"><span class="num">6</span>Boas práticas</h2>
+
+    <h3>✅ Faça</h3>
+    <ul>
+      <li><strong>Sempre vincule a um lead qualificado</strong> — automatiza a conversão para cliente na aprovação</li>
+      <li><strong>Meça a área real do ambiente</strong> — não estime. Use trena. Erro de 5m² = 3.000 BTU de diferença</li>
+      <li><strong>Conte janelas voltadas para o sol</strong> — uma janela grande a oeste vale muito mais que duas voltadas ao sul</li>
+      <li><strong>Use títulos descritivos</strong> — <em>"Proposta Sala 35m² - Vila Olímpia"</em> é melhor que <em>"Cotação 1"</em></li>
+      <li><strong>Revise a margem para cada caso</strong> — 20% em concorrência grande, 35-40% em cliente premium</li>
+      <li><strong>Salve como rascunho primeiro</strong>, envie depois — evita que o cliente receba versão inacabada</li>
+      <li><strong>Mantenha o estoque atualizado</strong> — adicione novos SKUs no inventário para o sistema sugerir corretamente</li>
+    </ul>
+
+    <h3>❌ Evite</h3>
+    <ul>
+      <li><strong>Não super-dimensione</strong> — aparelho grande demais gasta mais energia e desumidifica mal</li>
+      <li><strong>Não envie cotação sem medir a insolação</strong> — é o fator que mais impacta depois da área</li>
+      <li><strong>Não ignore o tipo de uso</strong> — academia precisa de 20% a mais que escritório</li>
+      <li><strong>Não use "Outro" como pretexto</strong> — se o ambiente não se encaixa, escolha o tipo mais próximo e anote na observação</li>
+      <li><strong>Não edite BTU manualmente</strong> — se precisa de mais potência, ajuste os fatores de entrada (área, janelas, etc.)</li>
+    </ul>
+
+    <!-- ═══ 7. TROUBLESHOOTING ═══ -->
+    <h2 id="troubleshooting"><span class="num">7</span>Troubleshooting</h2>
+
+    <h3>Problema: "Selecione um cliente ou lead" mesmo após selecionar</h3>
+    <p><strong>Causa:</strong> O lead não está com status <em>qualificado</em>, <em>proposta</em> ou <em>negociacao</em>. O filtro do select só mostra leads nessas fases.</p>
+    <p><strong>Solução:</strong> Vá em <em>Leads</em> e atualize o status do lead (geralmente: pontuação ≥ 60 → qualificado).</p>
+
+    <h3>Problema: BTU recomendado está muito acima do necessário</h3>
+    <p><strong>Causa:</strong> Algum fator foi inflado (área muito grande, muitas janelas, pé-direito alto).</p>
+    <p><strong>Solução:</strong> Revise os 8 fatores no Step 2. Lembre-se que a engine arredonda para o próximo BTU comercial padronizado — se der 30k, é porque o cálculo ficou entre 25k e 30k.</p>
+
+    <h3>Problema: Equipamento sugerido mostra "Nenhum compatível no estoque"</h3>
+    <p><strong>Causa:</strong> O estoque não tem nenhum equipamento ≥ BTU calculado.</p>
+    <p><strong>Solução:</strong> (1) Adicione o equipamento no módulo <em>Estoque</em> com a potência correta, ou (2) Crie a cotação mesmo assim e edite o equipamento manualmente na etapa de revisão.</p>
+
+    <h3>Problema: PDF demora muito para abrir (>10 segundos)</h3>
+    <p><strong>Causa:</strong> O Chromium do Playwright está cold-start (primeira vez).</p>
+    <p><strong>Solução:</strong> As próximas requisições são rápidas (cache do processo). Se persistir, reinicie o servidor.</p>
+
+    <h3>Problema: BOM aparece vazio na lista de materiais</h3>
+    <p><strong>Causa provável:</strong> Erro ao persistir itens (constraint FK). Veja logs do servidor em <code>cora-api/server-err.log</code>.</p>
+    <p><strong>Solução:</strong> Abra a cotação pelo ID e clique em <em>Regenerar BOM</em> (botão de ação na lista) ou recrie a cotação.</p>
+
+    <h3>Problema: CORS error no browser (Failed to fetch)</h3>
+    <p><strong>Causa:</strong> Sua origem não está no <code>CRM_FRONTEND_URL</code> do <code>.env</code>.</p>
+    <p><strong>Solução:</strong> Adicione a origem (ex: <code>http://localhost:5500</code>) no <code>.env</code> e reinicie o servidor.</p>
+
+    <!-- ═══ 8. FAQ ═══ -->
+    <h2 id="faq"><span class="num">8</span>FAQ</h2>
+
+    <h3>O cálculo de BTU é certificado?</h3>
+    <p>Não é certificação formal, mas usa a mesma lógica de norma técnica da ABNT NBR 16401 com 8 fatores. Para laudo oficial com ART, use o resultado como ponto de partida e faça a visita técnica presencial.</p>
+
+    <h3>Posso criar cotação sem cliente/lead?</h3>
+    <p>Sim — basta preencher os campos de contato manualmente no Step 1. Mas perde a automação de conversão lead→cliente na aprovação.</p>
+
+    <h3>Posso editar uma cotação depois de salvar?</h3>
+    <p>Sim, use <kbd>PUT /api/cotacoes/:id</kbd>. Se você alterar dados técnicos (área, pessoas, etc.), o sistema recalcula BTU automaticamente.</p>
+
+    <h3>E se eu precisar de um equipamento que não está no estoque?</h3>
+    <p>Adicione no módulo <em>Estoque</em> (admin/inventory.html) com SKU, marca, modelo, potência em BTU, refrigerante e preço. O BOM passa a sugerir automaticamente.</p>
+
+    <h3>Como funciona a margem de lucro na conversão lead→cliente?</h3>
+    <p>A margem é só no preço final da proposta — não afeta a criação de cliente. A aprovação da cotação: (1) cria o cliente, (2) marca lead como <code>ganho</code>, (3) deixa a cotação como <code>aprovada</code>. Opcionalmente você pode gerar contrato recorrente depois.</p>
+
+    <h3>Quantas cotações posso criar?</h3>
+    <p>Ilimitado tecnicamente. No SQLite atual (single-file) performance fica lenta acima de ~10k. Para mais, faça a migração para Supabase Postgres.</p>
+
+    <h3>Posso duplicar uma cotação existente?</h3>
+    <p>Não pela UI ainda, mas via API sim: <code>POST /api/cotacoes</code> com os mesmos dados técnicos gera uma nova cotação com novo BOM.</p>
+
+    <h3>Como cancelo uma cotação?</h3>
+    <p>Não tem "cancelar" como status — você pode <em>deletar</em> (DELETE /api/cotacoes/:id) ou marcar como <em>rejeitada</em> (cliente recusou).</p>
+
+    <h3>O PDF inclui o logo da Renostter automaticamente?</h3>
+    <p>Sim — o cabeçalho do PDF tem o logo + nome + tagline "Climatização &amp; Manutenção HVAC". Para trocar o logo, edite a constante <code>logo</code> na função <code>gerarHTMLProposta()</code> em <code>server.js</code>.</p>
+
+    <!-- ═══ 9. API ═══ -->
+    <h2 id="api"><span class="num">9</span>API reference (resumo)</h2>
+    <p>Todos os endpoints abaixo exigem que o servidor esteja rodando (<code>node cora-api/server.js</code>) e que sua origem esteja liberada no CORS.</p>
+
+    <h3>POST /api/cotacoes/calcular</h3>
+    <p>Calcula BTU + custos <em>sem persistir</em>. Use para preview no Step 3 do wizard.</p>
+    <pre><code>POST /api/cotacoes/calcular
+Content-Type: application/json
+
+{
+  <span class="st">"ambiente_tipo"</span>: <span class="st">"comercial"</span>,
+  <span class="st">"area_m2"</span>: <span class="nm">45</span>,
+  <span class="st">"pe_direito_m"</span>: <span class="nm">3.0</span>,
+  <span class="st">"num_pessoas"</span>: <span class="nm">8</span>,
+  <span class="st">"num_equipamentos_eletricos"</span>: <span class="nm">6</span>,
+  <span class="st">"num_janelas"</span>: <span class="nm">3</span>,
+  <span class="st">"orientacao_solar"</span>: <span class="st">"oeste"</span>,
+  <span class="st">"insolacao"</span>: <span class="st">"forte"</span>,
+  <span class="st">"tipo_uso"</span>: <span class="st">"intensivo"</span>,
+  <span class="st">"refrigerante"</span>: <span class="st">"R-32"</span>
+}</code></pre>
+    <p><strong>Resposta 200</strong>: <code>{ success: true, data: { calculo, equipamento, custos } }</code></p>
+
+    <h3>POST /api/cotacoes</h3>
+    <p>Cria cotação + gera BOM automático + persiste tudo.</p>
+    <pre><code>POST /api/cotacoes
+Content-Type: application/json
+
+{
+  <span class="st">"lead_id"</span>: <span class="st">"450a7f8e-..."</span>,       <span class="cm">// opcional, mas recomendado</span>
+  <span class="st">"titulo"</span>: <span class="st">"Proposta Sala 45m²"</span>,
+  <span class="st">"contato_nome"</span>: <span class="st">"Carlos Menezes"</span>,
+  <span class="st">"contato_email"</span>: <span class="st">"carlos@exemplo.com"</span>,
+  <span class="st">"endereco_obra"</span>: <span class="st">"Av. Paulista 1000"</span>,
+  <span class="st">"ambiente_tipo"</span>: <span class="st">"comercial"</span>,
+  <span class="st">"area_m2"</span>: <span class="nm">45</span>,
+  <span class="st">"pe_direito_m"</span>: <span class="nm">3.0</span>,
+  <span class="st">"num_pessoas"</span>: <span class="nm">8</span>,
+  <span class="st">"num_equipamentos_eletricos"</span>: <span class="nm">6</span>,
+  <span class="st">"num_janelas"</span>: <span class="nm">3</span>,
+  <span class="st">"orientacao_solar"</span>: <span class="st">"oeste"</span>,
+  <span class="st">"insolacao"</span>: <span class="st">"forte"</span>,
+  <span class="st">"tipo_uso"</span>: <span class="st">"intensivo"</span>,
+  <span class="st">"refrigerante"</span>: <span class="st">"R-32"</span>,
+  <span class="st">"custo_instalacao"</span>: <span class="nm">1200</span>,
+  <span class="st">"margem_lucro_percent"</span>: <span class="nm">30</span>,
+  <span class="st">"validade_dias"</span>: <span class="nm">15</span>,
+  <span class="st">"status"</span>: <span class="st">"rascunho"</span>
+}</code></pre>
+    <p><strong>Resposta 201</strong>: <code>{ success: true, data: { id, calculo, custos, equipamento_sugerido, bom } }</code></p>
+
+    <h3>GET /api/cotacoes</h3>
+    <p>Lista cotações com filtros opcionais.</p>
+    <pre><code>GET /api/cotacoes?status=aprovada&amp;limite=50
+GET /api/cotacoes?cliente_id=&lt;uuid&gt;
+GET /api/cotacoes?search=apartamento</code></pre>
+
+    <h3>GET /api/cotacoes/:id</h3>
+    <p>Retorna detalhe completo + itens_json parseado + dados do cliente.</p>
+
+    <h3>GET /api/cotacoes/:id/bom</h3>
+    <p>Lista os itens do BOM com totais por categoria.</p>
+
+    <h3>POST /api/cotacoes/:id/bom/regenerar</h3>
+    <p>Apaga e recria o BOM com base no BTU atual. Útil se você editou o equipamento sugerido.</p>
+
+    <h3>GET /api/cotacoes/:id/pdf?format=pdf</h3>
+    <p>Retorna o PDF binário. <code>?format=html</code> retorna HTML.</p>
+
+    <h3>POST /api/cotacoes/:id/aprovar</h3>
+    <p>Muda status para <code>aprovada</code>. Se houver <code>lead_id</code>, cria cliente automaticamente.</p>
+
+    <h3>POST /api/cotacoes/:id/rejeitar</h3>
+    <p>Muda status para <code>rejeitada</code>.</p>
+
+    <h3>POST /api/cotacoes/:id/gerar-contrato</h3>
+    <p>Cria um contrato recorrente (RMR) a partir da cotação aprovada.</p>
+
+    <h3>GET /api/cotacoes/stats?since=30</h3>
+    <p>KPIs agregados (alimenta o BI Dashboard).</p>
+    <pre><code>{
+  <span class="st">"total"</span>: <span class="nm">7</span>,
+  <span class="st">"total_valor"</span>: <span class="nm">92843.85</span>,
+  <span class="st">"valor_aprovadas"</span>: <span class="nm">0</span>,
+  <span class="st">"taxa_conversao"</span>: <span class="nm">0</span>,
+  <span class="st">"ticket_medio_aprovado"</span>: <span class="nm">0</span>,
+  <span class="st">"por_status"</span>: { <span class="st">"rascunho"</span>: <span class="nm">1</span>, <span class="st">"enviada"</span>: <span class="nm">6</span> },
+  <span class="st">"vencidas"</span>: <span class="nm">0</span>
+}</code></pre>
+
+    <!-- ═══ 10. GLOSSÁRIO ═══ -->
+    <h2 id="glossario"><span class="num">10</span>Glossário</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Termo</th><th>Significado</th></tr></thead>
+        <tbody>
+          <tr><td><strong>BTU</strong></td><td>British Thermal Unit. Unidade de capacidade de refrigeração. 1 BTU/h ≈ 0,293 W</td></tr>
+          <tr><td><strong>TR</strong></td><td>Tonelada de Refrigeração. 1 TR = 12.000 BTU/h. Usado em sistemas grandes</td></tr>
+          <tr><td><strong>kW</strong></td><td>Quilowatt. Unidade de potência. 1 kW = 3.412 BTU/h</td></tr>
+          <tr><td><strong>Split</strong></td><td>Tipo de ar-condicionado com unidade interna (evaporadora) + externa (condensadora)</td></tr>
+          <tr><td><strong>Hi-Wall</strong></td><td>Split de parede (mais comum em residencial)</td></tr>
+          <tr><td><strong>Piso-Teto</strong></td><td>Split instalado no chão ou teto (comercial)</td></tr>
+          <tr><td><strong>VRF</strong></td><td>Variable Refrigerant Flow. Sistema multi-split comercial/industrial</td></tr>
+          <tr><td><strong>PMOC</strong></td><td>Plano de Manutenção, Operação e Controle (obrigatório em ar-condicionado)</td></tr>
+          <tr><td><strong>BOM</strong></td><td>Bill of Materials — lista de materiais para fabricar/instalar</td></tr>
+          <tr><td><strong>RMR</strong></td><td>Receita Mensal Recorrente (Monthly Recurring Revenue)</td></tr>
+          <tr><td><strong>CSDAT</strong></td><td>Customer Satisfaction Score (0–10, baseado em feedback pós-atendimento)</td></tr>
+          <tr><td><strong>SDR</strong></td><td>Sales Development Representative — pré-vendas, qualifica leads</td></tr>
+          <tr><td><strong>Lead</strong></td><td>Potencial cliente (ainda não é cliente Renostter)</td></tr>
+          <tr><td><strong>Funil de Vendas</strong></td><td>Jornada: Lead → Qualificado → Cotação → Aprovada → Cliente</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <hr>
+
+    <div class="callout tip">
+      <div class="callout-icon">📚</div>
+      <div class="callout-body">
+        <div class="callout-title">Documentos relacionados</div>
+        <p>• <a href="arquitetura-erp.html" style="color:var(--blue)">Arquitetura do ERP</a> — visão técnica dos módulos<br>
+        • <a href="ANALISE-FLUXO-ERP.md" style="color:var(--blue)">Análise de Fluxo ERP</a> — como Cotação encaixa no fluxo geral<br>
+        • <a href="MIGRACAO-POSTGRES-ROADMAP.md" style="color:var(--blue)">Roadmap Postgres</a> — quando migrar para Supabase</p>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<footer>
+  <div class="row">
+    <div>Renostter Climatização &amp; Manutenção HVAC · contato@renostter.com.br · (11) 9999-9999</div>
+    <div>v1.0 · 21/07/2026 · <a href="arquitetura-erp.html">Arquitetura</a> · <a href="https://github.com">Repositório</a></div>
+  </div>
+</footer>
+
+<script>
+// Smooth scroll + active TOC highlight
+const tocLinks = document.querySelectorAll('.toc a');
+const sections = Array.from(tocLinks).map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    const id = '#' + entry.target.id;
+    const link = document.querySelector(`.toc a[href="${id}"]`);
+    if (link) {
+      if (entry.isIntersecting) {
+        tocLinks.forEach(l => l.classList.remove('active'));
+        link.classList.add('active');
+      }
+    }
+  });
+}, { rootMargin: '-20% 0px -70% 0px' });
+
+sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>

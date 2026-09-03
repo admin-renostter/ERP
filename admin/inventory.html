@@ -1,0 +1,3072 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Estoque — Renostter CRM</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="../css/global.css" />
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <style>
+        .stock-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 10px;
+            border-radius: 50px;
+            font-size: .72rem;
+            font-weight: 700
+        }
+
+        .stock-ok {
+            background: rgba(46, 160, 67, .15);
+            color: #2EA043
+        }
+
+        .stock-warn {
+            background: rgba(210, 153, 34, .15);
+            color: #D29922
+        }
+
+        .stock-crit {
+            background: rgba(218, 54, 51, .15);
+            color: #DA3633
+        }
+
+        .stock-zero {
+            background: rgba(139, 148, 158, .15);
+            color: #8B949E
+        }
+
+        .mv-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .8rem;
+            flex-shrink: 0
+        }
+
+        .mv-entrada {
+            background: rgba(46, 160, 67, .15);
+            color: #2EA043
+        }
+
+        .mv-saida {
+            background: rgba(218, 54, 51, .15);
+            color: #DA3633
+        }
+
+        .mv-ajuste {
+            background: rgba(210, 153, 34, .15);
+            color: #D29922
+        }
+
+        .import-zone {
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: .2s
+        }
+
+        .import-zone:hover,
+        .import-zone.drag {
+            border-color: var(--blue);
+            background: var(--blue-dim)
+        }
+
+        .import-preview {
+            max-height: 260px;
+            overflow-y: auto
+        }
+
+        .map-row {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: .82rem
+        }
+
+        .product-img {
+            width: 56px;
+            height: 56px;
+            border-radius: 8px;
+            object-fit: cover;
+            background: var(--bg-hover);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            overflow: hidden
+        }
+
+        .table-selector {
+            background: var(--bg-hover);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+        }
+
+        /* Enhanced Import UI */
+        .import-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .import-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .import-card-label {
+            font-size: .65rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: .03em;
+        }
+
+        .import-card-value {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        .import-card.primary {
+            border-left: 3px solid var(--blue);
+        }
+
+        .import-card.success {
+            border-left: 3px solid #2EA043;
+        }
+
+        .import-card.warning {
+            border-left: 3px solid #D29922;
+        }
+
+        .import-card.info {
+            border-left: 3px solid var(--blue);
+        }
+
+        .import-card.error {
+            border-left: 3px solid #DA3633;
+        }
+
+        .import-table-v2 {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: .82rem;
+        }
+
+        .import-table-v2 th {
+            background: var(--bg-hover);
+            padding: 10px;
+            text-align: left;
+            border-bottom: 2px solid var(--border);
+            font-weight: 700;
+            color: var(--text-secondary);
+        }
+
+        .import-table-v2 td {
+            padding: 8px 10px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        .import-table-v2 tr:hover {
+            background: rgba(0, 174, 239, 0.03);
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: .65rem;
+            text-transform: uppercase;
+        }
+
+        .status-novo {
+            background: rgba(46, 160, 67, .1);
+            color: #2EA043;
+        }
+
+        .status-atualizar {
+            background: rgba(210, 153, 34, .1);
+            color: #D29922;
+        }
+
+        .status-divergente {
+            background: rgba(246, 133, 27, .1);
+            color: #F6851B;
+        }
+
+        .status-erro {
+            background: rgba(218, 54, 51, .1);
+            color: #DA3633;
+        }
+
+        .import-sku {
+            font-family: var(--font-mono, monospace);
+            font-weight: 600;
+            color: var(--blue);
+        }
+
+        .import-price {
+            font-weight: 700;
+            color: var(--text-primary);
+            text-align: right;
+        }
+
+        .import-qty {
+            text-align: right;
+        }
+
+        .expand-btn {
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: .2s;
+            display: inline-flex;
+        }
+
+        .expand-btn:hover {
+            background: var(--bg-hover);
+        }
+
+        .detail-row {
+            background: var(--bg-alt);
+            display: none;
+        }
+
+        .detail-content {
+            padding: 15px 40px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .raw-data-box {
+            background: #0d1117;
+            color: #c9d1d9;
+            padding: 10px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: .75rem;
+            max-height: 150px;
+            overflow: auto;
+            margin-top: 8px;
+        }
+
+        .cell-editable {
+            cursor: pointer;
+            border-bottom: 1px dashed var(--blue-dim);
+        }
+
+        .cell-editable:hover {
+            background: var(--blue-dim);
+        }
+
+        .import-filters {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: .75rem;
+            cursor: pointer;
+            transition: .2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .filter-btn:hover {
+            background: var(--bg-hover);
+        }
+
+        .filter-btn.active {
+            background: var(--blue);
+            color: white;
+            border-color: var(--blue);
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-layout">
+        <!-- SIDEBAR -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <img src="../assets/logo-crm.png" alt="Renostter CRM" style="max-height:52px;object-fit:contain">
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section-label">Principal</div>
+                <a class="nav-item" href="dashboard.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7" />
+                        <rect x="14" y="3" width="7" height="7" />
+                        <rect x="14" y="14" width="7" height="7" />
+                        <rect x="3" y="14" width="7" height="7" />
+                    </svg><span>Dashboard</span></a>
+                <a class="nav-item" href="clients.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                    </svg><span>Clientes</span></a>
+                <a class="nav-item" href="leads.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.39a2 2 0 0 1 1.98-2.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span>Leads</span></a>
+                <a class="nav-item" href="contracts.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                    </svg><span>Contratos</span></a>
+                <a class="nav-item" href="tickets.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                        <polyline points="22 4 12 14.01 9 11.01" />
+                    </svg><span>Chamados</span><span class="nav-badge notif-badge" style="display:none">0</span></a>
+                <div class="nav-section-label">Almoxarifado</div>
+                <a class="nav-item active" href="inventory.html"><svg width="16" height="16" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2">
+                        <path
+                            d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                    </svg><span>Estoque</span></a>
+                <a class="nav-item" href="suppliers.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <rect x="1" y="3" width="15" height="13" />
+                        <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
+                        <circle cx="5.5" cy="18.5" r="2.5" />
+                        <circle cx="18.5" cy="18.5" r="2.5" />
+                    </svg><span>Fornecedores</span></a>
+                <div class="nav-section-label">Gestão</div>
+                <a class="nav-item" href="projects.html">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path
+                            d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                    </svg>
+                    <span>Dashboard PM</span>
+                </a>
+                <a class="nav-item" href="financeiro.html">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="1" x2="12" y2="23"></line>
+                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                    </svg>
+                    <span>Financeiro</span>
+                </a>
+                <a class="nav-item" href="cobrancas.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg><span>Cobranças</span></a>
+                <a class="nav-item" href="knowledge.html">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                    </svg>
+                    <span>Base de Conhecimento</span>
+                </a>
+                <div class="nav-section-label">Análise</div>
+                <a class="nav-item" href="reports.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="20" x2="18" y2="10" />
+                        <line x1="12" y1="20" x2="12" y2="4" />
+                        <line x1="6" y1="20" x2="6" y2="14" />
+                    </svg><span>Relatórios</span></a>
+                <a class="nav-item" href="users.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                    </svg><span>Usuários</span></a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-card" onclick="auth.logout()">
+                    <div class="user-avatar" id="sidebarAvatar">A</div>
+                    <div class="user-info">
+                        <div class="user-name" id="sidebarName">Admin</div>
+                        <div class="user-role" id="sidebarRole">admin</div>
+                    </div>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN -->
+        <div class="main-content">
+            <div class="topbar">
+                <div class="topbar-left">
+                    <button class="hamburger btn btn-ghost btn-icon" id="hamburger"><svg width="18" height="18"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="3" y1="6" x2="21" y2="6" />
+                            <line x1="3" y1="12" x2="21" y2="12" />
+                            <line x1="3" y1="18" x2="21" y2="18" />
+                        </svg></button>
+                    <span class="page-title">📦 Gestão de Estoque</span>
+                </div>
+                <!-- topbar-right removed as per user request (duplicate buttons) -->
+            </div>
+
+            <div class="page-body">
+                <div class="kpi-grid" id="kpiGrid"></div>
+
+                <div style="margin-bottom: 20px;">
+                    <h2>Gestão de Estoque</h2>
+                    <p style="color:var(--text-secondary);font-size:.85rem;margin-top:2px;margin-bottom:15px">Controle
+                        de materiais e peças de reposição</p>
+
+                    <div style="display:flex;gap:10px" class="admin-only">
+                        <button id="btnImportar" class="btn btn-ghost btn-sm" onclick="handleImportClick()"
+                            style="display:inline-flex;align-items:center;gap:6px"
+                            aria-label="Importar produtos via arquivo">
+                            <span id="importSpinner"
+                                style="display:none;width:14px;height:14px;border:2px solid;border-right-color:transparent;border-radius:50%;animation:spin 1s linear infinite"></span>
+                            <svg id="importIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e83e8c"
+                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                <polyline points="17 8 12 3 7 8" />
+                                <line x1="12" y1="3" x2="12" y2="15" />
+                            </svg>
+                            <span id="importText">Importar</span>
+                        </button>
+                        <button class="btn btn-ghost btn-sm" onclick="downloadTemplate()"
+                            style="display:inline-flex;align-items:center;gap:6px">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f8f9fa"
+                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                <polyline points="14 2 14 8 20 8" />
+                                <line x1="16" y1="13" x2="8" y2="13" />
+                                <line x1="16" y1="17" x2="8" y2="17" />
+                                <polyline points="10 9 9 9 8 9" />
+                            </svg>
+                            Modelo CSV
+                        </button>
+                        <button class="btn btn-primary btn-sm" onclick="openProductModal()"
+                            style="display:inline-flex;align-items:center;gap:6px">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d580ff"
+                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="5" x2="12" y2="19" />
+                                <line x1="5" y1="12" x2="19" y2="12" />
+                            </svg>
+                            Novo Produto
+                        </button>
+                    </div>
+                </div>
+                <!-- Bulk Actions Bar -->
+                <div id="bulkBar" class="bulk-bar">
+                    <div style="display:flex;align-items:center;gap:15px">
+                        <strong id="bulkCount">0 selecionado(s)</strong>
+                        <div style="display:flex;gap:5px">
+                            <button class="btn btn-ghost btn-sm" onclick="bulkExport()">📥 Exportar</button>
+                            <button class="btn btn-ghost btn-sm" onclick="bulkUpdatePrice()">💰 Atualizar
+                                Preços</button>
+                            <button class="btn btn-ghost btn-sm" onclick="bulkChangeStatus()">🔄 Alterar Status</button>
+                        </div>
+                    </div>
+                    <button class="btn btn-ghost btn-sm" onclick="toggleAllRows({checked:false})">Cancelar</button>
+                </div>
+
+                <!-- Filtros Principais -->
+                <div class="filters-bar" style="grid-column:1/-1;display:flex;gap:15px;align-items:center;padding:15px"
+                    id="mainFilters">
+                    <div class="search-box" style="flex:1;min-width:300px">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="11" cy="11" r="8" />
+                            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                        </svg>
+                        <input type="text" id="searchInput" placeholder="Buscar produto por nome, SKU, código."
+                            oninput="debouncedSearch()">
+                    </div>
+                    <select class="filter-select" id="fCat" onchange="applyFiltersAndRender()"
+                        style="width:40px; text-indent:-9999px;"></select>
+                    <select class="filter-select" id="fAlert" onchange="applyFiltersAndRender()"
+                        style="min-width:160px;">
+                        <option value="">Status do Estoque</option>
+                        <option value="critico">🔴 Crítico</option>
+                        <option value="atencao">🟡 Atenção</option>
+                        <option value="ok">🟢 Normal</option>
+                        <option value="zero">⚫ Zerado</option>
+                    </select>
+                    <button class="btn btn-ghost btn-sm" onclick="document.getElementById('advFilters').style.display = 
+                        document.getElementById('advFilters').style.display === 'none' ? 'flex' : 'none'"
+                        style="border:1px solid var(--border);background:none;color:var(--text-primary)">
+                        Filtros Avançados
+                    </button>
+                    <button class="btn btn-ghost btn-sm" title="Baixar listagem atual" onclick="exportVisible()"
+                        style="display:inline-flex;align-items:center;border:1px solid var(--border);background:none;color:var(--text-primary)">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d580ff" stroke-width="2.5"
+                            stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                            <polyline points="7 10 12 15 17 10" />
+                            <line x1="12" y1="15" x2="12" y2="3" />
+                        </svg>
+                        CSV
+                    </button>
+                </div>
+
+                <!-- Filtros Avançados Ocultos -->
+                <div class="filters-bar" id="advFilters"
+                    style="display:none;grid-column:1/-1;gap:15px;padding:15px;background:var(--bg-hover)">
+                    <select class="filter-select" id="fStatus" onchange="applyFiltersAndRender()">
+                        <option value="ATIVO">Apenas Ativos</option>
+                        <option value="INATIVO">Inativos</option>
+                        <option value="DESCONTINUADO">Descontinuados</option>
+                        <option value="EM_REPOSICAO">Em Reposição</option>
+                        <option value="">Todos os status</option>
+                    </select>
+                    <select class="filter-select" id="fSup" onchange="applyFiltersAndRender()"></select>
+                    <div style="display:flex;align-items:center;gap:8px">
+                        <span style="font-size:.8rem;color:var(--text-secondary)">Preço Venda:</span>
+                        <input type="number" id="fMinPrice" placeholder="Min" class="form-input"
+                            style="width:90px;height:32px" onchange="applyFiltersAndRender()">
+                        <span style="color:var(--text-secondary)">-</span>
+                        <input type="number" id="fMaxPrice" placeholder="Max" class="form-input"
+                            style="width:90px;height:32px" onchange="applyFiltersAndRender()">
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width:40px"><input type="checkbox" onclick="toggleAllRows(this)" /></th>
+                                <th onclick="setSort('sku')" style="cursor:pointer">SKU ↕</th>
+                                <th onclick="setSort('name')" style="cursor:pointer">Produto ↕</th>
+                                <th onclick="setSort('categoryId')" style="cursor:pointer">Cat. ↕</th>
+                                <th onclick="setSort('currentStock')" style="cursor:pointer">Saldo ↕</th>
+                                <th>Mín</th>
+                                <th>Status</th>
+                                <th>Localização</th>
+                                <th onclick="setSort('salePrice')" style="cursor:pointer">Preço ↕</th>
+                                <th style="text-align:right" class="action-col">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventoryTable"></tbody>
+                    </table>
+                </div>
+
+                <div id="paginationArea"
+                    style="margin-top:16px;display:flex;justify-content:space-between;align-items:center;padding:0 4px">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Product CRUD -->
+    <div class="modal-overlay" id="modalProduct">
+        <div class="modal">
+            <div class="modal-header">
+                <span class="modal-title" id="productModalTitle">Novo Produto</span>
+                <button class="modal-close" onclick="closeModal('modalProduct')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-tabs">
+                    <div class="modal-tab active" onclick="switchTab('tab-geral', this)">1. Informações Básicas</div>
+                    <div class="modal-tab" onclick="switchTab('tab-precos-estoque', this)">2. Preços e Estoque</div>
+                    <div class="modal-tab" onclick="switchTab('tab-fotos-notas', this)">3. Imagens e Observações</div>
+                </div>
+
+                <!-- Tab: Geral -->
+                <div id="tab-geral" class="tab-content active">
+                    <div class="form-grid">
+                        <div class="form-group"><label class="form-label">SKU <span
+                                    class="form-required">*</span></label><input class="form-input" id="pSku"
+                                placeholder="Ex: EL001" /></div>
+                        <div class="form-group"><label class="form-label">Nome do Produto <span
+                                    class="form-required">*</span></label><input class="form-input" id="pName"
+                                placeholder="Ex: Fusível 10A Automotivo" /></div>
+                        <div class="form-group"><label class="form-label">Categoria</label><select class="form-select"
+                                id="pCategory"></select></div>
+                        <div class="form-group"><label class="form-label">Fornecedor</label><select class="form-select"
+                                id="pSupplier"></select></div>
+                        <div class="form-group">
+                            <label class="form-label">Unidade de Medida</label>
+                            <select class="form-select" id="pUnit">
+                                <option value="UN">UN</option>
+                                <option value="KG">KG</option>
+                                <option value="M">M</option>
+                                <option value="L">L</option>
+                                <option value="CX">CX</option>
+                                <option value="KIT">KIT</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label class="form-label">Localização no Almoxarifado</label><input
+                                class="form-input" id="pLocation" placeholder="Ex: Prateleira A1" /></div>
+                        <div class="form-group"><label class="form-label">Status do Produto</label>
+                            <select class="form-select" id="pStatus">
+                                <option value="ATIVO">Ativo</option>
+                                <option value="INATIVO">Inativo</option>
+                                <option value="EM_REPOSICAO">Em Reposição</option>
+                                <option value="DESCONTINUADO">Descontinuado</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-span-2"><label class="form-label">Descrição /
+                                Aplicação</label><textarea class="form-textarea" id="pDesc" rows="2"
+                                placeholder="Opcional: Detalhes técnicos..."></textarea></div>
+                    </div>
+                </div>
+
+                <!-- Tab: Preços e Estoque -->
+                <div id="tab-precos-estoque" class="tab-content">
+                    <div class="form-grid">
+                        <div class="form-group"><label class="form-label">Preço de Custo (R$)</label><input
+                                class="form-input" type="number" id="pCost" step="0.01" min="0" /></div>
+                        <div class="form-group"><label class="form-label">Preço de Venda (R$) <span
+                                    class="form-required">*</span></label><input class="form-input" type="number"
+                                id="pSale" step="0.01" min="0" /></div>
+                        <div class="form-group"><label class="form-label">Estoque Atual <span
+                                    class="form-required">*</span></label><input class="form-input" type="number"
+                                id="pCurrentStock" min="0" value="0" /></div>
+                        <div class="form-group"><label class="form-label">Estoque Mínimo</label><input
+                                class="form-input" type="number" id="pMinStock" min="0" value="5" /></div>
+                        <div class="form-group" style="display:none"><input type="number" id="pInitStock" value="0" />
+                        </div> <!-- Legacy Compat -->
+                    </div>
+                </div>
+
+                <!-- Tab: Imagens e Observações -->
+                <div id="tab-fotos-notas" class="tab-content">
+                    <div class="form-grid">
+                        <div class="form-group col-span-2">
+                            <label class="form-label">Upload de Imagem Principal</label>
+                            <input type="file" class="form-input" id="pImage" accept="image/*"
+                                onchange="previewImg(this)" />
+                            <div id="imgPreviewContainer" style="margin-top:10px">
+                                <img id="pImagePreview"
+                                    style="max-height:100px;border-radius:6px;display:none;border:1px solid var(--border)" />
+                            </div>
+                        </div>
+                        <div class="form-group col-span-2"><label class="form-label">Observações
+                                Internas</label><textarea class="form-textarea" id="pNotes" rows="4"
+                                placeholder="Opcional: Notas administrativas..."></textarea></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('modalProduct')">Cancelar</button>
+                <button class="btn btn-ghost" id="btnSaveAndContinue" onclick="saveProduct(true)">Salvar e
+                    Continuar</button>
+                <button class="btn btn-primary" onclick="saveProduct(false)">💾 Salvar Produto</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Supplier Correction -->
+    <div class="modal-overlay" id="modalSupCorrection">
+        <div class="modal modal-md">
+            <div class="modal-header"><span class="modal-title">Corrigir Dados do Fornecedor</span><button
+                    class="modal-close" onclick="closeModal('modalSupCorrection')">✕</button></div>
+            <div class="modal-body">
+                <div class="form-grid">
+                    <div class="form-group col-span-2"><label class="form-label">Razão Social</label><input
+                            class="form-input" id="sCorrName" /></div>
+                    <div class="form-group"><label class="form-label">CNPJ</label><input class="form-input"
+                            id="sCorrCnpj" /></div>
+                    <div class="form-group"><label class="form-label">CEP</label><input class="form-input"
+                            id="sCorrCep" /></div>
+                    <div class="form-group col-span-2"><label class="form-label">Logradouro</label><input
+                            class="form-input" id="sCorrAddr" /></div>
+                </div>
+            </div>
+            <div class="modal-footer"><button class="btn btn-primary" onclick="confirmSupCorrection()">Confirmar
+                    Alterações</button></div>
+        </div>
+    </div>
+
+    <!-- MODAL: Stock Entry -->
+    <div class="modal-overlay" id="modalEntry">
+        <div class="modal modal-sm">
+            <div class="modal-header"><span class="modal-title">⬆ï¸ Registrar Entrada</span><button class="modal-close"
+                    onclick="closeModal('modalEntry')">✕</button></div>
+            <div class="modal-body">
+                <p id="entryProductLabel" style="font-size:.84rem;color:var(--text-secondary);margin-bottom:14px"></p>
+                <div class="form-grid">
+                    <div class="form-group"><label class="form-label">Quantidade <span
+                                class="form-required">*</span></label><input class="form-input" type="number"
+                            id="entryQty" min="1" value="1" /></div>
+                    <div class="form-group"><label class="form-label">Valor unitário (R$)</label><input
+                            class="form-input" type="number" id="entryUnitCost" step="0.01" min="0" /></div>
+                    <div class="form-group"><label class="form-label">Fornecedor</label><select class="form-select"
+                            id="entrySupplier"></select></div>
+                    <div class="form-group"><label class="form-label">Nota Fiscal</label><input class="form-input"
+                            id="entryInvoice" placeholder="Ex: NF-12345" /></div>
+                    <div class="form-group col-span-2"><label class="form-label">Observações</label><textarea
+                            class="form-textarea" id="entryNotes" rows="2"></textarea></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('modalEntry')">Cancelar</button>
+                <button class="btn btn-primary" style="background:#2EA043;border-color:#2EA043"
+                    onclick="confirmEntry()">✅ Confirmar Entrada</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Stock Exit -->
+    <div class="modal-overlay" id="modalExit">
+        <div class="modal modal-sm">
+            <div class="modal-header"><span class="modal-title">⬇ï¸ Registrar Saída</span><button class="modal-close"
+                    onclick="closeModal('modalExit')">✕</button></div>
+            <div class="modal-body">
+                <p id="exitProductLabel" style="font-size:.84rem;color:var(--text-secondary);margin-bottom:14px"></p>
+                <div id="exitStockInfo"
+                    style="background:var(--bg-hover);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:.84rem">
+                </div>
+                <div class="form-grid">
+                    <div class="form-group"><label class="form-label">Quantidade <span
+                                class="form-required">*</span></label><input class="form-input" type="number"
+                            id="exitQty" min="1" value="1" /></div>
+                    <div class="form-group"><label class="form-label">Chamado vinculado</label>
+                        <select class="form-select" id="exitTicket">
+                            <option value="">— Nenhum —</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label class="form-label">Técnico responsável</label><select
+                            class="form-select" id="exitTech"></select></div>
+                    <div class="form-group col-span-2"><label class="form-label">Observações / Motivo</label><textarea
+                            class="form-textarea" id="exitNotes" rows="2"></textarea></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('modalExit')">Cancelar</button>
+                <button class="btn btn-primary" style="background:#DA3633;border-color:#DA3633"
+                    onclick="confirmExit()">⬇ï¸ Confirmar Saída</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Adjustment -->
+    <div class="modal-overlay" id="modalAdj">
+        <div class="modal modal-sm">
+            <div class="modal-header"><span class="modal-title">🔧 Ajuste de Inventário</span><button
+                    class="modal-close" onclick="closeModal('modalAdj')">✕</button></div>
+            <div class="modal-body">
+                <p id="adjProductLabel" style="font-size:.84rem;color:var(--text-secondary);margin-bottom:14px"></p>
+                <div class="form-grid">
+                    <div class="form-group"><label class="form-label">Novo saldo real <span
+                                class="form-required">*</span></label><input class="form-input" type="number"
+                            id="adjNewBalance" min="0" /></div>
+                    <div class="form-group"><label class="form-label">Tipo</label>
+                        <select class="form-select" id="adjType">
+                            <option value="ajuste">Ajuste de inventário</option>
+                            <option value="perda">Perda / Quebra</option>
+                            <option value="devolucao">Devolução</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-span-2"><label class="form-label">Justificativa <span
+                                class="form-required">*</span></label><textarea class="form-textarea" id="adjNotes"
+                            rows="3" placeholder="Descreva o motivo do ajuste..."></textarea></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('modalAdj')">Cancelar</button>
+                <button class="btn btn-primary" style="background:#D29922;border-color:#D29922;color:#000"
+                    onclick="confirmAdj()">🔧 Confirmar Ajuste</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Product Detail + History -->
+    <div class="modal-overlay" id="modalDetail">
+        <div class="modal modal-lg">
+            <div class="modal-header">
+                <span class="modal-title" id="detailTitle">Detalhes do Produto</span>
+                <div style="display:flex;gap:8px">
+                    <button class="btn btn-ghost btn-sm" id="detailEntryBtn" onclick="openEntryFromDetail()">⬆ï¸
+                        Entrada</button>
+                    <button class="btn btn-ghost btn-sm" id="detailExitBtn" onclick="openExitFromDetail()">⬇ï¸
+                        Saída</button>
+                    <button class="btn btn-ghost btn-sm" id="detailAdjBtn" onclick="openAdjFromDetail()">🔧
+                        Ajuste</button>
+                    <button class="modal-close" onclick="closeModal('modalDetail')">✕</button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div id="detailInfo"
+                    style="display:grid;grid-template-columns:80px 1fr 1fr;gap:16px;margin-bottom:20px"></div>
+                <div class="card-title"
+                    style="margin-bottom:12px;font-size:.85rem;font-weight:600;color:var(--text-secondary)">HISTÓRICO DE
+                    MOVIMENTAÇÕES</div>
+                <div id="detailHistory"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Import -->
+    <div class="modal-overlay" id="modalImport">
+        <div class="modal modal-lg">
+            <div class="modal-header"><span class="modal-title">⬆ï¸ Importar Produtos</span><button class="modal-close"
+                    onclick="closeModal('modalImport')">✕</button></div>
+            <div class="modal-body">
+                <div class="modal-tabs" id="importTabs" style="margin-bottom:20px">
+                    <div class="modal-tab active" onclick="switchImportTab('tab-import-main', this)">Importar</div>
+                    <div class="modal-tab" onclick="switchImportTab('tab-import-history', this)">Histórico</div>
+                </div>
+
+                <div id="tab-import-main" class="tab-content active">
+                    <div id="importStep1">
+                        <div class="import-zone" id="importZone" onclick="document.getElementById('importFile').click()"
+                            ondragover="event.preventDefault();this.classList.add('drag')"
+                            ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event)">
+                            <div style="font-size:2.5rem;margin-bottom:8px">📂</div>
+                            <div style="font-weight:600;margin-bottom:4px">Arraste um arquivo ou clique para selecionar
+                            </div>
+                            <div style="font-size:.8rem;color:var(--text-secondary)" id="acceptedFormatsLabel">Formatos
+                                aceitos: .xlsx, .xls, .csv, .xml, .html, .htm</div>
+                            <div style="font-size:.75rem;color:var(--text-muted);margin-top:8px">Formatos aceitos: XML,
+                                PDF,
+                                XLSX, CSV, HTML. Tamanho máximo: 20MB.</div>
+                        </div>
+                        <input type="file" id="importFile" style="display:none"
+                            accept=".xlsx,.xls,.csv,.xml,.pdf,.html,.htm" onchange="handleFileSelect(this)" />
+                    </div>
+                    <div id="importProgress"
+                        style="display:none;margin-top:20px;padding:20px;background:var(--bg-hover);border-radius:12px">
+                        <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:8px">
+                            <span id="progressText" style="font-weight:600">Processando arquivo...</span>
+                            <span id="progressPercent">0%</span>
+                        </div>
+                        <div style="height:10px;background:var(--bg-secondary);border-radius:5px;overflow:hidden">
+                            <div id="progressBar"
+                                style="width:0;height:100%;background:var(--blue);transition:width 0.3s">
+                            </div>
+                        </div>
+                    </div>
+                    <div id="tableSelectorArea" style="display:none" class="table-selector">
+                        <p style="font-size:.82rem;margin-bottom:8px">Múltiplas tabelas encontradas. Selecione uma:</p>
+                        <select id="tableIndexSelect" class="form-select" onchange="selectTable(this.value)"></select>
+                    </div>
+                    <div id="importStep2" style="display:none">
+                        <div style="margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">
+                            <b id="importFileName" style="font-size:.9rem"></b>
+                            <button class="btn btn-ghost btn-sm" onclick="resetImport()">🔄 Trocar arquivo</button>
+                        </div>
+
+                        <div id="supDetectedPanel"
+                            style="display:none; padding:15px; background:rgba(46, 160, 67, 0.1); border:1px solid #2EA043; border-radius:8px; margin-bottom:15px;">
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                                <div>
+                                    <span id="supStatusBadge" class="badge badge-green">CADASTRADO ✓</span>
+                                    <h4 id="supExtName" style="margin:5px 0;">Fornecedor XYZ</h4>
+                                    <div id="supExtCnpj" style="font-size:0.8rem; font-family:monospace;">CNPJ:
+                                        00.000.000/0001-00</div>
+                                    <div id="supExtAddr" style="font-size:0.8rem; color:var(--text-secondary);">Endereço
+                                    </div>
+                                </div>
+                                <button class="btn btn-ghost btn-sm" onclick="openModal('modalSupCorrection')">Corrigir
+                                    Dados</button>
+                            </div>
+                            <label
+                                style="display:flex; align-items:center; gap:8px; margin-top:10px; font-size:0.85rem; cursor:pointer;"
+                                class="chkAutoSupLabel">
+                                <input type="checkbox" id="chkAutoSup" disabled>
+                                Criar fornecedor automaticamente no banco de dados local
+                            </label>
+                            <div style="margin-top:10px;">
+                                <label class="form-label" style="font-size:0.8rem;">Ou vincule a um Fornecedor
+                                    Existente:</label>
+                                <select id="importDefSupplier" class="form-control form-control-sm"
+                                    onchange="toggleAutoSup(this.value)"></select>
+                            </div>
+                        </div>
+
+                        <div class="card" style="padding:15px;margin-bottom:15px">
+                            <p style="font-size:.82rem;font-weight:700;margin-bottom:10px;color:var(--text-secondary)">
+                                1.
+                                MAPEAMENTO DE COLUNAS</p>
+                            <div id="importMapping"
+                                style="display:grid;grid-template-columns:1fr 1fr;gap:10px 30px;margin-bottom:10px">
+                            </div>
+                            <div style="text-align:right">
+                                <button class="btn btn-primary btn-sm" onclick="preparePreview()">Próximo: Revisar Dados
+                                    ➔</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="importStep3" style="display:none">
+                        <div style="margin-bottom:15px;display:flex;justify-content:space-between;align-items:center">
+                            <div class="import-filters" id="importStatusFilters">
+                                <button class="filter-btn active" onclick="filterImport('all')">Todos <span
+                                        class="badge" id="cntAll">0</span></button>
+                                <button class="filter-btn" onclick="filterImport('novo')">🆕 Novos <span class="badge"
+                                        id="cntNovo">0</span></button>
+                                <button class="filter-btn" onclick="filterImport('atualizar')">⚠ï¸ Atualizar <span
+                                        class="badge" id="cntAtu">0</span></button>
+                                <button class="filter-btn" onclick="filterImport('divergente')">! Divergentes <span
+                                        class="badge" id="cntDiv">0</span></button>
+                                <button class="filter-btn" onclick="filterImport('erro')">✗ Erros <span class="badge"
+                                        id="cntErr">0</span></button>
+                            </div>
+                            <button class="btn btn-ghost btn-sm btn-icon" onclick="toggleColumnConfig()"
+                                title="Configurar Colunas">⚙ï¸</button>
+                        </div>
+
+                        <div class="import-summary" id="importSummaryPanel">
+                            <div class="import-card primary">
+                                <span class="import-card-label">Total de Registros</span>
+                                <span class="import-card-value" id="sumTotal">0</span>
+                            </div>
+                            <div class="import-card success">
+                                <span class="import-card-label">Valor Total</span>
+                                <span class="import-card-value" id="sumValue">R$ 0,00</span>
+                            </div>
+                            <div class="import-card info">
+                                <span class="import-card-label">Qtd. Total Itens</span>
+                                <span class="import-card-value" id="sumItems">0</span>
+                            </div>
+                        </div>
+
+                        <div class="table-wrapper"
+                            style="max-height:400px;overflow:auto;border:1px solid var(--border);border-radius:8px">
+                            <table class="import-table-v2">
+                                <thead style="position:sticky;top:0;z-index:10">
+                                    <tr>
+                                        <th style="width:30px"></th>
+                                        <th style="width:40px"><input type="checkbox" checked
+                                                onclick="toggleAllImport(this)" /></th>
+                                        <th>SKU</th>
+                                        <th>PRODUTO</th>
+                                        <th style="text-align:right">SALDO</th>
+                                        <th style="text-align:right">PREÇO</th>
+                                        <th>STATUS</th>
+                                        <th style="width:60px"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="importPreviewBody"></tbody>
+                            </table>
+                        </div>
+
+                        <div style="margin-top:15px;display:flex;justify-content:space-between;align-items:center">
+                            <button class="btn btn-ghost btn-sm" onclick="showStep(2)">⬅ Voltar ao mapeamento</button>
+                            <button class="btn btn-primary" onclick="showFinalOptions()">Continuar para Importação
+                                ➔</button>
+                        </div>
+                    </div>
+
+                    <!-- Final Confirmation Step -->
+                    <div id="importStep4" style="display:none">
+                        <div class="card" style="padding:20px;max-width:500px;margin:0 auto">
+                            <h3 style="margin-bottom:15px;display:flex;align-items:center;gap:10px">✅ Confirmar
+                                Importação
+                            </h3>
+                            <div class="form-grid" style="gap:15px">
+                                <div style="display:flex;flex-direction:column;gap:8px">
+                                    <label
+                                        style="display:flex;align-items:center;gap:8px;font-size:.85rem;cursor:pointer">
+                                        <input type="checkbox" id="chkCreateNew" checked /> Criar novos produtos
+                                    </label>
+                                    <label
+                                        style="display:flex;align-items:center;gap:8px;font-size:.85rem;cursor:pointer">
+                                        <input type="checkbox" id="chkUpdateExist" checked /> Atualizar produtos
+                                        existentes
+                                    </label>
+                                    <label
+                                        style="display:flex;align-items:center;gap:8px;font-size:.85rem;cursor:pointer">
+                                        <input type="checkbox" id="chkReplaceAll" /> Substituir dados existentes
+                                        (sobrescrever)
+                                    </label>
+                                    <label
+                                        style="display:flex;align-items:center;gap:8px;font-size:.85rem;cursor:pointer">
+                                        <input type="checkbox" id="chkIgnoreErrors" checked /> Ignorar produtos com erro
+                                    </label>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Regra de Estoque</label>
+                                    <select class="form-select" id="finalImportRule">
+                                        <option value="new">Apenas novos</option>
+                                        <option value="update" selected>Atualizar existentes (preço/desc)</option>
+                                        <option value="sum">Somar quantidades ao estoque</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Vincular Fornecedor (opcional)</label>
+                                    <select class="form-select" id="finalDefSupplier"></select>
+                                </div>
+                            </div>
+                            <div style="margin-top:25px;display:flex;gap:10px">
+                                <button class="btn btn-ghost" style="flex:1" onclick="showStep(3)">Voltar</button>
+                                <button class="btn btn-primary" style="flex:2" onclick="runImportFinal()">✅ FINALIZAR
+                                    IMPORTAÇãO</button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- History Tab Content -->
+            <div id="tab-import-history" class="tab-content" style="display:none">
+                <div class="table-wrapper"
+                    style="max-height:450px;overflow:auto;border:1px solid var(--border);border-radius:8px">
+                    <table class="import-table-v2">
+                        <thead style="position:sticky;top:0;z-index:10">
+                            <tr>
+                                <th>Data</th>
+                                <th>Arquivo</th>
+                                <th>Registros</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="importHistoryBody">
+                            <!-- Filled by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="closeModal('modalImport')">Fechar</button>
+            <button class="btn btn-primary" id="importBtn" style="display:none" onclick="runImport()">📥
+                Importar
+                Produtos</button>
+        </div>
+    </div>
+    </div>
+
+    <!-- MODAL: Manage Categories -->
+    <div class="modal-overlay" id="modalCategories">
+        <div class="modal" style="max-width:500px">
+            <div class="modal-header">
+                <span class="modal-title">Gerenciar Categorias</span>
+                <button class="modal-close" onclick="closeModal('modalCategories')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div style="display:flex;gap:8px;margin-bottom:15px">
+                    <input class="form-input" id="newCatName" placeholder="Nova categoria..." />
+                    <select class="form-select" id="newCatParent" style="width:180px">
+                        <option value="">(Raiz)</option>
+                    </select>
+                    <button class="btn btn-primary" onclick="addCategory()">Add</button>
+                </div>
+                <div id="categoriesList"
+                    style="max-height:400px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;padding:10px;background:var(--bg-inset)">
+                    <!-- Tree view here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('modalCategories')">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastContainer" class="toast-container"></div>
+    <script src="../js/storage.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/approval-banner.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/api.js"></script>
+    <style>
+        /* New styles for tabs and enhanced UI */
+        .modal-tabs {
+            display: flex;
+            gap: 5px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 15px;
+        }
+
+        .modal-tab {
+            padding: 8px 16px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            font-size: .85rem;
+            color: var(--text-secondary);
+            transition: .2s;
+        }
+
+        .modal-tab:hover {
+            color: var(--text-primary);
+        }
+
+        .modal-tab.active {
+            border-color: var(--blue);
+            color: var(--blue);
+            font-weight: 600;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .bulk-bar {
+            display: none;
+            background: var(--bg-hover);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 15px;
+            margin-bottom: 16px;
+            align-items: center;
+            justify-content: space-between;
+            font-size: .85rem;
+            animation: slideDown .3s;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-10px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+    <script>
+        const session = auth.protect(['admin', 'superadmin', 'tecnico']);
+        let currentProductId = null;
+        let importRows = [], importHeaders = [];
+        let importPreviewData = []; // enriched data for the new table
+        let importFilter = 'all';
+
+        // --- AUDIT SEED START ---
+        if (!localStorage.getItem('renostter_inventory') || JSON.parse(localStorage.getItem('renostter_inventory')).length < 5) {
+            const seedCats = [
+                { id: 'c1', name: 'Eletroeletrônicos', level: 1 },
+                { id: 'c2', name: 'Ferramentas', level: 1 },
+                { id: 'c3', name: 'Cabos', level: 1 }
+            ];
+            localStorage.setItem('renostter_inventory_categories', JSON.stringify(seedCats));
+
+            const seedSups = [
+                { id: 's1', name: 'Fornecedor A', status: 'ativo' },
+                { id: 's2', name: 'Fornecedor B', status: 'ativo' }
+            ];
+            localStorage.setItem('renostter_suppliers', JSON.stringify(seedSups));
+
+            const seedProducts = [];
+            for (let i = 1; i <= 25; i++) {
+                seedProducts.push({
+                    id: 'p' + i,
+                    sku: 'SKU' + String(i).padStart(3, '0'),
+                    name: 'Produto de Teste ' + i,
+                    categoryId: i % 2 === 0 ? 'c1' : 'c2',
+                    supplierId: i % 3 === 0 ? 's1' : 's2',
+                    currentStock: i * 2,
+                    minStock: 10,
+                    salePrice: 100 + i,
+                    unit: 'UN',
+                    status: 'ATIVO',
+                    createdAt: new Date().toISOString()
+                });
+            }
+            seedProducts.push({
+                id: 'p_crit',
+                sku: 'CRIT001',
+                name: 'Produto Crítico',
+                categoryId: 'c3',
+                currentStock: 2,
+                minStock: 10,
+                unit: 'UN',
+                status: 'ATIVO',
+                createdAt: new Date().toISOString()
+            });
+            localStorage.setItem('renostter_inventory', JSON.stringify(seedProducts));
+            console.log('AUDIT: Seeded 26 products for testing.');
+        }
+        // --- AUDIT SEED END ---
+
+
+        // State for List Enhancement
+        let currentPage = 1;
+        let itemsPerPage = 20;
+        let sortBy = 'sku';
+        let sortDir = 'asc';
+        let filteredCount = 0;
+
+        let searchTimeout;
+        function debouncedSearch() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                applyFiltersAndRender();
+            }, 300);
+        }
+
+        let CAT_LABELS = {};
+
+        function getCatLabels() {
+            const cats = db.get('inventory_categories');
+            const labels = { others: '📦 Outros' };
+            cats.forEach(c => labels[c.id] = c.name);
+            return labels;
+        }
+
+        function mvIcon(type) {
+            const icons = { entrada: '⬆ï¸', saida: '⬇ï¸', ajuste: '🔧', perda: '⚠ï¸', devolucao: '🔄', audit: '📝' };
+            const cls = { entrada: 'mv-entrada', saida: 'mv-saida', ajuste: 'mv-ajuste', perda: 'mv-ajuste', devolucao: 'mv-ajuste', audit: 'mv-ajuste' };
+            return `<div class="mv-icon ${cls[type] || ''}">${icons[type] || '📦'}</div>`;
+        }
+
+        function logProductHistory(productId, field, oldVal, newVal, note = '') {
+            db.insert('product_history', {
+                productId,
+                action: 'edit',
+                field,
+                oldValue: oldVal,
+                newValue: newVal,
+                note,
+                userId: session.userId,
+                userName: session.name,
+                createdAt: new Date().toISOString()
+            });
+        }
+
+        function stockBadge(p) {
+            if (p.currentStock <= 0) return `<span class="stock-badge stock-zero">⚫ Zerado</span>`;
+            if (p.currentStock <= p.minStock) return `<span class="stock-badge stock-crit">🔴 Crítico</span>`;
+            if (p.currentStock <= p.safetyStock) return `<span class="stock-badge stock-warn">🟡 Atenção</span>`;
+            return `<span class="stock-badge stock-ok">🟢 Normal</span>`;
+        }
+        function stockClass(p) {
+            if (p.currentStock <= 0) return 'zero';
+            if (p.currentStock <= p.minStock) return 'critico';
+            if (p.currentStock <= p.safetyStock) return 'atencao';
+            return 'ok';
+        }
+        function fmtR(v) { return v != null ? 'R$ ' + Number(v).toFixed(2).replace('.', ',') : '—'; }
+        function mvIcon(type) { const m = { entrada: 'mv-entrada', saida: 'mv-saida', ajuste: 'mv-ajuste', perda: 'mv-ajuste', devolucao: 'mv-entrada' }; const ic = { entrada: '⬆', saida: '⬇', ajuste: '🔧', perda: '🗑', devolucao: '↩' }; return `<div class="mv-icon ${m[type] || 'mv-ajuste'}">${ic[type] || '•'}</div>`; }
+
+        function loadKpis() {
+            const items = db.get('inventory').filter(p => p.status === 'ativo');
+            const movs = db.get('stock_movements');
+            const thirtyAgo = new Date(Date.now() - 30 * 24 * 3600_000).toISOString();
+            const mov30 = movs.filter(m => m.createdAt >= thirtyAgo).length;
+            const belowMin = items.filter(p => p.currentStock <= p.minStock).length;
+            // Include stock value for ALL items, not just active ones
+            const allItemsForValue = db.get('inventory');
+            const totalVal = allItemsForValue.reduce((s, p) => s + (p.currentStock * (p.costPrice || 0)), 0);
+            const kpis = [
+                { label: 'Itens Ativos', value: items.length, icon: '📦', cls: 'blue' },
+                { label: 'Abaixo do Mínimo', value: belowMin, icon: '⚠ï¸', cls: 'red', change: '⚠ï¸ Ação necessária' },
+                { label: 'Valor em Estoque', value: 'R$ ' + totalVal.toFixed(2).replace('.', ','), icon: '💰', cls: 'green' },
+                { label: 'Movim. (30 dias)', value: mov30, icon: '📊', cls: 'orange' },
+            ];
+            document.getElementById('kpiGrid').innerHTML = kpis.map(k => `
+    <div class="kpi-card fade-in-up"><div class="kpi-info"><div class="kpi-label">${k.label}</div><div class="kpi-value">${k.value}</div>${k.change ? `<div class="kpi-change">${k.change}</div>` : ''}</div><div class="kpi-icon ${k.cls}" style="font-size:1.3rem">${k.icon}</div></div>`).join('');
+
+            const crit = items.filter(p => p.currentStock <= p.minStock);
+            const bar = document.getElementById('alertBar');
+            if (crit.length) { bar.style.display = ''; bar.innerHTML = `⚠ï¸ <strong>${crit.length} produto(s) abaixo do estoque mínimo:</strong> ${crit.map(p => `${p.name} (saldo: ${p.currentStock})`).join(' · ')}`; }
+            else bar.style.display = 'none';
+        }
+
+        function renderTable() {
+            try {
+                console.log('AUDIT: renderTable called. DB Inventory size:', (db.get('inventory') || []).length);
+                CAT_LABELS = getCatLabels();
+                const q = (document.getElementById('searchInput').value || '').toLowerCase();
+                const cat = document.getElementById('fCat').value;
+                const alert = document.getElementById('fAlert').value;
+                const status = document.getElementById('fStatus').value;
+                const supId = document.getElementById('fSup') ? document.getElementById('fSup').value : '';
+                const minPrice = parseFloat(document.getElementById('fMinPrice')?.value) || 0;
+                const maxPrice = parseFloat(document.getElementById('fMaxPrice')?.value) || Infinity;
+
+                let items = db.get('inventory');
+
+                // Filters
+                if (q) items = items.filter(p =>
+                    p.name.toLowerCase().includes(q) ||
+                    p.sku.toLowerCase().includes(q) ||
+                    (CAT_LABELS[p.categoryId] || '').toLowerCase().includes(q)
+                );
+                if (cat) items = items.filter(p => p.categoryId === cat);
+                if (status) items = items.filter(p => (p.status || 'ATIVO') === status);
+                if (alert) items = items.filter(p => stockClass(p) === alert);
+                if (supId) items = items.filter(p => p.supplierId === supId);
+                if (minPrice > 0 || maxPrice < Infinity) {
+                    items = items.filter(p => (p.salePrice || 0) >= minPrice && (p.salePrice || 0) <= maxPrice);
+                }
+
+                filteredCount = items.length;
+                window.lastFilteredItems = items;
+
+                // Sorting
+                items.sort((a, b) => {
+                    let va = a[sortBy] || '';
+                    let vb = b[sortBy] || '';
+                    if (typeof va === 'string') va = va.toLowerCase();
+                    if (typeof vb === 'string') vb = vb.toLowerCase();
+
+                    if (va < vb) return sortDir === 'asc' ? -1 : 1;
+                    if (va > vb) return sortDir === 'asc' ? 1 : -1;
+                    return 0;
+                });
+
+                // Pagination
+                const totalPages = Math.ceil(items.length / itemsPerPage) || 1;
+                if (currentPage > totalPages) currentPage = totalPages;
+                const start = (currentPage - 1) * itemsPerPage;
+                const paginated = items.slice(start, start + itemsPerPage);
+
+                document.getElementById('inventoryTable').innerHTML = paginated.map(p => `
+    <tr>
+      <td><input type="checkbox" class="row-check" value="${p.id}" onclick="updateBulkBar()" /></td>
+      <td style="font-family:monospace;font-size:.8rem" onclick="viewDetail('${p.id}')" style="cursor:pointer">${esc(p.sku)}</td>
+      <td onclick="viewDetail('${p.id}')" style="cursor:pointer">
+        <div style="font-weight:500">${esc(p.name)}</div>
+        <div style="font-size:.75rem;color:var(--text-secondary)">${p.unit}</div>
+      </td>
+      <td><span class="badge badge-blue" style="font-size:.7rem">${CAT_LABELS[p.categoryId] || p.categoryId || '—'}</span></td>
+      <td><strong style="font-size:1.05rem">${p.currentStock}</strong> <span style="color:var(--text-secondary);font-size:.78rem">${p.unit}</span></td>
+      <td style="color:var(--text-secondary)">${p.minStock}</td>
+      <td>${stockBadge(p)}</td>
+      <td style="font-size:.8rem;color:var(--text-secondary)">${esc(p.location || '—')}</td>
+      <td style="font-size:.82rem">${fmtR(p.salePrice)}</td>
+      <td class="action-col">
+        <div style="display:flex;gap:4px;justify-content:flex-end">
+          <button class="btn btn-ghost btn-icon-sm" onclick="viewDetail('${p.id}')" title="Visualizar">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+          <button class="btn btn-ghost btn-icon-sm admin-only" onclick="openProductModal('${p.id}')" title="Editar">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="btn btn-ghost btn-icon-sm admin-only" style="color:var(--danger)" onclick="confirmDeleteProduct('${p.id}')" title="Excluir">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+          </button>
+          <div style="width:1px;height:16px;background:var(--border);margin:0 4px"></div>
+          <button class="btn btn-ghost btn-icon-sm" style="color:#2EA043" onclick="openEntry('${p.id}')" title="Entrada">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>
+          </button>
+          <button class="btn btn-ghost btn-icon-sm" style="color:#DA3633" onclick="openExit('${p.id}')" title="Saída">
+             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+        </div>
+      </td>
+    </tr>`).join('') || '<tr><td colspan="10" style="text-align:center;padding:30px;color:var(--text-secondary)">Nenhum produto encontrado</td></tr>';
+
+                updatePaginationControls(totalPages);
+
+                // Permissões de UI para Técnicos
+                if (session.role === 'tecnico') {
+                    // Esconde botões de ação e colunas na tabela
+                    document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+                    document.querySelectorAll('.action-col').forEach(el => el.style.display = 'none');
+                    // Desabilita checkboxes de bulk actions
+                    document.querySelectorAll('.row-check').forEach(el => el.disabled = true);
+                    const selectAllChk = document.querySelector('th input[type="checkbox"]');
+                    if (selectAllChk) selectAllChk.disabled = true;
+                    // Hide bulk bar if it's visible
+                    document.getElementById('bulkBar').style.display = 'none';
+                }
+
+            } catch (error) {
+                console.error("Error rendering table:", error);
+                // Optionally display an error message to the user
+                document.getElementById('inventoryTable').innerHTML = '<tr><td colspan="10" style="text-align:center;padding:30px;color:var(--danger)">Erro ao carregar produtos.</td></tr>';
+            }
+        }
+
+        function updatePaginationControls(total) {
+            const area = document.getElementById('paginationArea');
+            if (!area) return;
+            area.innerHTML = `
+                <div style="display:flex;align-items:center;gap:15px;font-size:.85rem;color:var(--text-secondary)">
+                    <span>Exibindo ${Math.min(filteredCount, (currentPage - 1) * itemsPerPage + 1)}-${Math.min(filteredCount, currentPage * itemsPerPage)} de ${filteredCount}</span>
+                    <div style="display:flex;gap:5px">
+                        <button class="btn btn-ghost btn-sm" ${currentPage === 1 ? 'disabled' : ''} onclick="changePage(${currentPage - 1})">Anterior</button>
+                        ${Array.from({ length: Math.min(5, total) }, (_, i) => {
+                let p = i + 1;
+                if (total > 5 && currentPage > 3) p = currentPage - 3 + i + 1;
+                if (p > total) return '';
+                return `<button class="btn btn-sm ${currentPage === p ? 'btn-primary' : 'btn-ghost'}" onclick="changePage(${p})">${p}</button>`;
+            }).join('')}
+                        <button class="btn btn-ghost btn-sm" ${currentPage === total ? 'disabled' : ''} onclick="changePage(${currentPage + 1})">Próximo</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function changePage(p) { currentPage = p; renderTable(); }
+        function setSort(col) {
+            if (sortBy === col) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+            else { sortBy = col; sortDir = 'asc'; }
+            renderTable();
+        }
+        function changeItemsPerPage(val) { itemsPerPage = parseInt(val); currentPage = 1; renderTable(); }
+        function applyFiltersAndRender() { currentPage = 1; renderTable(); }
+
+        function switchTab(tabId, el) {
+            el.closest('.modal-body').querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+            el.closest('.modal-body').querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        function initFilters() {
+            const cats = db.get('inventory_categories');
+            const sups = db.get('suppliers').filter(s => s.status === 'ativo');
+
+            const fCat = document.getElementById('fCat');
+            const catOptions = '<option value="">Todas as categorias</option>' +
+                cats.sort((a, b) => a.level - b.level || a.name.localeCompare(b.name)).map(c =>
+                    `<option value="${c.id}">${c.level > 1 ? '&nbsp;&nbsp;↳ ' : ''}${esc(c.name)}</option>`
+                ).join('');
+            if (fCat) fCat.innerHTML = catOptions;
+
+            const fSup = document.getElementById('fSup');
+            const supOptions = '<option value="">Todos os fornecedores</option>' +
+                sups.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
+            if (fSup) fSup.innerHTML = supOptions;
+
+            // Modal Selects
+            const pCat = document.getElementById('pCategory');
+            if (pCat) pCat.innerHTML = '<option value="">— Selecione —</option>' +
+                cats.map(c => `<option value="${c.id}">${c.level > 1 ? '&nbsp;&nbsp;↳ ' : ''}${esc(c.name)}</option>`).join('');
+
+            const pSup = document.getElementById('pSupplier');
+            if (pSup) pSup.innerHTML = '<option value="">— Selecione —</option>' +
+                sups.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
+
+            // Entry Modal
+            const eSup = document.getElementById('entrySupplier');
+            if (eSup) eSup.innerHTML = '<option value="">— Selecione —</option>' +
+                sups.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
+        }
+
+        function toggleAllRows(chk) {
+            const checks = document.querySelectorAll('.row-check');
+            checks.forEach(c => c.checked = chk.checked);
+            updateBulkBar();
+        }
+
+        function updateBulkBar() {
+            const selected = document.querySelectorAll('.row-check:checked').length;
+            const bar = document.getElementById('bulkBar');
+            if (!bar) return;
+            if (selected > 0 && session.role !== 'tecnico') { // Only show bulk bar for non-technicians
+                bar.style.display = 'flex';
+                document.getElementById('bulkCount').textContent = `${selected} selecionado(s)`;
+            } else {
+                bar.style.display = 'none';
+            }
+        }
+
+        function bulkExport() {
+            const ids = Array.from(document.querySelectorAll('.row-check:checked')).map(c => c.value);
+            const items = ids.map(id => db.find('inventory', id));
+            const csv = 'SKU,Produto,Categoria,Saldo,Preço\n' + items.map(p => `${p.sku},${p.name},${CAT_LABELS[p.categoryId] || p.categoryId},${p.currentStock},${p.salePrice}`).join('\n');
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'estoque_selecionado.csv'; a.click();
+            toast('Exportado', `${items.length} itens exportados.`, 'success');
+        }
+
+        function bulkUpdatePrice() {
+            const ids = Array.from(document.querySelectorAll('.row-check:checked')).map(c => c.value);
+            const pct = prompt('Aumentar preço em quantos %? (ex: 10 para 10%)');
+            if (!pct || isNaN(pct)) return;
+            const factor = 1 + (parseFloat(pct) / 100);
+            ids.forEach(id => {
+                const p = db.find('inventory', id);
+                db.update('inventory', id, { salePrice: (p.salePrice || 0) * factor });
+            });
+            toast('Sucesso', `Preços atualizados para ${ids.length} itens.`, 'success');
+            renderTable();
+        }
+
+        function bulkChangeStatus() {
+            const ids = Array.from(document.querySelectorAll('.row-check:checked')).map(c => c.value);
+            if (!ids.length) { toast('Seleção vazia', 'Selecione produtos para alterar.', 'warning'); return; }
+            const newStatus = prompt('Novo status? (ATIVO, INATIVO, EM_REPOSICAO, DESCONTINUADO)')?.toUpperCase();
+            if (!newStatus || !['ATIVO', 'INATIVO', 'EM_REPOSICAO', 'DESCONTINUADO'].includes(newStatus)) {
+                if (newStatus) toast('Erro', 'Status inválido.', 'error');
+                return;
+            }
+            ids.forEach(id => db.update('inventory', id, { status: newStatus }));
+            toast('Status Atualizado', `${ids.length} produtos alterados.`, 'success');
+            renderTable();
+        }
+
+        // ─── Product CRUD ───
+        async function openProductModal(id = null) {
+            try {
+                console.log('AUDIT: openProductModal called with ID:', id);
+                currentProductId = id;
+                const modal = document.getElementById('modalProduct');
+                if (!modal) { console.error('AUDIT: modalProduct NOT FOUND IN DOM'); return; }
+
+                document.getElementById('productModalTitle').textContent = id ? 'Editar Produto' : 'Novo Produto';
+
+                // Reset tabs
+                modal.querySelectorAll('.modal-tab').forEach((t, i) => t.classList.toggle('active', i === 0));
+                modal.querySelectorAll('.tab-content').forEach((t, i) => t.classList.toggle('active', i === 0));
+
+                // Populate Category & Supplier dropdowns
+                const cats = db.get('inventory_categories') || [];
+                const catSelect = document.getElementById('pCategory');
+                if (catSelect) {
+                    catSelect.innerHTML = '<option value="">— Sem Categoria —</option>' +
+                        cats.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('');
+                }
+
+                const sups = db.get('suppliers') || [];
+                const supSelect = document.getElementById('pSupplier');
+                if (supSelect) {
+                    supSelect.innerHTML = '<option value="">— Sem Fornecedor —</option>' +
+                        sups.filter(s => s.status !== 'inativo').map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
+                }
+
+                if (id) {
+                    const p = db.find('inventory', id);
+                    if (!p) return;
+                    document.getElementById('pSku').value = p.sku || '';
+                    document.getElementById('pName').value = p.name || '';
+                    document.getElementById('pCategory').value = p.categoryId || '';
+                    document.getElementById('pSupplier').value = p.supplierId || '';
+                    if (document.getElementById('pUnit')) document.getElementById('pUnit').value = (p.unit || 'UN').toUpperCase();
+                    if (document.getElementById('pLocation')) document.getElementById('pLocation').value = p.location || '';
+                    if (document.getElementById('pCost')) document.getElementById('pCost').value = p.costPrice || 0;
+                    if (document.getElementById('pSale')) document.getElementById('pSale').value = p.salePrice || 0;
+                    if (document.getElementById('pCurrentStock')) {
+                        document.getElementById('pCurrentStock').value = p.currentStock || 0;
+                        document.getElementById('pCurrentStock').disabled = true;
+                    }
+                    if (document.getElementById('pMinStock')) document.getElementById('pMinStock').value = p.minStock || 5;
+                    const elStatus = document.getElementById('pStatus');
+                    if (elStatus) elStatus.value = p.status || 'ATIVO';
+                    if (document.getElementById('pDesc')) document.getElementById('pDesc').value = p.description || '';
+                    if (document.getElementById('pNotes')) document.getElementById('pNotes').value = p.notes || '';
+
+                    if (document.getElementById('btnSaveAndContinue')) document.getElementById('btnSaveAndContinue').style.display = 'none';
+
+                    const imgPre = document.getElementById('pImagePreview');
+                    if (p.imageBase64) {
+                        imgPre.src = p.imageBase64;
+                        imgPre.style.display = 'block';
+                    } else {
+                        imgPre.style.display = 'none';
+                    }
+                } else {
+                    ['pSku', 'pName', 'pCategory', 'pSupplier', 'pLocation', 'pDesc', 'pNotes'].forEach(f => {
+                        const el = document.getElementById(f);
+                        if (el) el.value = '';
+                    });
+                    if (document.getElementById('pUnit')) document.getElementById('pUnit').value = 'UN';
+                    if (document.getElementById('pCost')) document.getElementById('pCost').value = 0;
+                    if (document.getElementById('pSale')) document.getElementById('pSale').value = 0;
+                    if (document.getElementById('pCurrentStock')) {
+                        document.getElementById('pCurrentStock').value = 0;
+                        document.getElementById('pCurrentStock').disabled = false;
+                    }
+                    if (document.getElementById('pMinStock')) document.getElementById('pMinStock').value = 5;
+                    const elStatus = document.getElementById('pStatus');
+                    if (elStatus) elStatus.value = 'ATIVO';
+                    if (document.getElementById('pImagePreview')) document.getElementById('pImagePreview').style.display = 'none';
+                    if (document.getElementById('pImage')) document.getElementById('pImage').value = '';
+                    if (document.getElementById('btnSaveAndContinue')) document.getElementById('btnSaveAndContinue').style.display = 'inline-block';
+                }
+                openModal('modalProduct');
+            } catch (err) {
+                console.error('Error opening product modal:', err);
+                toast('Erro', 'Falha ao abrir o formulário.', 'error');
+            }
+        }
+
+        function previewImg(inp) {
+            if (!inp.files[0]) return;
+            const reader = new FileReader();
+            reader.onload = e => { const img = document.getElementById('pImagePreview'); img.src = e.target.result; img.style.display = ''; };
+            reader.readAsDataURL(inp.files[0]);
+        }
+
+        async function saveProduct(keepOpen = false) {
+            const sku = document.getElementById('pSku').value.trim();
+            const name = document.getElementById('pName').value.trim();
+            const salePrice = parseFloat(document.getElementById('pSale').value) || 0;
+            const currentStock = parseInt(document.getElementById('pCurrentStock').value) || 0;
+            const minStock = parseInt(document.getElementById('pMinStock').value) || 0;
+
+            if (!sku || !name) { toast('Campos Obrigatórios', 'SKU e Nome são obrigatórios.', 'error'); return; }
+            if (salePrice <= 0) { toast('Preço Obrigatório', 'Informe o preço de venda.', 'warning'); return; }
+
+            // SKU Uniqueness
+            const existing = db.get('inventory').find(it => it.sku.toLowerCase() === sku.toLowerCase() && it.id !== currentProductId);
+            if (existing) { toast('SKU Duplicado', `O código ${sku} já pertence ao produto: ${existing.name}`, 'error'); return; }
+
+            const catId = document.getElementById('pCategory').value;
+            const supId = document.getElementById('pSupplier').value;
+            const sup = supId ? db.find('suppliers', supId) : null;
+            const imgEl = document.getElementById('pImagePreview');
+            const imgB64 = (imgEl.style.display !== 'none' && imgEl.src && imgEl.src.startsWith('data:')) ? imgEl.src : '';
+
+            const data = {
+                sku, name,
+                categoryId: catId || 'others',
+                supplierId: supId || null,
+                supplierName: sup?.name || null,
+                unit: document.getElementById('pUnit').value,
+                costPrice: parseFloat(document.getElementById('pCost').value) || 0,
+                salePrice: salePrice,
+                location: document.getElementById('pLocation').value.trim(),
+                description: document.getElementById('pDesc').value.trim(),
+                minStock,
+                status: document.getElementById('pStatus').value,
+                imageBase64: imgB64,
+                notes: document.getElementById('pNotes').value.trim(),
+                updatedAt: new Date().toISOString()
+            };
+
+            if (currentProductId) {
+                const old = db.find('inventory', currentProductId);
+                const fields = ['name', 'costPrice', 'salePrice', 'minStock', 'categoryId', 'status', 'location']; // Added status back
+                fields.forEach(f => { if (old[f] !== data[f]) logProductHistory(currentProductId, f, old[f], data[f]); });
+                db.update('inventory', currentProductId, data);
+                toast('Produto Atualizado!', name, 'success');
+                logAudit('inventory_product', `Editou produto ${sku}: ${name}`);
+            } else {
+                const p = db.insert('inventory', { ...data, currentStock, status: 'ATIVO', createdAt: new Date().toISOString() });
+                logProductHistory(p.id, 'create', null, null, 'Produto cadastrado via formulário');
+                if (currentStock > 0) {
+                    db.insert('stock_movements', {
+                        productId: p.id, productName: name, productSku: sku, type: 'entrada',
+                        quantity: currentStock, balanceAfter: currentStock,
+                        supplierId: supId || null, supplierName: sup?.name || null,
+                        unitCost: data.costPrice,
+                        technicianId: session.userId, technicianName: session.name,
+                        notes: 'Saldo inicial no cadastro.',
+                        createdAt: new Date().toISOString()
+                    });
+                }
+                toast('Produto cadastrado!', name, 'success');
+                logAudit('inventory_product', `Criou produto ${sku}: ${name}`);
+            }
+
+            if (keepOpen) {
+                ['pSku', 'pName', 'pLocation', 'pDesc', 'pNotes'].forEach(i => document.getElementById(i).value = '');
+                document.getElementById('pCost').value = 0;
+                document.getElementById('pSale').value = 0;
+                document.getElementById('pCurrentStock').value = 0;
+                document.getElementById('pImagePreview').style.display = 'none';
+                document.getElementById('pSku').focus();
+            } else {
+                closeModal('modalProduct');
+            }
+            loadKpis(); renderTable();
+        }
+
+        function hasMovements(id) {
+            const movs = db.get('stock_movements').some(m => m.productId === id);
+            // Check other potential links if they exist
+            const ticketItems = db.get('ticket_items')?.some(ti => ti.productId === id) || false;
+            return movs || ticketItems;
+        }
+
+        function confirmDeleteProduct(id) {
+            const p = db.find('inventory', id);
+            if (!p) return;
+
+            if (hasMovements(id)) {
+                // Soft delete / Inactivation
+                confirmCustom('Inativar Produto', `O produto <b>${esc(p.name)}</b> possui histórico de movimentações e não pode ser excluído permanentemente.<br><br>Deseja alterar seu status para <b>DESCONTINUADO</b>?`, 'Encerrar comercialização', () => {
+                    db.update('inventory', id, { status: 'DESCONTINUADO' });
+                    toast('Produto Inativado', 'Status alterado para Descontinuado.', 'info');
+                    renderTable();
+                });
+            } else {
+                // Hard delete
+                confirmHardDelete(p);
+            }
+        }
+
+        function closeCustomConfirm(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.classList.remove('open');
+                setTimeout(() => el.remove(), 250);
+            }
+        }
+
+        function confirmHardDelete(p) {
+            const id = 'modalHardDelete_' + Date.now();
+            const modalHtml = `
+                <div class="modal-overlay" id="${id}" style="z-index:1001">
+                    <div class="modal modal-sm" style="border:1px solid var(--danger)">
+                        <div class="modal-header">
+                            <span class="modal-title">🗑ï¸ EXCLUIR PRODUTO</span>
+                            <button class="modal-close" onclick="closeCustomConfirm('${id}')">✕</button>
+                        </div>
+                        <div class="modal-body">
+                            <p style="margin-bottom:12px">Produto: <b>${esc(p.name)}</b> (SKU: ${esc(p.sku)})</p>
+                            <div style="background:rgba(218,54,51,0.1);color:#DA3633;padding:12px;border-radius:8px;font-size:.85rem;margin-bottom:15px">
+                                ⚠ï¸ Esta ação é PERMANENTE e não pode ser desfeita. O produto será removido completamente do sistema.
+                            </div>
+                            <label class="form-label">Digite <b>EXCLUIR</b> para confirmar:</label>
+                            <input type="text" class="form-input" id="confirmDeleteCode_${id}" placeholder="EXCLUIR" oninput="validateDeleteBtn(this, '${id}')" />
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-ghost" onclick="closeCustomConfirm('${id}')">Cancelar</button>
+                            <button class="btn btn-danger" id="btnFinalDelete_${id}" disabled onclick="finalDeleteProduct('${p.id}', '${id}')">EXCLUIR DEFINITIVAMENTE</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            setTimeout(() => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('open');
+            }, 10);
+        }
+
+        function validateDeleteBtn(inp, modalId) {
+            const btn = document.getElementById(`btnFinalDelete_${modalId}`);
+            if (btn) {
+                btn.disabled = inp.value.trim().toUpperCase() !== 'EXCLUIR';
+            }
+        }
+
+        function finalDeleteProduct(productId, modalId) {
+            const p = db.find('inventory', productId);
+            if (!p) return;
+            const pJson = JSON.stringify(p);
+            db.delete('inventory', productId);
+            logAudit('inventory_deletion', `EXCLUSãO DEFINITIVA: ${p.sku} - ${p.name}. Dados originais: ${pJson}`);
+            toast('Produto Excluído', 'O registro foi removido permanentemente.', 'success');
+            closeCustomConfirm(modalId);
+            renderTable();
+            loadKpis();
+        }
+
+        // Generic custom confirm for soft actions
+        function confirmCustom(title, text, btnLabel, callback) {
+            const id = 'modalCustomConfirm_' + Date.now();
+            const html = `
+                <div class="modal-overlay" id="${id}" style="z-index:1001">
+                    <div class="modal modal-sm" style="border:1px solid var(--warning)">
+                        <div class="modal-header">
+                            <span class="modal-title">${title}</span>
+                            <button class="modal-close" onclick="closeCustomConfirm('${id}')">✕</button>
+                        </div>
+                        <div class="modal-body"><p>${text}</p></div>
+                        <div class="modal-footer">
+                            <button class="btn btn-ghost" onclick="closeCustomConfirm('${id}')">Cancelar</button>
+                            <button class="btn btn-warning" id="btnCustomConfirm_${id}">
+                                ${btnLabel}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+             `;
+            document.body.insertAdjacentHTML('beforeend', html);
+
+            setTimeout(() => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('open');
+            }, 10);
+
+            document.getElementById(`btnCustomConfirm_${id}`).onclick = () => {
+                closeCustomConfirm(id);
+                if (callback) callback();
+            };
+        }
+
+        // ─── Entry ───
+        let entryProductId = null;
+        function openEntry(id) { entryProductId = id; const p = db.find('inventory', id); if (!p) return; document.getElementById('entryProductLabel').textContent = `${p.sku} — ${p.name} | Saldo atual: ${p.currentStock} ${p.unit}`; document.getElementById('entryQty').value = 1; document.getElementById('entryUnitCost').value = p.costPrice || ''; document.getElementById('entryInvoice').value = ''; document.getElementById('entryNotes').value = ''; const sups = db.get('suppliers').filter(s => s.status === 'ativo'); document.getElementById('entrySupplier').innerHTML = '<option value="">— Selecione —</option>' + sups.map(s => `<option value="${s.id}|${esc(s.name)}"${s.id === p.supplierId ? ' selected' : ''}>${esc(s.name)}</option>`).join(''); openModal('modalEntry'); }
+        function openEntryFromDetail() { closeModal('modalDetail'); openEntry(currentProductId); }
+        function confirmEntry() {
+            const qty = parseInt(document.getElementById('entryQty').value) || 0;
+            if (qty <= 0) { toast('Erro', 'Informe quantidade válida.', 'error'); return; }
+            const p = db.find('inventory', entryProductId); if (!p) return;
+            const newBal = p.currentStock + qty;
+            const supVal = document.getElementById('entrySupplier').value;
+            const [supId, supName] = supVal ? supVal.split('|') : ['', ''];
+            db.update('inventory', entryProductId, { currentStock: newBal });
+            db.insert('stock_movements', { productId: entryProductId, productName: p.name, productSku: p.sku, type: 'entrada', quantity: qty, balanceAfter: newBal, supplierId: supId || null, supplierName: supName || null, invoiceNumber: document.getElementById('entryInvoice').value.trim() || null, unitCost: parseFloat(document.getElementById('entryUnitCost').value) || p.costPrice, ticketId: null, ticketNum: null, technicianId: session.userId, technicianName: session.name, notes: document.getElementById('entryNotes').value.trim(), createdBy: session.userId, createdByName: session.name });
+            logAudit('stock_entry', `Entrada de ${qty} un. ${p.sku} — ${p.name}. Novo saldo: ${newBal}`);
+            toast('Entrada registrada!', `+${qty} ${p.unit}. Saldo: ${newBal}`, 'success');
+            closeModal('modalEntry'); loadKpis(); renderTable();
+        }
+
+        // ─── Exit ───
+        let exitProductId = null;
+        function openExit(id) { exitProductId = id; const p = db.find('inventory', id); if (!p) return; document.getElementById('exitProductLabel').textContent = `${p.sku} — ${p.name}`; document.getElementById('exitStockInfo').innerHTML = `Saldo atual: <strong style="font-size:1.1rem">${p.currentStock}</strong> ${p.unit} &nbsp;|&nbsp; Mínimo: ${p.minStock} ${p.unit} &nbsp;|&nbsp; ${stockBadge(p)}`; document.getElementById('exitQty').value = 1; document.getElementById('exitNotes').value = ''; const techs = db.get('users').filter(u => ['tecnico', 'admin', 'superadmin'].includes(u.role) && !u.deactivated); document.getElementById('exitTech').innerHTML = techs.map(u => `<option value="${u.id}|${esc(u.name)}"${u.id === session.userId ? ' selected' : ''}>${esc(u.name)}</option>`).join(''); const openTkts = db.get('tickets').filter(t => !['fechado', 'cancelado'].includes(t.status)); document.getElementById('exitTicket').innerHTML = '<option value="">— Nenhum —</option>' + openTkts.map(t => `<option value="${t.id}|${esc(t.num)}">${esc(t.num)} — ${esc(t.title.slice(0, 40))}</option>`).join(''); openModal('modalExit'); }
+        function openExitFromDetail() { closeModal('modalDetail'); openExit(currentProductId); }
+        function confirmExit() {
+            const qty = parseInt(document.getElementById('exitQty').value) || 0;
+            if (qty <= 0) { toast('Erro', 'Informe quantidade válida.', 'error'); return; }
+            const p = db.find('inventory', exitProductId); if (!p) return;
+            if (qty > p.currentStock) { toast('Saldo insuficiente', `Saldo disponível: ${p.currentStock} ${p.unit}`, 'error'); return; }
+            const newBal = p.currentStock - qty;
+            const techVal = document.getElementById('exitTech').value; const [tId, tName] = techVal ? techVal.split('|') : [session.userId, session.name];
+            const tickVal = document.getElementById('exitTicket').value; const [tkId, tkNum] = tickVal ? tickVal.split('|') : [null, null];
+            db.update('inventory', exitProductId, { currentStock: newBal });
+            db.insert('stock_movements', { productId: exitProductId, productName: p.name, productSku: p.sku, type: 'saida', quantity: -qty, balanceAfter: newBal, supplierId: null, supplierName: null, invoiceNumber: null, unitCost: p.costPrice, ticketId: tkId || null, ticketNum: tkNum || null, technicianId: tId, technicianName: tName, notes: document.getElementById('exitNotes').value.trim(), createdBy: session.userId, createdByName: session.name });
+            logAudit('stock_exit', `Saída de ${qty} un. ${p.sku} — ${p.name}. Chamado: ${tkNum || 'N/A'}. Saldo: ${newBal}`);
+            if (newBal <= p.minStock && p.currentStock > p.minStock) {
+                // Notifica caso o saldo cruze o limite mínimo
+                const nts = db.get('notifications') || [];
+                nts.push({
+                    id: Date.now().toString(),
+                    title: 'Estoque Mínimo Atingido',
+                    message: `O produto ${p.sku} (${p.name}) atingiu o saldo de ${newBal} ${p.unit}.`,
+                    type: 'warning',
+                    read: false,
+                    targetRole: ['admin', 'superadmin'],
+                    createdAt: new Date().toISOString()
+                });
+                db.set('notifications', nts);
+            }
+            toast('Saída registrada!', `-${qty} ${p.unit}. Saldo: ${newBal}`, 'success');
+            closeModal('modalExit'); loadKpis(); renderTable();
+        }
+
+        // ─── Adjustment ───
+        let adjProductId = null;
+        function openAdj(id) { adjProductId = id; const p = db.find('inventory', id); if (!p) return; document.getElementById('adjProductLabel').textContent = `${p.sku} — ${p.name} | Saldo atual: ${p.currentStock} ${p.unit}`; document.getElementById('adjNewBalance').value = p.currentStock; document.getElementById('adjNotes').value = ''; openModal('modalAdj'); }
+        function openAdjFromDetail() { closeModal('modalDetail'); openAdj(currentProductId); }
+        function confirmAdj() {
+            const newBal = parseInt(document.getElementById('adjNewBalance').value);
+            const notes = document.getElementById('adjNotes').value.trim();
+            if (isNaN(newBal) || newBal < 0) { toast('Erro', 'Informe o novo saldo.', 'error'); return; }
+            if (!notes) { toast('Justificativa obrigatória', 'Descreva o motivo do ajuste.', 'error'); return; }
+            const p = db.find('inventory', adjProductId); if (!p) return;
+            const diff = newBal - p.currentStock;
+            const type = document.getElementById('adjType').value;
+            db.update('inventory', adjProductId, { currentStock: newBal });
+            db.insert('stock_movements', { productId: adjProductId, productName: p.name, productSku: p.sku, type, quantity: diff, balanceAfter: newBal, supplierId: null, supplierName: null, invoiceNumber: null, unitCost: p.costPrice, ticketId: null, ticketNum: null, technicianId: session.userId, technicianName: session.name, notes, createdBy: session.userId, createdByName: session.name });
+            logAudit('stock_adjustment', `Ajuste ${p.sku}: ${p.currentStock} → ${newBal}. Motivo: ${notes}`);
+            logAudit('stock_adjustment', `Ajuste ${p.sku}: ${p.currentStock} → ${newBal}. Motivo: ${notes}`);
+            if (newBal <= p.minStock && p.currentStock > p.minStock) {
+                // Notifica caso o saldo cruze o limite mínimo
+                const nts = db.get('notifications') || [];
+                nts.push({
+                    id: Date.now().toString(),
+                    title: 'Estoque Mínimo Atingido',
+                    message: `O produto ${p.sku} (${p.name}) atingiu o saldo de ${newBal} ${p.unit} após ajuste manual.`,
+                    type: 'warning',
+                    read: false,
+                    targetRole: ['admin', 'superadmin'],
+                    createdAt: new Date().toISOString()
+                });
+                db.set('notifications', nts);
+            }
+            toast('Ajuste registrado!', `Novo saldo: ${newBal} ${p.unit}`, 'success');
+            closeModal('modalAdj'); loadKpis(); renderTable();
+        }
+
+        // ─── Detail ───
+        function viewDetail(id) {
+            currentProductId = id;
+            const p = db.find('inventory', id); if (!p) return;
+            document.getElementById('detailTitle').textContent = `${p.sku} — ${p.name}`;
+
+            const catName = CAT_LABELS[p.categoryId] || CAT_LABELS[p.category] || '—';
+
+            document.getElementById('detailInfo').innerHTML = `
+                <div class="product-img">${p.imageBase64 ? `<img src="${p.imageBase64}" style="width:100%;height:100%;object-fit:cover">` : '📦'}</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;width:100%">
+                    <div>
+                        <div class="meta-item"><span class="meta-label">Categoria</span><span>${catName}</span></div>
+                        <div class="meta-item"><span class="meta-label">Fornecedor</span><span>${esc(p.supplierName || '—')}</span></div>
+                        <div class="meta-item"><span class="meta-label">Localização</span><span>${esc(p.location || '—')}</span></div>
+                        <div class="meta-item"><span class="meta-label">Status</span><span class="badge ${p.status === 'ATIVO' ? 'badge-success' : 'badge-danger'}">${p.status || 'ATIVO'}</span></div>
+                    </div>
+                    <div>
+                        <div class="meta-item"><span class="meta-label">Saldo Atual</span><strong style="font-size:1.2rem;color:${p.currentStock <= p.minStock ? '#DA3633' : 'inherit'}">${p.currentStock} ${p.unit}</strong></div>
+                        <div class="meta-item"><span class="meta-label">Preço Venda</span><strong style="color:var(--blue)">${fmtR(p.salePrice)}</strong></div>
+                        <div class="meta-item"><span class="meta-label">Mínimo / Segurança</span><span>${p.minStock} / ${p.safetyStock || 0}</span></div>
+                        <div class="meta-item" title="NCM: ${p.ncm || '—'} | EAN: ${p.ean || '—'}"><span class="meta-label">Dados Fiscais</span><span>NCM: ${p.ncm || '—'}</span></div>
+                    </div>
+                </div>
+            `;
+
+            const movs = db.get('stock_movements').filter(m => m.productId === id);
+            const audit = db.get('product_history').filter(a => a.productId === id);
+
+            const combined = [
+                ...movs.map(m => ({ ...m, kind: 'mov' })),
+                ...audit.map(a => ({ ...a, kind: 'audit' }))
+            ].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+
+            document.getElementById('detailHistory').innerHTML = combined.length ? `
+                <div class="activity-timeline" style="margin-top:10px">
+                    ${combined.map(item => {
+                if (item.kind === 'mov') {
+                    return `
+                            <div class="activity-item">
+                                ${mvIcon(item.type)}
+                                <div class="act-body">
+                                    <div class="act-title">
+                                        <span style="font-weight:700;color:${item.type === 'entrada' ? '#2EA043' : (item.type === 'saida' ? '#DA3633' : '#D29922')}">
+                                            ${item.type === 'entrada' ? '+' : (item.type === 'saida' ? '-' : '')}${Math.abs(item.quantity)} ${p.unit}
+                                        </span> 
+                                        — <b>${item.type.toUpperCase()}</b>
+                                        ${item.ticketNum ? ` <span class="badge badge-blue">Chamado ${esc(item.ticketNum)}</span>` : ''}
+                                    </div>
+                                    <div class="act-meta">
+                                        Saldo: ${item.balanceAfter} · ${esc(item.technicianName || item.createdByName || '—')}
+                                        ${item.notes ? ` · <span style="font-style:italic">"${esc(item.notes)}"</span>` : ''}
+                                        <div style="font-size:.7rem;margin-top:2px;color:var(--text-muted)">${new Date(item.createdAt).toLocaleString()} (${fmt.relative(item.createdAt)})</div>
+                                    </div>
+                                </div>
+                            </div>`;
+                } else {
+                    let text = `<b>Alterou ${esc(item.field || 'campo')}</b>: <span>${esc(item.oldValue || '—')}</span> ➡ <span>${esc(item.newValue || '—')}</span>`;
+                    if (item.field === 'create') text = `<b>Produto cadastrado no sistema</b>`;
+                    if (item.note) text += ` · ${esc(item.note)}`;
+
+                    return `
+                            <div class="activity-item">
+                                ${mvIcon('audit')}
+                                <div class="act-body">
+                                    <div class="act-title">${text}</div>
+                                    <div class="act-meta">
+                                        ${esc(item.userName || '—')}
+                                        <div style="font-size:.7rem;margin-top:2px;color:var(--text-muted)">${new Date(item.createdAt).toLocaleString()} (${fmt.relative(item.createdAt)})</div>
+                                    </div>
+                                </div>
+                            </div>`;
+                }
+            }).join('')}
+                </div>` : '<p style="color:var(--text-secondary);font-size:.85rem;padding:20px 0;text-align:center">Nenhuma movimentação registrada</p>';
+
+            openModal('modalDetail');
+        }
+
+        // ─── Import ───
+        let extractedSup = { cnpj: '', name: '', logradouro: '', numero: '', bairro: '', cidade: '', uf: '', cep: '' };
+
+        function extractSupplierFromXml(doc) {
+            const emit = doc.querySelector('emit');
+            if (!emit) return null;
+
+            const data = {
+                cnpj: (emit.querySelector('CNPJ')?.textContent || emit.querySelector('CPF')?.textContent || '').replace(/\D/g, ''),
+                name: (emit.querySelector('xNome')?.textContent || emit.querySelector('xFant')?.textContent || '').trim(),
+                logradouro: (emit.querySelector('enderEmit xLgr')?.textContent || '').trim(),
+                numero: (emit.querySelector('enderEmit nro')?.textContent || 'S/N').trim(),
+                bairro: (emit.querySelector('enderEmit xBairro')?.textContent || '').trim(),
+                cidade: (emit.querySelector('enderEmit xMun')?.textContent || '').trim(),
+                uf: (emit.querySelector('enderEmit UF')?.textContent || 'SP').trim(),
+                cep: (emit.querySelector('enderEmit CEP')?.textContent || '').replace(/\D/g, '')
+            };
+            return data.cnpj || data.name ? data : null;
+        }
+
+        function extractSupplierFromPdf(lines) {
+            // Regex for CNPJ (XX.XXX.XXX/XXXX-XX or digits)
+            const cnpjRegex = /(\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2})|(\d{14})/;
+            let foundCnpj = '';
+
+            // Search in first 20 lines (header)
+            for (let i = 0; i < Math.min(20, lines.length); i++) {
+                const match = lines[i].match(cnpjRegex);
+                if (match) {
+                    foundCnpj = match[0].replace(/\D/g, '');
+                    break;
+                }
+            }
+
+            if (!foundCnpj) return null;
+
+            // For PDF, we'll mostly rely on CNPJ and then use BrasilAPI enrichment
+            return { cnpj: foundCnpj, name: 'FORNECEDOR EXTRAÍDO (PDF)', logradouro: '', numero: '', bairro: '', cidade: '', uf: 'SP', cep: '' };
+        }
+
+        async function updateSupPanel(data) {
+            extractedSup = data || { cnpj: '', name: '', logradouro: '', numero: '', bairro: '', cidade: '', uf: '', cep: '' };
+            if (!data) {
+                document.getElementById('supDetectedPanel').style.display = 'none';
+                return;
+            }
+
+            // NEW: BrasilAPI Enrichment if name is placeholder or missing
+            if (extractedSup.cnpj && (!extractedSup.name || extractedSup.name === 'FORNECEDOR EXTRAÍDO (PDF)')) {
+                toast('Enriquecendo...', 'Buscando dados do fornecedor via BrasilAPI', 'info');
+                const enriched = await api.getCNPJ(extractedSup.cnpj);
+                if (enriched) {
+                    extractedSup.name = enriched.razao_social || enriched.nome_fantasia || extractedSup.name;
+                    extractedSup.logradouro = enriched.logradouro || extractedSup.logradouro;
+                    extractedSup.numero = enriched.numero || extractedSup.numero;
+                    extractedSup.bairro = enriched.bairro || extractedSup.bairro;
+                    extractedSup.cidade = enriched.municipio || extractedSup.cidade;
+                    extractedSup.uf = enriched.uf || extractedSup.uf;
+                    extractedSup.cep = enriched.cep || extractedSup.cep;
+                }
+            }
+
+            document.getElementById('supDetectedPanel').style.display = '';
+            document.getElementById('supExtName').textContent = data.name || 'Nome não identificado';
+            document.getElementById('supExtCnpj').textContent = 'CNPJ: ' + (fmt.cnpj(data.cnpj) || 'Não identificado');
+            document.getElementById('supExtAddr').textContent = `${data.logradouro || ''}, ${data.numero || ''} - ${data.cidade || ''}/${data.uf || ''}`;
+
+            // Search in DB
+            const existing = db.get('suppliers').find(s => s.cnpj.replace(/\D/g, '') === data.cnpj);
+            const badge = document.getElementById('supStatusBadge');
+
+            if (existing) {
+                badge.textContent = 'CADASTRADO ✓';
+                badge.className = 'badge badge-green';
+                document.getElementById('importDefSupplier').value = existing.id;
+                document.getElementById('chkAutoSup').checked = false;
+            } else {
+                badge.textContent = 'NOVO FORNECEDOR';
+                badge.className = 'badge badge-blue';
+                document.getElementById('importDefSupplier').value = '';
+                document.getElementById('chkAutoSup').checked = true;
+            }
+
+            // Fill correction modal
+            document.getElementById('sCorrName').value = data.name;
+            document.getElementById('sCorrCnpj').value = data.cnpj;
+            document.getElementById('sCorrCep').value = data.cep;
+            document.getElementById('sCorrAddr').value = data.logradouro;
+        }
+
+        function confirmSupCorrection() {
+            extractedSup.name = document.getElementById('sCorrName').value.trim();
+            extractedSup.cnpj = document.getElementById('sCorrCnpj').value.replace(/\D/g, '');
+            extractedSup.cep = document.getElementById('sCorrCep').value.replace(/\D/g, '');
+            extractedSup.logradouro = document.getElementById('sCorrAddr').value.trim();
+            updateSupPanel(extractedSup);
+            closeModal('modalSupCorrection');
+            toast('Sucesso', 'Dados do fornecedor atualizados para o fluxo local.', 'success');
+        }
+
+        function toggleAutoSup(val) {
+            if (val) {
+                document.getElementById('chkAutoSup').checked = false;
+            }
+        }
+
+        async function handleImportClick() {
+            const btn = document.getElementById('btnImportar');
+            const spinner = document.getElementById('importSpinner');
+            const icon = document.getElementById('importIcon');
+            const text = document.getElementById('importText');
+
+            btn.disabled = true;
+            spinner.style.display = 'inline-block';
+            icon.style.display = 'none';
+            text.textContent = 'Carregando...';
+
+            try {
+                // Pequeno delay para exibir o feedback visual e aliviar a thread principal
+                await new Promise(r => setTimeout(r, 300));
+
+                openImport();
+                logAudit('importacao_iniciada', 'Usuário clicou no botão para iniciar fluxo de importação');
+            } catch (error) {
+                toast('Erro', 'Não foi possível carregar o módulo de importação.', 'error');
+                console.error(error);
+            } finally {
+                btn.disabled = false;
+                spinner.style.display = 'none';
+                icon.style.display = 'inline-block';
+                text.textContent = 'Importar';
+            }
+        }
+
+        function openImport() {
+            resetImport();
+            const sups = db.get('suppliers').filter(s => s.status === 'ativo');
+            const supHtml = '<option value="">— Selecione —</option>' + sups.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
+            document.getElementById('importDefSupplier').innerHTML = supHtml;
+            document.getElementById('finalDefSupplier').innerHTML = supHtml;
+            openModal('modalImport');
+        }
+        function resetImport() {
+            importRows = [];
+            importHeaders = [];
+            importPreviewData = [];
+            htmlTables = [];
+            showStep(1);
+            switchImportTab('tab-import-main', document.querySelector('#importTabs .modal-tab:first-child'));
+            document.getElementById('importProgress').style.display = 'none';
+            document.getElementById('progressBar').style.width = '0%';
+            document.getElementById('progressPercent').textContent = '0%';
+            document.getElementById('tableSelectorArea').style.display = 'none';
+            if (document.getElementById('supDetectedPanel')) document.getElementById('supDetectedPanel').style.display = 'none';
+            extractedSup = { cnpj: '', name: '', logradouro: '', numero: '', bairro: '', cidade: '', uf: '', cep: '' };
+            document.getElementById('importBtn').style.display = 'none';
+            document.getElementById('importFile').value = '';
+        }
+
+        function switchImportTab(tabId, el) {
+            // UI Update
+            const container = el.parentElement;
+            container.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+
+            // Logic
+            document.getElementById('tab-import-main').style.display = tabId === 'tab-import-main' ? '' : 'none';
+            document.getElementById('tab-import-history').style.display = tabId === 'tab-import-history' ? '' : 'none';
+
+            if (tabId === 'tab-import-history') {
+                renderImportHistory();
+            }
+        }
+
+        function renderImportHistory() {
+            const history = db.get('import_history') || [];
+            const tbody = document.getElementById('importHistoryBody');
+
+            if (!history.length) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text-secondary)">Nenhum histórico de importação encontrado.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = history.sort((a, b) => new Date(b.date) - new Date(a.date)).map(h => `
+                    <tr>
+                        <td>${fmt.date(h.date)} <br> <small style="color:var(--text-secondary)">${new Date(h.date).toLocaleTimeString()}</small></td>
+                        <td style="font-weight:600">${esc(h.filename)}</td>
+                        <td>
+                            <div style="font-size:.7rem">
+                                Total: ${h.counts.all} | Sucesso: ${h.counts.novo + h.counts.atualizar} <br>
+                                Erros: <span style="color:${h.counts.erro > 0 ? '#DA3633' : 'inherit'}">${h.counts.erro}</span>
+                            </div>
+                        </td>
+                        <td><span class="status-pill status-${h.status === 'erro' ? 'erro' : 'novo'}">${h.status.toUpperCase()}</span></td>
+                        <td>
+                            <button class="btn btn-ghost btn-sm" onclick="downloadImportLog(${h.id})" title="Baixar Log de Erros" ${!h.errorLog || !h.errorLog.length ? 'disabled' : ''}>📄</button>
+                        </td>
+                    </tr>
+                `).join('');
+        }
+
+        function downloadImportLog(id) {
+            const history = db.get('import_history') || [];
+            const h = history.find(x => x.id === id);
+            if (!h || !h.errorLog) return;
+
+            const csvContent = "data:text/csv;charset=utf-8,Registro,Erro\n" + h.errorLog.map(e => `"${e.sku || 'N/A'}","${e.error}"`).join("\n");
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `log_erro_import_${h.filename}_${id}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function showStep(n) {
+            [1, 2, 3, 4, 5].forEach(i => {
+                const el = document.getElementById('importStep' + i);
+                if (el) el.style.display = i === n ? '' : 'none';
+            });
+            // Auto buttons
+            document.getElementById('importBtn').style.display = (n === 4) ? '' : 'none';
+        }
+
+        function preparePreview() {
+            const skuCol = getMapVal('sku');
+            const nameCol = getMapVal('name');
+            const qtyCol = getMapVal('qty');
+            if (!skuCol || !nameCol || !qtyCol) {
+                toast('Mapeamento incompleto', 'Mapeie ao menos SKU, Nome e Quantidade.', 'error');
+                return;
+            }
+
+            // Save mapping
+            const currentMap = {};
+            ['sku', 'name', 'qty', 'category', 'unit', 'costPrice', 'minStock', 'location', 'description'].forEach(k => currentMap[k] = getMapVal(k));
+            localStorage.setItem(DB_PREFIX + 'last_import_map', JSON.stringify(currentMap));
+
+            processImportPreviewData();
+            showStep(3);
+            renderImportPreview();
+        }
+
+        function processImportPreviewData() {
+            const inventory = db.get('inventory');
+            const skuCol = getMapVal('sku');
+            const nameCol = getMapVal('name');
+            const qtyCol = getMapVal('qty');
+            const priceCol = getMapVal('price');
+            const unitCol = getMapVal('unit');
+
+            const seenSkusInFile = new Map();
+
+            importPreviewData = importRows.map((row, idx) => {
+                const sku = String(row[skuCol] || '').trim();
+                const name = String(row[nameCol] || '').trim();
+                const qty = parseFloat(String(row[qtyCol] || '0').replace(',', '.')) || 0;
+                const priceValue = row[priceCol];
+                const price = typeof priceValue !== 'undefined' ? fmt.parseMoney(priceValue) : 0;
+                const unit = String(row[unitCol] || 'un').toLowerCase().trim();
+
+                let status = 'novo';
+                let statusMsg = '';
+                const existing = inventory.find(p => p.sku === sku);
+
+                if (!sku) {
+                    status = 'erro';
+                    statusMsg = 'SKU não pode ser vazio.';
+                } else if (!name || name.length < 3) {
+                    status = 'erro';
+                    statusMsg = 'Nome deve ter no mínimo 3 caracteres.';
+                } else if (isNaN(qty) || qty < 0) {
+                    status = 'erro';
+                    statusMsg = 'Quantidade não pode ser negativa.';
+                } else if (isNaN(price) || price < 0) {
+                    status = 'erro';
+                    statusMsg = 'Preço inválido ou negativo.';
+                } else if (seenSkusInFile.has(sku)) {
+                    status = 'erro';
+                    statusMsg = `SKU duplicado na linha ${seenSkusInFile.get(sku)}. Corrija para evitar mesclagem cega.`;
+                } else if (existing) {
+                    status = 'atualizar';
+                    if (existing.costPrice && Math.abs(existing.costPrice - price) > 0.01) {
+                        status = 'divergente';
+                        statusMsg = `Preço atual: R$ ${existing.costPrice.toFixed(2)}`;
+                    }
+                }
+
+                if (sku && status !== 'erro') {
+                    seenSkusInFile.set(sku, idx + 1);
+                }
+
+                return {
+                    id: idx,
+                    sku,
+                    name,
+                    qty,
+                    price,
+                    unit,
+                    status,
+                    statusMsg,
+                    checked: status !== 'erro',
+                    rawData: row
+                };
+            });
+
+            calculateImportSummary();
+        }
+
+        function calculateImportSummary() {
+            const counts = { all: 0, novo: 0, atualizar: 0, divergente: 0, erro: 0 };
+            let totalValue = 0;
+            let totalItems = 0;
+
+            importPreviewData.forEach(d => {
+                counts.all++;
+                counts[d.status]++;
+                if (d.checked) {
+                    totalValue += (d.qty * d.price);
+                    totalItems += d.qty;
+                }
+            });
+
+            document.getElementById('cntAll').textContent = counts.all;
+            document.getElementById('cntNovo').textContent = counts.novo;
+            document.getElementById('cntAtu').textContent = counts.atualizar;
+            document.getElementById('cntDiv').textContent = counts.divergente;
+            document.getElementById('cntErr').textContent = counts.erro;
+
+            document.getElementById('sumTotal').textContent = counts.all;
+            document.getElementById('sumValue').textContent = fmtR(totalValue);
+            document.getElementById('sumItems').textContent = totalItems;
+        }
+
+        function filterImport(status) {
+            importFilter = status;
+            document.querySelectorAll('#importStatusFilters .filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('onclick').includes(`'${status}'`));
+            });
+            renderImportPreview();
+        }
+
+        function renderImportPreview() {
+            const tbody = document.getElementById('importPreviewBody');
+            const filtered = importPreviewData.filter(d => importFilter === 'all' || d.status === importFilter);
+
+            tbody.innerHTML = filtered.map(d => `
+                <tr class="${d.status === 'erro' ? 'row-error' : ''}">
+                    <td>
+                        <span class="expand-btn" onclick="toggleImportRowDetail(${d.id})">▶</span>
+                    </td>
+                    <td>
+                        <input type="checkbox" ${d.checked ? 'checked' : ''} ${d.status === 'erro' ? 'disabled' : ''} onchange="toggleImportRow(${d.id})">
+                    </td>
+                    <td><span class="import-sku cell-editable" onclick="editImportCell(${d.id}, 'sku')">${esc(d.sku)}</span></td>
+                    <td>
+                        <div style="display:flex;flex-direction:column">
+                            <span class="cell-editable" style="font-weight:600" onclick="editImportCell(${d.id}, 'name')">${esc(d.name)}</span>
+                            <span style="font-size:.65rem;color:var(--text-secondary)">${esc(d.unit || 'un')}</span>
+                        </div>
+                    </td>
+                    <td class="import-qty">
+                        <span class="cell-editable" onclick="editImportCell(${d.id}, 'qty')">${d.qty}</span>
+                        <small style="color:var(--text-secondary);font-size:.7rem">${esc(d.unit || 'un')}</small>
+                    </td>
+                    <td class="import-price" style="font-weight:600;color:var(--accent)">
+                        <span class="cell-editable" onclick="editImportCell(${d.id}, 'price')">${fmtR(d.price)}</span>
+                    </td>
+                    <td>
+                        <span class="status-pill status-${d.status}" title="${esc(d.statusMsg)}">${d.status.toUpperCase()}</span>
+                    </td>
+                    <td>
+                        <button class="btn btn-ghost btn-sm" onclick="removeImportRow(${d.id})">🗑ï¸</button>
+                    </td>
+                </tr>
+                <tr id="import-detail-${d.id}" class="detail-row">
+                    <td colspan="8">
+                        <div class="detail-content">
+                            <div style="font-size:.75rem;font-weight:700;color:var(--text-secondary);margin-bottom:5px">DADOS EXTRAÍDOS:</div>
+                            <div class="raw-data-box">${esc(JSON.stringify(d.rawData, null, 2))}</div>
+                            ${d.statusMsg ? `<div style="margin-top:8px;color:#DA3633;font-size:.75rem;font-weight:600">⚠ ${esc(d.statusMsg)}</div>` : ''}
+                        </div>
+                    </td>
+                </tr>
+            `).join('') || '<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--text-secondary)">Nenhum registro encontrado para este filtro.</td></tr>';
+        }
+
+        function toggleImportRow(id) {
+            const item = importPreviewData.find(d => d.id === id);
+            if (item) {
+                item.checked = !item.checked;
+                calculateImportSummary();
+            }
+        }
+
+        function toggleAllImport(chk) {
+            importPreviewData.forEach(d => {
+                if (d.status !== 'erro') d.checked = chk.checked;
+            });
+            renderImportPreview();
+            calculateImportSummary();
+        }
+
+        function toggleImportRowDetail(id) {
+            const row = document.getElementById(`import-detail-${id}`);
+            const btn = row.previousElementSibling.querySelector('.expand-btn');
+            const isVisible = row.style.display === 'table-row';
+            row.style.display = isVisible ? 'none' : 'table-row';
+            btn.textContent = isVisible ? '▶' : '▼';
+        }
+
+        function editImportCell(id, field) {
+            const item = importPreviewData.find(d => d.id === id);
+            if (!item) return;
+            const newVal = prompt(`Editar ${field}:`, item[field]);
+            if (newVal !== null) {
+                if (field === 'qty') item[field] = parseInt(newVal) || 0;
+                else if (field === 'price') item[field] = fmt.parseMoney(newVal);
+                else item[field] = newVal.trim();
+
+                // Re-validate row status
+                const inventory = db.get('inventory');
+                const existing = inventory.find(p => p.sku === item.sku);
+                if (!item.sku || !item.name) item.status = 'erro';
+                else if (existing) {
+                    item.status = (Math.abs(existing.costPrice - item.price) > 0.01) ? 'divergente' : 'atualizar';
+                } else item.status = 'novo';
+
+                renderImportPreview();
+                calculateImportSummary();
+            }
+        }
+
+        function removeImportRow(id) {
+            if (confirm('Remover este item da importação?')) {
+                importPreviewData = importPreviewData.filter(d => d.id !== id);
+                renderImportPreview();
+                calculateImportSummary();
+            }
+        }
+
+        function showFinalOptions() {
+            const checkedCount = importPreviewData.filter(d => d.checked).length;
+            if (checkedCount === 0) {
+                toast('Atenção', 'Nenhum registro selecionado para importar.', 'warning');
+                return;
+            }
+            showStep(4);
+        }
+
+        async function runImportFinal() {
+            const doCreate = document.getElementById('chkCreateNew').checked;
+            const doUpdate = document.getElementById('chkUpdateExist').checked;
+            const rule = document.getElementById('finalImportRule').value;
+            const linkSup = document.getElementById('finalDefSupplier').value;
+
+            // Show chunking progress
+            document.getElementById('importStep4').style.display = 'none';
+            document.getElementById('importStep1').style.display = 'none';
+            document.getElementById('importProgress').style.display = '';
+            updateProgress(0, 'Iniciando importação no banco de dados...');
+
+            let existing = db.get('inventory');
+            let skuMap = new Map();
+            existing.forEach(p => {
+                if (p.sku) skuMap.set(p.sku.toUpperCase(), p);
+            });
+
+            let stats = { created: 0, updated: 0, skipped: 0, errors: 0 };
+            const timeStr = new Date().toISOString();
+
+            const rowsToProcess = importPreviewData.filter(r => r.checked && r.status !== 'erro');
+            const totalRows = rowsToProcess.length;
+
+            let currentIndex = 0;
+            const CHUNK_SIZE = 50;
+
+            function processChunk() {
+                const end = Math.min(currentIndex + CHUNK_SIZE, totalRows);
+
+                for (let i = currentIndex; i < end; i++) {
+                    let row = rowsToProcess[i];
+                    let existingProduct = skuMap.get((row.sku || '').toUpperCase());
+
+                    if (!existingProduct && doCreate) {
+                        const newId = 'p' + Date.now() + Math.floor(Math.random() * 1000);
+                        const p = {
+                            id: newId,
+                            sku: row.sku || '',
+                            name: row.name || 'Produto Sem Nome',
+                            currentStock: row.qty || 0,
+                            salePrice: 0,
+                            costPrice: row.price || 0,
+                            supplierId: linkSup || null,
+                            status: 'ATIVO',
+                            minStock: 0, safetyStock: 0,
+                            createdAt: timeStr,
+                            unit: row.unit || 'UN'
+                        };
+                        db.insert('inventory', p);
+                        skuMap.set(p.sku.toUpperCase(), p);
+                        stats.created++;
+
+                        if (p.currentStock > 0) {
+                            db.insert('stock_movements', {
+                                productId: p.id, productName: p.name, productSku: p.sku,
+                                type: 'entrada', quantity: p.currentStock, balanceAfter: p.currentStock,
+                                notes: 'Saldo inicial (Importação via arquivo)',
+                                technicianId: session.userId, technicianName: session.name,
+                                createdAt: timeStr
+                            });
+                        }
+                    } else if (existingProduct && doUpdate) {
+                        const updates = {};
+                        let movementQty = 0;
+                        let oldStock = existingProduct.currentStock || 0;
+
+                        if (rule === 'sum') {
+                            movementQty = row.qty;
+                            updates.currentStock = oldStock + movementQty;
+                        } else if (rule === 'replace') {
+                            movementQty = row.qty - oldStock;
+                            updates.currentStock = row.qty;
+                        } else {
+                            if (row.qty !== oldStock) {
+                                movementQty = row.qty - oldStock;
+                                updates.currentStock = row.qty;
+                            }
+                        }
+
+                        if (row.price != null && !isNaN(row.price)) updates.costPrice = parseFloat(row.price);
+                        if (row.name) updates.name = row.name;
+                        if (row.unit) updates.unit = row.unit;
+                        if (linkSup && !existingProduct.supplierId) updates.supplierId = linkSup;
+
+                        if (Object.keys(updates).length > 0) {
+                            db.update('inventory', existingProduct.id, updates);
+                            stats.updated++;
+
+                            if (movementQty !== 0) {
+                                db.insert('stock_movements', {
+                                    productId: existingProduct.id, productName: existingProduct.name, productSku: existingProduct.sku,
+                                    type: movementQty > 0 ? 'entrada' : 'ajuste',
+                                    quantity: movementQty, balanceAfter: updates.currentStock,
+                                    supplierId: linkSup || null,
+                                    invoiceNumber: 'IMPORTAÇãO_REVISADA',
+                                    unitCost: row.price || existingProduct.costPrice,
+                                    technicianId: session.userId, technicianName: session.name,
+                                    notes: `Importação revisada (${rule}).`, createdAt: timeStr
+                                });
+                            }
+                        } else {
+                            stats.skipped++;
+                        }
+                    } else {
+                        stats.skipped++;
+                    }
+                }
+
+                currentIndex = end;
+                const progressPct = totalRows > 0 ? Math.floor((currentIndex / totalRows) * 100) : 100;
+                updateProgress(progressPct, `Salvando no BD... ${currentIndex}/${totalRows}`);
+
+                if (currentIndex < totalRows) {
+                    setTimeout(processChunk, 10);
+                } else {
+                    finishImport();
+                }
+            }
+
+            function finishImport() {
+                stats.skipped += importPreviewData.length - totalRows;
+                stats.errors = importPreviewData.filter(d => d.status === 'erro').length;
+
+                logAudit('inventory_import', `Importação: ${stats.created} novos, ${stats.updated} atualizados.`);
+
+                document.getElementById('importProgress').style.display = 'none';
+                showStep(5);
+                document.getElementById('importResult').innerHTML = `
+                    <div style="text-align:center;padding:20px 0">
+                        <div style="font-size:2.5rem;margin-bottom:8px">✅</div>
+                        <div style="font-size:1.1rem;font-weight:700;margin-bottom:8px">Importação Finalizada!</div>
+                        <div style="font-size:0.85rem;color:var(--text-secondary)">${stats.created} novos criados, ${stats.updated} atualizados, ${stats.skipped} ignorados/erros.</div>
+                    </div>`;
+
+                loadKpis(); renderTable();
+
+                const histEntry = {
+                    id: Date.now(),
+                    date: timeStr,
+                    user: session.name || 'Usuário',
+                    filename: document.getElementById('importFileName').textContent || 'arquivo_desconhecido',
+                    format: (document.getElementById('importFileName').textContent || '').split('.').pop().toLowerCase() || '?',
+                    counts: {
+                        all: importPreviewData.length,
+                        novo: stats.created,
+                        atualizar: stats.updated,
+                        erro: stats.errors
+                    },
+                    status: stats.errors > 0 ? (stats.created + stats.updated > 0 ? 'parcial' : 'erro') : 'concluído',
+                    errorLog: []
+                };
+
+                const existingHistory = db.get('import_history') || [];
+                existingHistory.push(histEntry);
+                db.set('import_history', existingHistory);
+            }
+
+            if (totalRows > 0) {
+                setTimeout(processChunk, 20);
+            } else {
+                finishImport();
+            }
+        }
+        function handleDrop(e) { e.preventDefault(); document.getElementById('importZone').classList.remove('drag'); const f = e.dataTransfer.files[0]; if (f) parseImportFile(f); }
+        function handleFileSelect(inp) { if (inp.files[0]) parseImportFile(inp.files[0]); }
+
+        function parseImportFile(file) {
+            const MAX_SIZE = 20 * 1024 * 1024; // 20MB
+            if (file.size > MAX_SIZE) {
+                toast('Arquivo muito grande', 'O tamanho máximo permitido é 20MB.', 'error');
+                document.getElementById('importFile').value = '';
+                return;
+            }
+
+            const ext = file.name.split('.').pop().toLowerCase();
+            document.getElementById('importFileName').textContent = file.name;
+
+            // Show progress bar
+            document.getElementById('importStep1').style.display = 'none';
+            document.getElementById('importProgress').style.display = '';
+            updateProgress(10, 'Lendo arquivo...');
+
+            if (ext === 'pdf') {
+                parsePdf(file);
+            } else if (ext === 'html' || ext === 'htm') {
+                parseHtml(file);
+            } else if (ext === 'xml') {
+                parseXml(file);
+            } else if (ext === 'csv') {
+                parseCsv(file);
+            } else {
+                parseXlsx(file);
+            }
+        }
+
+        function parseXml(file) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                updateProgress(40, 'Analisando XML...');
+                const parser = new DOMParser();
+                let xmlText = e.target.result;
+
+                xmlText = xmlText.replace(/<!ENTITY[^>]*>/gi, '').replace(/<!DOCTYPE[^>]*>/gi, '');
+                const doc = parser.parseFromString(xmlText, 'text/xml');
+
+                const sup = extractSupplierFromXml(doc);
+                updateSupPanel(sup);
+
+                let items = [];
+                let dets = doc.getElementsByTagName('det');
+                if (!dets.length) dets = doc.getElementsByTagNameNS('*', 'det');
+
+                if (dets.length > 0) {
+                    items = Array.from(dets).map(det => {
+                        let prod = det.getElementsByTagName('prod')[0] || det.getElementsByTagNameNS('*', 'prod')[0];
+                        return prod ? prod : det;
+                    });
+                } else {
+                    items = [...doc.querySelectorAll('produto, item, product, Produto, Item, row, entry')];
+                    if (!items.length) {
+                        const tags = {};
+                        [...doc.querySelectorAll('*')].forEach(el => {
+                            if (el.children.length > 0) tags[el.tagName] = (tags[el.tagName] || 0) + 1;
+                        });
+                        const bestTag = Object.entries(tags).find(([t, count]) => count > 1 && !['header', 'structure', 'events'].includes(t));
+                        if (bestTag) items = [...doc.querySelectorAll(bestTag[0])];
+                    }
+                }
+
+                if (!items.length) {
+                    updateProgress(0, '');
+                    document.getElementById('importProgress').style.display = 'none';
+                    document.getElementById('importStep1').style.display = '';
+                    toast('Erro', 'Estrutura XML não reconhecida.', 'error');
+                    return;
+                }
+
+                function flattenXmlNode(node, obj = {}, prefix = '') {
+                    Array.from(node.children).forEach(child => {
+                        // Ignore namespaces in tags by splitting ':' 
+                        let childName = child.localName || child.tagName;
+                        if (childName.includes(':')) childName = childName.split(':')[1];
+
+                        const key = prefix ? prefix + '_' + childName : childName;
+                        if (child.children.length > 0) {
+                            flattenXmlNode(child, obj, key);
+                        } else {
+                            if (!obj[key]) obj[key] = child.textContent.trim();
+                        }
+                    });
+                    Array.from(node.attributes || []).forEach(attr => {
+                        const attrKey = prefix ? prefix + '_' + attr.name : attr.name;
+                        if (!obj[attrKey]) obj[attrKey] = attr.value.trim();
+                    });
+                    return obj;
+                }
+
+                importHeaders = [];
+                importRows = items.map(el => {
+                    const row = flattenXmlNode(el);
+                    Object.keys(row).forEach(k => {
+                        if (!importHeaders.includes(k)) importHeaders.push(k);
+                    });
+                    return row;
+                });
+
+                updateProgress(100, 'Concluído');
+                setTimeout(() => {
+                    document.getElementById('importProgress').style.display = 'none';
+                    showImportPreview();
+                }, 500);
+            };
+            reader.readAsText(file, 'UTF-8');
+        }
+
+        function parseCsv(file) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                updateProgress(50, 'Decodificando CSV...');
+                const buffer = e.target.result;
+                let text = '';
+                try {
+                    text = new TextDecoder('utf-8', { fatal: true }).decode(buffer);
+                } catch (err) {
+                    console.warn('Fallback to ISO-8859-1 decoding for CSV');
+                    text = new TextDecoder('iso-8859-1').decode(buffer);
+                }
+
+                if (!text || text.length < 10) {
+                    document.getElementById('importProgress').style.display = 'none';
+                    document.getElementById('importStep1').style.display = '';
+                    toast('Arquivo vazio', 'Nenhum dado encontrado no CSV.', 'error');
+                    return;
+                }
+
+                const wb = XLSX.read(text, { type: 'string', raw: true });
+                processXlsxWorkbook(wb);
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function parseXlsx(file) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                updateProgress(50, 'Processando planilha...');
+                const wb = XLSX.read(e.target.result, { type: 'array' });
+                processXlsxWorkbook(wb);
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function processXlsxWorkbook(wb) {
+            const ws = wb.Sheets[wb.SheetNames[0]];
+            const data = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+            if (data.length < 2) {
+                document.getElementById('importProgress').style.display = 'none';
+                document.getElementById('importStep1').style.display = '';
+                toast('Planilha vazia', 'Nenhum dado encontrado.', 'error');
+                return;
+            }
+            importHeaders = data[0].map(h => String(h || ''));
+            importRows = data.slice(1).filter(r => r.some(c => String(c).trim() !== '')).map(r => {
+                const obj = {};
+                importHeaders.forEach((h, i) => obj[h] = String(r[i] || ''));
+                return obj;
+            });
+            updateProgress(100, 'Concluído');
+            setTimeout(() => {
+                document.getElementById('importProgress').style.display = 'none';
+                showImportPreview();
+            }, 500);
+        }
+
+        function updateProgress(pct, text) {
+            document.getElementById('progressPercent').textContent = pct + '%';
+            document.getElementById('progressBar').style.width = pct + '%';
+            if (text) document.getElementById('progressText').textContent = text;
+        }
+
+        function parsePdf(file) {
+            const reader = new FileReader();
+            reader.onload = async function () {
+                updateProgress(20, 'Carregando motor PDF...');
+                const typedarray = new Uint8Array(this.result);
+                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+                const pdf = await pdfjsLib.getDocument(typedarray).promise;
+                let rows = [];
+
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    updateProgress(20 + Math.floor((i / pdf.numPages) * 60), `Processando página ${i}/${pdf.numPages}...`);
+                    const page = await pdf.getPage(i);
+                    const textContent = await page.getTextContent();
+
+                    // Enhanced grouping: group items by Y coordinate (rows) with a small threshold
+                    const items = textContent.items.map(item => ({
+                        str: item.str.trim(),
+                        y: Math.round(item.transform[5]),
+                        x: Math.round(item.transform[4])
+                    })).filter(it => it.str);
+
+                    const lineGroups = [];
+                    items.forEach(item => {
+                        let group = lineGroups.find(g => Math.abs(g.y - item.y) <= 4); // 4px tolerance
+                        if (group) {
+                            group.items.push(item);
+                        } else {
+                            lineGroups.push({ y: item.y, items: [item] });
+                        }
+                    });
+
+                    // Sort each line by X, join with tabs
+                    const pageLines = lineGroups.sort((a, b) => b.y - a.y).map(g => {
+                        return g.items.sort((a, b) => a.x - b.x).map(it => it.str).join("\t");
+                    });
+
+                    rows = rows.concat(pageLines);
+                }
+
+                const filteredRows = rows.filter(l => l.trim().length > 2);
+                if (!filteredRows.length) {
+                    document.getElementById('importProgress').style.display = 'none';
+                    document.getElementById('importStep1').style.display = '';
+                    toast('Alerta de PDF', 'Não foi possível extrair texto. Se for um PDF escaneado (imagem), o sistema não suporta extração automatizada.', 'error');
+                    return;
+                }
+
+                // Split lines into columns based on tabs (or multiple spaces if any leaked)
+                const parsedData = filteredRows.map(line => line.split(/\t|\s{3,}/).map(col => col.trim()).filter(col => col));
+
+                let maxCols = 0;
+                parsedData.forEach(row => { if (row.length > maxCols) maxCols = row.length; });
+
+                importHeaders = Array.from({ length: maxCols }, (_, i) => `Coluna PDF ${i + 1}`);
+                importRows = parsedData.map(cols => {
+                    let obj = {};
+                    importHeaders.forEach((h, i) => obj[h] = cols[i] || '');
+                    return obj;
+                });
+
+                const sup = extractSupplierFromPdf(filteredRows);
+                updateSupPanel(sup);
+
+                updateProgress(100, 'Concluído');
+                setTimeout(() => {
+                    document.getElementById('importProgress').style.display = 'none';
+                    showImportPreview();
+                    toast('PDF processado', 'Verifique a extração tabelada e mapeie as colunas.', 'info');
+                }, 500);
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        let htmlTables = [];
+        function parseHtml(file) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(e.target.result, 'text/html');
+                const tables = doc.querySelectorAll('table');
+
+                if (!tables.length) {
+                    toast('Sem tabelas', 'Não encontramos tabelas HTML no arquivo.', 'warning');
+                    // Fallback: mostrar conteúdo textual se necessário
+                    return;
+                }
+
+                htmlTables = Array.from(tables);
+                if (htmlTables.length === 1) {
+                    extractTableData(htmlTables[0]);
+                } else {
+                    document.getElementById('tableSelectorArea').style.display = '';
+                    const select = document.getElementById('tableIndexSelect');
+                    select.innerHTML = htmlTables.map((t, i) => {
+                        const firstRow = t.querySelector('tr');
+                        const info = firstRow ? firstRow.textContent.trim().substring(0, 50) : `Tabela ${i + 1}`;
+                        return `<option value="${i}">Tabela ${i + 1} (${info}...)</option>`;
+                    }).join('');
+                    extractTableData(htmlTables[0]); // Preview first table
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function selectTable(idx) {
+            extractTableData(htmlTables[idx]);
+        }
+
+        function extractTableData(table) {
+            const rows = Array.from(table.querySelectorAll('tr'));
+            if (rows.length < 1) return;
+
+            // Safe Header extraction
+            const headerRow = rows.find(r => r.querySelector('th')) || rows[0];
+            const headerCells = Array.from(headerRow.querySelectorAll('th, td'));
+            importHeaders = headerCells.map((c, i) => c.innerText.trim() || `Coluna HTML ${i + 1}`);
+
+            // Body extraction (avoid headers)
+            const bodyRows = rows.filter(r => r !== headerRow);
+            importRows = bodyRows.map(r => {
+                const cells = Array.from(r.querySelectorAll('td, th')); // include th as data row sometimes uses th for first cell
+                const obj = {};
+                importHeaders.forEach((h, i) => {
+                    obj[h] = cells[i] ? cells[i].innerText.trim() : '';
+                });
+                return obj;
+            }).filter(r => Object.values(r).some(v => v !== '')); // remove completely empty rows
+
+            showImportPreview();
+        }
+
+        function showImportPreview() {
+            showStep(2);
+
+            const FIELDS = [
+                { key: 'sku', label: 'SKU *', keywords: ['código', 'sku', 'cód.', 'referência', 'partnumber', 'cprod', 'codigo'] },
+                { key: 'name', label: 'Produto *', keywords: ['descrição', 'produto', 'serviço', 'nome', 'desc.', 'xprod', 'descricao'] },
+                { key: 'qty', label: 'Saldo *', keywords: ['quantidade', 'saldo', 'qtd', 'qtde.', 'comprada', 'qcom', 'quantity', 'qty'] },
+                { key: 'price', label: 'Preço *', keywords: ['valor unitário', 'preço', 'v. unit.', 'custo', 'vlr', 'vuncom', 'preco', 'valor', 'price'] },
+                { key: 'unit', label: 'Unidade', keywords: ['unidade', 'un', 'unid', 'medida', 'ucom', 'unit'] },
+                { key: 'category', label: 'Categoria', keywords: ['categoria', 'cat', 'grupo'] },
+                { key: 'minStock', label: 'Estoque Mínimo', keywords: ['mínimo', 'min', 'segurança'] },
+                { key: 'location', label: 'Localização', keywords: ['localização', 'local', 'prateleira'] },
+                { key: 'description', label: 'Descrição Completa', keywords: ['obs', 'detalhes', 'complemento'] }
+            ];
+
+            const savedMap = JSON.parse(localStorage.getItem(DB_PREFIX + 'last_import_map') || '{}');
+
+            document.getElementById('importMapping').innerHTML = FIELDS.map(f => {
+                let selectedHeader = '';
+
+                // 1. Try saved map
+                if (savedMap[f.key] && importHeaders.includes(savedMap[f.key])) {
+                    selectedHeader = savedMap[f.key];
+                }
+
+                // 2. Try auto-detection if no saved map or invalid
+                if (!selectedHeader) {
+                    selectedHeader = importHeaders.find(h => {
+                        const lowH = h.toLowerCase().trim();
+                        return f.keywords.some(kw => lowH === kw || lowH.includes(kw));
+                    }) || '';
+                }
+
+                return `
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;padding:8px;background:rgba(255,255,255,0.02);border-radius:6px">
+                    <span style="font-size:.8rem;font-weight:600;white-space:nowrap;color:var(--text-primary)">${f.label}</span>
+                    <select class="form-select" id="map_${f.key}" style="font-size:0.75rem;padding:4px;width:160px;background-color:rgba(0,0,0,0.2)">
+                        <option value="">— ignorar —</option>
+                        ${importHeaders.map(h => `
+                            <option value="${esc(h)}"${h === selectedHeader ? ' selected' : ''}>${esc(h)}</option>
+                        `).join('')}
+                    </select>
+                </div>`;
+            }).join('');
+        }
+
+        function toggleColumnConfig() {
+            toast('Em breve', 'A configuração personalizada de colunas será implementada na próxima versão.', 'info');
+        }
+
+        function updateImportRow(idx, header, val) {
+            if (importRows[idx]) importRows[idx][header] = val.trim();
+        }
+
+        function getMapVal(key) { return document.getElementById('map_' + key)?.value || ''; }
+        // Removed legacy runImport. Now using runImportFinal.
+
+        function downloadTemplate() {
+            const headers = 'SKU,PRODUTO,CATEGORIA,SALDO,MINIMO,UNIDADE,LOCALIZACAO,PRECO,FORNECEDOR';
+            const example = 'EL001,Fusível 10A Automotivo,Componentes Elétricos,45,20,UN,Prateleira A1,"5,00",REFRICIRL';
+            const csv = headers + '\n' + example + '\n';
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const bUrl = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = bUrl;
+            a.download = 'modelo_importacao_estoque.csv';
+            a.click();
+            URL.revokeObjectURL(bUrl);
+            toast('Template Gerado', 'O download do modelo CSV foi iniciado.', 'success');
+        }
+
+        // ─── Category Management ───
+        function openCategoriesModal() {
+            renderCategoriesList();
+            const cats = db.get('inventory_categories');
+            const parentSelect = document.getElementById('newCatParent');
+            parentSelect.innerHTML = '<option value="">(Raiz)</option>' +
+                cats.filter(c => c.level === 1).map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('');
+            openModal('modalCategories');
+        }
+
+        function renderCategoriesList() {
+            const cats = db.get('inventory_categories');
+            const container = document.getElementById('categoriesList');
+
+            const roots = cats.filter(c => !c.parentId);
+            container.innerHTML = roots.map(root => `
+                            <div class="cat-item-tree">
+                                <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+                                    <span style="font-weight:600">📂 ${esc(root.name)}</span>
+                                    <button class="btn btn-ghost btn-sm" onclick="deleteCategory('${root.id}')" ${['eletrica', 'mecanica', 'others'].includes(root.id) ? 'disabled' : ''}>🗑ï¸</button>
+                                </div>
+                                ${cats.filter(c => c.parentId === root.id).map(sub => `
+                        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0 6px 24px;border-bottom:1px dashed var(--border)">
+                            <span style="font-size:.85rem">↳ ${esc(sub.name)}</span>
+                            <button class="btn btn-ghost btn-sm" onclick="deleteCategory('${sub.id}')">🗑ï¸</button>
+                        </div>
+                    `).join('')}
+                            </div>
+                            `).join('');
+        }
+
+        function addCategory() {
+            const name = document.getElementById('newCatName').value.trim();
+            const parentId = document.getElementById('newCatParent').value;
+            if (!name) return;
+
+            const id = name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-');
+            const level = parentId ? 2 : 1;
+
+            db.insert('inventory_categories', { id, name, parentId: parentId || null, level });
+            document.getElementById('newCatName').value = '';
+            CAT_LABELS = getCatLabels();
+            initFilters();
+            openCategoriesModal(); // refresh
+            toast('Sucesso', 'Categoria adicionada.', 'success');
+        }
+
+        function deleteCategory(id) {
+            if (!confirm('Excluir esta categoria? Produtos vinculados podem perder a referência.')) return;
+            db.delete('inventory_categories', id);
+            CAT_LABELS = getCatLabels();
+            initFilters();
+            renderCategoriesList();
+            toast('Sucesso', 'Categoria removida.', 'info');
+        }
+
+        // --- Export CSV Logic ---
+        function exportToCsv(items, filename) {
+            if (!items || items.length === 0) {
+                toast('Erro', 'Nenhum produto para exportar.', 'error');
+                return;
+            }
+            const headers = ['SKU', 'PRODUTO', 'CATEGORIA', 'SALDO', 'STATUS', 'LOCALIZAÇãO', 'PREÇO'];
+            const rows = items.map(p => {
+                const cat = CAT_LABELS[p.categoryId] || '';
+                const status = (p.status || 'ATIVO').replace(/"/g, '""');
+                const price = (p.salePrice || 0).toFixed(2).replace('.', ',');
+
+                const safe = (s) => `"${(s || '').toString().replace(/"/g, '""')}"`;
+
+                return [
+                    safe(p.sku),
+                    safe(p.name),
+                    safe(cat),
+                    p.currentStock || 0,
+                    safe(status),
+                    safe(p.location),
+                    safe(price)
+                ].join(';');
+            });
+
+            const csvContent = '\uFEFF' + headers.join(';') + '\n' + rows.join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            link.click();
+            URL.revokeObjectURL(link.href);
+            toast('Exportação', 'Arquivo CSV gerado com sucesso.', 'success');
+        }
+
+        function exportVisible() {
+            const dateStr = new Date().toISOString().replace(/[:-]/g, '').slice(0, 15);
+            exportToCsv(window.lastFilteredItems || [], `produtos_${dateStr}.csv`);
+        }
+
+        function bulkExport() {
+            const ids = Array.from(document.querySelectorAll('.row-check:checked')).map(cb => cb.value);
+            if (!ids.length) return;
+            const all = db.get('inventory');
+            const sel = all.filter(p => ids.includes(p.id));
+            const dateStr = new Date().toISOString().replace(/[:-]/g, '').slice(0, 15);
+            exportToCsv(sel, `estoque_selecionados_${dateStr}.csv`);
+            toggleAllRows({ checked: false });
+        }
+
+        window.addEventListener('load', () => {
+            initFilters();
+            renderTable();
+            loadKpis();
+            initSidebar(); // Assuming initSidebar is also needed on load
+        });
+    </script>
+</body>
+
+</html>

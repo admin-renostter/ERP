@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meus Contratos — Renostter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="../css/global.css" />
+</head>
+
+<body>
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-logo">
+        <img src="../assets/logo-crm.png" alt="Renostter CRM">
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section-label">Minha Área</div>
+        <a class="nav-item" href="dashboard.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7" />
+            <rect x="14" y="3" width="7" height="7" />
+            <rect x="14" y="14" width="7" height="7" />
+            <rect x="3" y="14" width="7" height="7" />
+          </svg><span>Início</span></a>
+                <a class="nav-item" href="faturas.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg><span>Minhas Faturas</span></a>
+        <a class="nav-item" href="tickets.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2">
+            <path d="M9 11l3 3L22 4" />
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+          </svg><span>Meus Chamados</span><span class="nav-badge notif-badge" style="display:none">0</span></a>
+        <a class="nav-item active" href="contracts.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+          </svg><span>Meus Contratos</span></a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-card" onclick="auth.logout()">
+          <div class="user-avatar" id="sidebarAvatar">C</div>
+          <div class="user-info"><strong id="sidebarUserName">Cliente</strong><span id="sidebarUserRole">Cliente</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <div class="main-content">
+      <div class="topbar">
+        <div class="topbar-left">
+          <button class="hamburger btn btn-ghost btn-icon" id="hamburger"><svg width="18" height="18"
+              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg></button>
+          <span class="page-title">Meus Contratos</span>
+        </div>
+      </div>
+
+      <div class="page-body" id="contractsBody">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+  <script src="../js/storage.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/utils.js"></script>
+  <script>
+    const session = auth.protect(['cliente']);
+    const clientId = session.clientId;
+    const contracts = db.findBy('contracts', 'clientId', clientId);
+
+    function renderContracts() {
+      if (!contracts.length) {
+        document.getElementById('contractsBody').innerHTML = `<div class="empty-state" style="padding:80px 0"><div style="font-size:3rem">📋</div><h4>Nenhum contrato encontrado</h4><p>Entre em contato com a Renostter para mais informações.</p><a href="tickets.html" class="btn btn-primary btn-sm" style="margin-top:12px">Abrir Chamado</a></div>`;
+        return;
+      }
+
+      document.getElementById('contractsBody').innerHTML = contracts.map(c => {
+        const sla = SLA_CONFIG[c.type] || {};
+        const now = new Date();
+        const end = new Date(c.endDate);
+        const daysLeft = Math.ceil((end - now) / (1000 * 3600 * 24));
+        const isExpired = daysLeft < 0;
+        const expiresIn30 = !isExpired && daysLeft <= 30;
+
+        return `<div class="card" style="margin-bottom:20px">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px">
+        <div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">${badgeContractType(c.type)} ${isExpired ? '<span class="badge badge-red">Encerrado</span>' : expiresIn30 ? `<span class="badge badge-yellow">⚠️ Vence em ${daysLeft}d</span>` : ''}</div>
+          <h3 style="font-size:1.05rem;font-weight:700">${sla.label || c.type} — Plano de Manutenção</h3>
+          <p style="font-size:0.82rem;color:var(--text-secondary);margin-top:4px">${c.description || ''}</p>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-size:1.6rem;font-weight:800;color:var(--blue)">${fmt.currency(c.value)}</div>
+          <div style="font-size:0.72rem;color:var(--text-secondary)">por ano</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px">
+        <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;text-align:center">
+          <div style="font-size:1.5rem;font-weight:800;color:var(--blue)">${sla.responseH || '—'}h</div>
+          <div style="font-size:0.72rem;color:var(--text-secondary);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-top:2px">SLA Resposta</div>
+        </div>
+        <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;text-align:center">
+          <div style="font-size:1.5rem;font-weight:800;color:var(--orange)">${sla.resolutionH || '—'}h</div>
+          <div style="font-size:0.72rem;color:var(--text-secondary);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-top:2px">SLA Resolução</div>
+        </div>
+        <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;text-align:center">
+          <div style="font-size:1.5rem;font-weight:800;color:var(--success)">${c.visits || '—'}</div>
+          <div style="font-size:0.72rem;color:var(--text-secondary);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-top:2px">Visitas/Ano</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+        <div>
+          <div style="font-size:0.75rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Vigência</div>
+          <div style="font-size:0.875rem">${fmt.date(c.startDate)} → ${fmt.date(c.endDate)}</div>
+          <div style="margin-top:6px">
+            <div style="height:5px;background:var(--border);border-radius:50px;overflow:hidden">
+              <div style="height:100%;border-radius:50px;background:${isExpired ? 'var(--danger)' : expiresIn30 ? 'var(--warning)' : 'var(--success)'};width:${isExpired ? 100 : Math.min(100, Math.round((new Date() - new Date(c.startDate)) / (new Date(c.endDate) - new Date(c.startDate)) * 100))}%"></div>
+            </div>
+            <div style="font-size:0.72rem;color:var(--text-secondary);margin-top:4px">${isExpired ? 'Contrato encerrado' : daysLeft + ' dias restantes'}</div>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:0.75rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Serviços Incluídos</div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px">
+            ${(c.servicos || []).map(s => `<span class="badge badge-gray">${s}</span>`).join('') || '<span style="font-size:0.82rem;color:var(--text-secondary)">—</span>'}
+          </div>
+        </div>
+      </div>
+
+      <div style="padding-top:16px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap">
+        <button class="btn btn-ghost btn-sm" onclick="baixarRelatorioPmoc('${c.clientId || clientId}')" id="btnPmoc-${c.clientId || clientId}">📥 Baixar Relatório PMOC</button>
+        <a href="tickets.html" class="btn btn-primary btn-sm">🎫 Abrir Chamado</a>
+        <a href="https://wa.me/5511952730593?text=Olá!%20Preciso%20de%20suporte%20sobre%20meu%20contrato." target="_blank" class="btn btn-ghost btn-sm">💬 Falar com Suporte</a>
+      </div>
+    </div>`;
+      }).join('');
+    }
+
+    initSidebar(); renderContracts();
+  </script>
+</body>
+
+</html>

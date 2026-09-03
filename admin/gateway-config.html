@@ -1,0 +1,687 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Gateways de Pagamento — Renostter CRM</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../css/global.css" />
+    <link rel="stylesheet" href="../css/dashboard.css" />
+    <style>
+        /* ── Bank card (padrão admin/*) ── */
+        .bank-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .bank-card:hover { border-color: var(--blue); transform: translateY(-2px); box-shadow: var(--shadow-lg, 0 8px 24px rgba(0,0,0,.18)); }
+        .bank-card::before {
+            content: "";
+            position: absolute; top: 0; left: 0;
+            width: 4px; height: 100%;
+            background: transparent;
+            transition: background 0.3s;
+        }
+        .bank-card.is-primary::before { background: var(--blue); }
+
+        .bank-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px; }
+        .bank-icon {
+            width: 52px; height: 52px;
+            background: linear-gradient(135deg, rgba(0,174,239,.15), rgba(255,107,0,.10));
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.6rem;
+        }
+        .bank-info h3 { font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin: 0 0 4px; }
+        .bank-info p { font-size: 0.8rem; color: var(--text-secondary); margin: 0; }
+
+        .badge-primary { background: var(--blue); color: white; font-size: 0.65rem; font-weight: 800; padding: 4px 8px; border-radius: 50px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .badge-ok { background: rgba(46,160,67,.18); color: #2EA043; font-size: 0.65rem; font-weight: 800; padding: 4px 8px; border-radius: 50px; text-transform: uppercase; letter-spacing: 0.05em; display: inline-flex; align-items: center; gap: 4px; }
+        .badge-warn { background: rgba(255,107,0,.15); color: #FF6B00; font-size: 0.65rem; font-weight: 800; padding: 4px 8px; border-radius: 50px; text-transform: uppercase; letter-spacing: 0.05em; display: inline-flex; align-items: center; gap: 4px; }
+
+        .bank-detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+            margin-top: 16px;
+            padding-top: 18px;
+            border-top: 1px solid var(--border);
+        }
+        .detail-item { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+        .detail-label { font-size: 0.65rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
+        .detail-value { font-size: 0.85rem; font-weight: 500; color: var(--text-primary); word-break: break-all; }
+        .detail-value.mono { font-family: 'Courier New', monospace; font-size: 0.78rem; color: var(--blue); }
+        .detail-value.muted { color: var(--text-muted); }
+
+        .bank-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--border); }
+
+        /* ── Health check result ── */
+        .health-box {
+            margin-top: 14px;
+            padding: 14px 16px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            display: none;
+        }
+        .health-box.show { display: block; }
+        .health-box.success { border-color: rgba(46,160,67,.3); background: rgba(46,160,67,.06); }
+        .health-box.error { border-color: rgba(218,54,51,.3); background: rgba(218,54,51,.06); }
+        .health-box .health-title { display: flex; align-items: center; gap: 8px; font-weight: 600; margin-bottom: 4px; }
+        .health-box.success .health-title { color: #2EA043; }
+        .health-box.error .health-title { color: #DA3633; }
+        .health-box .health-body { font-size: 0.82rem; color: var(--text-secondary); }
+
+        /* ── Logs list ── */
+        .log-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.82rem;
+        }
+        .log-row:last-child { border-bottom: none; }
+        .log-status { padding: 3px 8px; border-radius: 50px; font-size: 0.7rem; font-weight: 700; }
+        .log-status.success { background: rgba(46,160,67,.18); color: #2EA043; }
+        .log-status.error { background: rgba(218,54,51,.18); color: #DA3633; }
+
+        /* ── Wizard cards (providers ainda não configurados) ── */
+        .provider-tile {
+            background: var(--bg-card);
+            border: 1px dashed var(--border-med);
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .provider-tile:hover { border-style: solid; border-color: var(--blue); transform: translateY(-2px); }
+        .provider-tile.disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .provider-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+    </style>
+</head>
+
+<body>
+    <div class="app-layout">
+
+        <!-- ─────────────── SIDEBAR ─────────────── -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <img src="../assets/logo-crm.png" alt="Renostter CRM" style="max-height:52px;object-fit:contain">
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section-label">Relatórios &amp; Analytics</div>
+                <a class="nav-item" href="dashboard.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span>Dashboard</span></a>
+                <a class="nav-item" href="reports.html?tab=kpi"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg><span>KPIs</span></a>
+                <a class="nav-item" href="documentacao.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg><span>Documentação</span></a>
+                <a class="nav-item" href="estoque.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg><span>Estoque</span></a>
+
+                <div class="nav-section-label" style="margin-top:16px">GESTãO</div>
+                <a class="nav-item" href="projects.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg><span>Dashboard PM</span></a>
+                <a class="nav-item" href="financeiro.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg><span>Financeiro</span></a>
+                <a class="nav-item" href="cobrancas.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg><span>Cobranças</span></a>
+                <a class="nav-item" href="knowledge.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span>Base de Conhecimento</span></a>
+                <a class="nav-item" href="clients.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Clientes</span></a>
+                <a class="nav-item" href="leads.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.39a2 2 0 0 1 1.98-2.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span>Leads</span></a>
+                <a class="nav-item" href="contracts.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>Contratos</span></a>
+                <a class="nav-item" href="tickets.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><span>Chamados</span></a>
+
+                <div class="nav-section-label" style="margin-top:16px">CONFIGURAÇÕES</div>
+                <a class="nav-item active" href="gateway-config.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg><span>Gateways Pagamento</span></a>
+                <a class="nav-item" href="users.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Usuários</span></a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-card" onclick="auth.logout()">
+                    <div class="user-avatar" id="sidebarAvatar">A</div>
+                    <div class="user-info"><strong id="sidebarUserName">Admin</strong><span id="sidebarUserRole">Administrador Master</span></div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ─────────────── MAIN ─────────────── -->
+        <div class="main-content">
+
+            <div class="topbar">
+                <div class="topbar-left">
+                    <button class="hamburger btn btn-ghost btn-icon" id="hamburger"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></svg></button>
+                    <span class="page-title">Gateways de Pagamento</span>
+                </div>
+                <div class="topbar-right">
+                    <button class="btn btn-ghost btn-sm" onclick="window.open('https://docs.cora.com.br', '_blank')">📚 Docs Cora</button>
+                    <a href="cobrancas.html" class="btn btn-primary btn-sm">💳 Cobranças</a>
+                </div>
+            </div>
+
+            <div class="page-body">
+
+                <!-- ── Status Banner ── -->
+                <div id="statusBanner" style="padding:14px 20px;border-radius:10px;margin-bottom:20px;display:flex;align-items:center;gap:14px;background:var(--bg-card);border:1px solid var(--border)">
+                    <div id="statusIcon" style="font-size:1.5rem">⏳</div>
+                    <div style="flex:1">
+                        <div id="statusTitle" style="font-weight:600;font-size:0.92rem">Carregando configuração…</div>
+                        <div id="statusSub" style="font-size:0.8rem;color:var(--text-secondary)"></div>
+                    </div>
+                </div>
+
+                <!-- ── CARD: Cora Bank (Provider Principal) ── -->
+                <div class="bank-card is-primary" id="coraCard" style="margin-bottom:24px">
+                    <div class="bank-header">
+                        <div style="display:flex;gap:14px;align-items:center">
+                            <div class="bank-icon">🏦</div>
+                            <div class="bank-info">
+                                <h3 style="display:flex;gap:8px;align-items:center">
+                                    Cora Bank
+                                    <span class="badge-primary" id="badgePrimary">PROVIDER PRINCIPAL</span>
+                                    <span class="badge-ok" id="badgeStatus"><span>●</span><span id="badgeStatusText">ATIVO</span></span>
+                                </h3>
+                                <p>API Banking Cora — emissão de boletos, PIX, gestão de webhooks</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bank-detail-grid">
+                        <div class="detail-item">
+                            <div class="detail-label">Ambiente</div>
+                            <div class="detail-value" id="coraAmb">—</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Client ID</div>
+                            <div class="detail-value mono" id="coraClientId">—</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Certificado (cert)</div>
+                            <div class="detail-value mono" id="coraCertPath" style="font-size:0.75rem">—</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Chave Privada (key)</div>
+                            <div class="detail-value mono" id="coraKeyPath" style="font-size:0.75rem">—</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Webhook URL</div>
+                            <div class="detail-value mono" id="coraWebhookUrl" style="font-size:0.75rem">—</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Último Token Cacheado</div>
+                            <div class="detail-value" id="coraLastToken">—</div>
+                        </div>
+                    </div>
+
+                    <!-- Health check result (hidden until test) -->
+                    <div class="health-box" id="coraHealthBox">
+                        <div class="health-title"><span id="coraHealthIcon">✓</span><span id="coraHealthTitle">Conexão OK</span></div>
+                        <div class="health-body" id="coraHealthBody">—</div>
+                    </div>
+
+                    <div class="bank-actions">
+                        <button class="btn btn-primary btn-sm" onclick="testCoraConnection()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                            Testar Conexão
+                        </button>
+                        <button class="btn btn-ghost btn-sm" onclick="openUploadCertModal()">🔑 Atualizar Certificados</button>
+                        <button class="btn btn-ghost btn-sm" onclick="openWebhookConfigModal()">📡 Reconfigurar Webhook</button>
+                        <button class="btn btn-ghost btn-sm" onclick="openAmbienteModal()">⚙ï¸ Trocar Ambiente (stage ↔ prod)</button>
+                        <button class="btn btn-ghost btn-sm" onclick="emitirBoletoTeste()">🧪 Emitir Boleto Teste</button>
+                    </div>
+                </div>
+
+                <!-- ── Card: Outros Providers + Logs recentes ── -->
+                <div class="grid grid-cols-1" style="display:grid;gap:24px;grid-template-columns:1fr;margin-bottom:24px">
+
+                    <div class="card">
+                        <div class="card-header" style="flex-wrap:wrap;padding-bottom:16px">
+                            <span class="card-title">📡 Últimas Chamadas ao Gateway</span>
+                            <div style="display:flex;gap:8px">
+                                <button class="btn btn-ghost btn-sm" onclick="loadGatewayLogs()">🔄 Atualizar</button>
+                                <a href="#" class="btn btn-ghost btn-sm" onclick="event.preventDefault();loadLogsFull()">📜 Ver Histórico</a>
+                            </div>
+                        </div>
+                        <div id="gatewayLogsList"></div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header" style="flex-wrap:wrap;padding-bottom:16px">
+                            <span class="card-title">➕ Adicionar Novo Provider</span>
+                            <span style="font-size:0.78rem;color:var(--text-muted)">Provedores prontos para provisionar</span>
+                        </div>
+                        <div class="provider-grid" id="providerTiles">
+                            <!-- preenchido por JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─────────────── MODAL: Upload Certificado ─────────────── -->
+    <div id="modalCert" class="modal-overlay">
+        <div class="modal" style="max-width:520px">
+            <div class="modal-header">
+                <h2 class="modal-title">🔑 Atualizar Certificados mTLS</h2>
+                <button class="modal-close" onclick="closeModal('modalCert')">✖</button>
+            </div>
+            <div class="modal-body">
+                <div style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:16px;padding:12px;background:var(--bg-card);border-radius:8px;border-left:3px solid var(--blue)">
+                    ℹï¸ Os arquivos <code>.pem</code> e <code>.key</code> devem ser gerados via plataforma Cora Web (área de API &gt; Certificados). Após o upload, clique em <strong>Testar Conexão</strong>.
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Certificado (.pem)</label>
+                    <input type="file" id="certFile" accept=".pem" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Chave Privada (.key)</label>
+                    <input type="file" id="keyFile" accept=".key,.pem" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Caminho alternativo (caminho absoluto no servidor)</label>
+                    <input type="text" id="certPath" class="form-input" placeholder="Ex: C:\certs\cora\certificate.pem" style="font-family:'Courier New',monospace;font-size:0.82rem">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('modalCert')">Cancelar</button>
+                <button class="btn btn-primary" onclick="saveCertConfig()">Salvar Certificados</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─────────────── MODAL: Webhook ─────────────── -->
+    <div id="modalWebhook" class="modal-overlay">
+        <div class="modal" style="max-width:520px">
+            <div class="modal-header">
+                <h2 class="modal-title">📡 Reconfigurar Webhook</h2>
+                <button class="modal-close" onclick="closeModal('modalWebhook')">✖</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">URL Pública do Webhook</label>
+                    <input type="text" id="webhookUrl" class="form-input" placeholder="https://api.seudominio.com/api/webhooks/cora" style="font-family:'Courier New',monospace;font-size:0.82rem">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Webhook Secret (HMAC)</label>
+                    <input type="text" id="webhookSecret" class="form-input" placeholder="Gerado na Cora Web → seção Webhooks" style="font-family:'Courier New',monospace;font-size:0.82rem">
+                </div>
+                <div style="font-size:0.78rem;color:var(--text-muted);padding:10px;background:var(--bg-card);border-radius:8px">
+                    💡 Configure o mesmo secret na plataforma Cora Web para validação HMAC dos webhooks recebidos. Em produção, webhooks sem assinatura válida são rejeitados (HTTP 401).
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('modalWebhook')">Cancelar</button>
+                <button class="btn btn-primary" onclick="saveWebhookConfig()">Salvar Webhook</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─────────────── MODAL: Ambiente ─────────────── -->
+    <div id="modalAmb" class="modal-overlay">
+        <div class="modal" style="max-width:420px">
+            <div class="modal-header">
+                <h2 class="modal-title">⚙ï¸ Trocar Ambiente</h2>
+                <button class="modal-close" onclick="closeModal('modalAmb')">✖</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Ambiente Cora</label>
+                    <select id="newAmb" class="form-input">
+                        <option value="stage">Homologação (Sandbox)</option>
+                        <option value="production">Produção (Live)</option>
+                    </select>
+                </div>
+                <div style="font-size:0.78rem;color:var(--text-muted);padding:10px;background:var(--bg-card);border-radius:8px;margin-top:8px">
+                    ⚠ï¸ Alternar entre stage e production <strong>invalida o token cacheado</strong>. Recomendado apenas se você tem os certificados do novo ambiente prontos.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('modalAmb')">Cancelar</button>
+                <button class="btn btn-primary" onclick="saveAmbiente()">Aplicar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script src="../js/storage.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/approval-banner.js"></script>
+    <script src="../js/utils.js"></script>
+    <script>
+        // ─── Auth ───
+        const session = auth.protect(['admin', 'superadmin']);
+        initSidebar();
+
+        // ─── Estado ───
+        let coraConfig = null;
+        let providerList = [
+            { id: 'itau', name: 'Itaú', icon: '🏛️', desc: 'Banking Itaú — boletos registrados, PIX', supported: true },
+            { id: 'bradesco', name: 'Bradesco', icon: '🟡', desc: 'API Bradesco — boletos + Cobrança Direta', supported: false },
+            { id: 'santander', name: 'Santander', icon: '🔴', desc: 'API Santander — boletos + PIX', supported: false },
+            { id: 'mercado_pago', name: 'Mercado Pago', icon: '💙', desc: 'Checkout + QR PIX dinâmico', supported: false },
+            { id: 'pix_direto', name: 'PIX Direto (BACEN)', icon: '⚡', desc: 'Cobrança direta sem intermediário', supported: false },
+            { id: 'stripe', name: 'Stripe', icon: '💜', desc: 'Cartão de crédito + PIX (internacional)', supported: false }
+        ];
+
+        // ─── Carregar config ───
+        async function loadCoraConfig() {
+            try {
+                const res = await fetch('http://localhost:3000/api/bancos/cadastrados');
+                if (!res.ok) throw new Error('Falha ao carregar');
+                const json = await res.json();
+                const rows = json.data || [];
+                coraConfig = rows.find(r => (r.ref_comp || '').toUpperCase().includes('CORA') || (r.banco_nome_ref || '').toLowerCase().includes('cora'));
+                if (!coraConfig) coraConfig = rows[0]; // fallback para o primary
+                if (!coraConfig) {
+                    setBanner('error', 'Nenhum banco configurado', 'Cadastre o Cora em Configurações → Bancos.');
+                    return;
+                }
+                renderCoraConfig();
+                await loadGatewayLogs();
+            } catch (e) {
+                setBanner('error', 'API inacessível', 'O middleware na porta 3000 está rodando? ' + e.message);
+            }
+        }
+
+        function renderCoraConfig() {
+            if (!coraConfig) return;
+            const isProd = coraConfig.ambiente === 'production';
+            const hasCerts = !!(coraConfig.cert_path && coraConfig.key_path);
+            const hasWebhook = !!coraConfig.webhook_url;
+
+            document.getElementById('coraAmb').textContent = isProd ? '🟢 Produção (Live)' : '🟡 Homologação (Sandbox)';
+            document.getElementById('coraAmb').style.color = isProd ? '#2EA043' : '#FF6B00';
+            document.getElementById('coraClientId').textContent = coraConfig.client_id
+                ? `${coraConfig.client_id.substring(0, 12)}…${coraConfig.client_id.substring(coraConfig.client_id.length - 4)}`
+                : '— não configurado —';
+
+            const certEl = document.getElementById('coraCertPath');
+            certEl.textContent = coraConfig.cert_path || '— não configurado —';
+            certEl.classList.toggle('muted', !coraConfig.cert_path);
+
+            const keyEl = document.getElementById('coraKeyPath');
+            keyEl.textContent = coraConfig.key_path || '— não configurado —';
+            keyEl.classList.toggle('muted', !coraConfig.key_path);
+
+            const webhookEl = document.getElementById('coraWebhookUrl');
+            webhookEl.textContent = coraConfig.webhook_url || '— não configurado —';
+            webhookEl.classList.toggle('muted', !coraConfig.webhook_url);
+
+            // Status final
+            const ready = coraConfig.ativo && hasCerts;
+            const statusBadge = document.getElementById('badgeStatus');
+            const statusText = document.getElementById('badgeStatusText');
+            if (ready) {
+                statusBadge.className = 'badge-ok';
+                statusText.textContent = hasWebhook ? 'ATIVO — pronto para emitir' : 'ATIVO — webhook pendente';
+                statusBadge.style.background = 'rgba(255,107,0,.15)';
+                statusBadge.style.color = '#FF6B00';
+            } else {
+                statusBadge.className = 'badge-warn';
+                statusText.textContent = 'CONFIGURAÇãO INCOMPLETA';
+            }
+
+            // Banner
+            if (ready) {
+                setBanner('success', hasWebhook ? 'Banco Cora configurado e pronto para emitir boletos' : 'Banco Cora ativo — configure o webhook para receber pagamentos',
+                    `Ambiente: ${isProd ? 'Produção' : 'Sandbox'} · Client ID: ${coraConfig.client_id?.substring(0, 12)}…`);
+            } else {
+                setBanner('error', 'Configuração incompleta', 'Faça upload dos certificados mTLS (.pem + .key) para começar a emitir.');
+            }
+        }
+
+        function setBanner(type, title, sub) {
+            const banner = document.getElementById('statusBanner');
+            const icon = document.getElementById('statusIcon');
+            const titleEl = document.getElementById('statusTitle');
+            const subEl = document.getElementById('statusSub');
+
+            banner.className = '';
+            if (type === 'success') {
+                banner.style.background = 'rgba(46,160,67,.06)';
+                banner.style.borderColor = 'rgba(46,160,67,.3)';
+                icon.textContent = '✅';
+            } else if (type === 'error') {
+                banner.style.background = 'rgba(218,54,51,.06)';
+                banner.style.borderColor = 'rgba(218,54,51,.3)';
+                icon.textContent = '⚠ï¸';
+            } else {
+                banner.style.background = 'var(--bg-card)';
+                banner.style.borderColor = 'var(--border)';
+                icon.textContent = '⏳';
+            }
+            titleEl.textContent = title;
+            subEl.textContent = sub;
+        }
+
+        // ─── Testar Conexão ───
+        async function testCoraConnection() {
+            const box = document.getElementById('coraHealthBox');
+            const icon = document.getElementById('coraHealthIcon');
+            const ttl = document.getElementById('coraHealthTitle');
+            const body = document.getElementById('coraHealthBody');
+
+            box.classList.add('show');
+            box.classList.remove('success', 'error');
+            icon.textContent = '⏳';
+            ttl.textContent = 'Testando...';
+            body.textContent = 'Solicitando novo token mTLS na API Cora...';
+
+            try {
+                const start = Date.now();
+                const res = await fetch('http://localhost:3000/api/bancos/testar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        provider: 'cora',
+                        client_id: coraConfig?.client_id,
+                        certificate: coraConfig?.cert_path,
+                        key: coraConfig?.key_path,
+                        ambiente: coraConfig?.ambiente
+                    })
+                });
+                const json = await res.json();
+                const latency = Date.now() - start;
+
+                if (res.ok && json.success) {
+                    box.classList.add('success');
+                    icon.textContent = '✓';
+                    ttl.textContent = 'Conexão OK';
+                    body.innerHTML = `<strong>${json.message}</strong><br>Token preview: <code>${json.token_preview}</code><br>Tempo: ${latency}ms · Ambiente: ${coraConfig?.ambiente}`;
+                    toast('Sucesso', 'Banco Cora respondeu com sucesso.', 'success');
+                } else {
+                    throw new Error(json.error || 'Erro desconhecido');
+                }
+            } catch (e) {
+                box.classList.add('error');
+                icon.textContent = '✗';
+                ttl.textContent = 'Falha na conexão';
+                body.innerHTML = `<strong>${e.message}</strong><br><br><strong>Possíveis causas:</strong><br>• Certificados (.pem/.key) não conferem com a Client ID<br>• Client ID não cadastrada na plataforma Cora Web<br>• Ambiente errado (stage vs produção)<br>• Máquina sem acesso à internet`;
+                toast('Erro', e.message, 'error');
+            }
+        }
+
+        // ─── Logs ───
+        async function loadGatewayLogs() {
+            try {
+                const res = await fetch('http://localhost:3000/api/cora/logs?limit=5');
+                const json = await res.json();
+                const logs = json.data || [];
+                const list = document.getElementById('gatewayLogsList');
+                if (logs.length === 0) {
+                    list.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-muted);font-size:0.85rem">Nenhuma chamada registrada ainda. Use "Testar Conexão" para começar.</div>';
+                    return;
+                }
+                list.innerHTML = logs.map(l => `
+                    <div class="log-row">
+                        <div style="flex:1">
+                            <div style="font-weight:600;font-size:0.82rem">${esc(l.type || 'HTTP')} → <code>${esc(l.endpoint || '')}</code></div>
+                            <div style="font-size:0.72rem;color:var(--text-muted);margin-top:2px">${esc(l.contract_id || '')} ${l.charge_id ? '· '+esc(l.charge_id) : ''} · ${fmt.datetime(l.created_at)}</div>
+                        </div>
+                        <span class="log-status ${l.http_status >= 400 ? 'error' : 'success'}">${l.http_status || '—'}</span>
+                    </div>
+                `).join('');
+            } catch (e) {
+                document.getElementById('gatewayLogsList').innerHTML = '<div style="padding:16px;color:var(--danger);font-size:0.85rem">API inacessível: ' + e.message + '</div>';
+            }
+        }
+
+        function loadLogsFull() {
+            window.open('cobrancas.html#logs', '_blank');
+        }
+
+        // ─── Modais ───
+        function openUploadCertModal() {
+            document.getElementById('certFile').value = '';
+            document.getElementById('keyFile').value = '';
+            document.getElementById('certPath').value = coraConfig?.cert_path || '';
+            openModal('modalCert');
+        }
+
+        function saveCertConfig() {
+            const certPath = document.getElementById('certPath').value.trim() || (coraConfig?.cert_path || '');
+            if (!certPath) {
+                toast('Atenção', 'Informe pelo menos o caminho do certificado (campo "Caminho alternativo").', 'warning');
+                return;
+            }
+
+            // Simulação: este endpoint /api/bancos/cadastrados aceita update; aqui só refresca o card.
+            // Em produção, o handler já está pronto em /api/bancos/cadastrados (POST com id preenchido).
+            updateCoraInBackend({
+                id: coraConfig.id,
+                cert_path: certPath,
+                key_path: certPath.replace(/certificate\.pem$/, 'private-key.key')
+            }).then(() => {
+                toast('Certificados atualizados', 'Recarregue e teste a conexão.', 'success');
+                closeModal('modalCert');
+                loadCoraConfig();
+            }).catch(e => {
+                toast('Erro', e.message, 'error');
+            });
+        }
+
+        function openWebhookConfigModal() {
+            document.getElementById('webhookUrl').value = coraConfig?.webhook_url || '';
+            document.getElementById('webhookSecret').value = '';
+            openModal('modalWebhook');
+        }
+
+        function saveWebhookConfig() {
+            const url = document.getElementById('webhookUrl').value.trim();
+            if (!url || !url.startsWith('http')) {
+                toast('Atenção', 'Informe uma URL válida (http/https).', 'warning');
+                return;
+            }
+            updateCoraInBackend({ id: coraConfig.id, webhook_url: url })
+                .then(() => {
+                    toast('Webhook configurado', 'Cadastre o mesmo secret na Cora Web para validação HMAC.', 'success');
+                    closeModal('modalWebhook');
+                    loadCoraConfig();
+                }).catch(e => toast('Erro', e.message, 'error'));
+        }
+
+        function openAmbienteModal() {
+            document.getElementById('newAmb').value = coraConfig?.ambiente || 'stage';
+            openModal('modalAmb');
+        }
+
+        function saveAmbiente() {
+            const novoAmb = document.getElementById('newAmb').value;
+            updateCoraInBackend({ id: coraConfig.id, ambiente: novoAmb })
+                .then(() => {
+                    toast('Ambiente alterado', 'Token anterior invalidado.', 'info');
+                    closeModal('modalAmb');
+                    loadCoraConfig();
+                }).catch(e => toast('Erro', e.message, 'error'));
+        }
+
+        async function updateCoraInBackend(payload) {
+            // POST /api/bancos/cadastrados já trata de update se `id` estiver presente
+            // (vide server.js handler), mas o endpoint expõe só "banco_referencia_id".
+            // Para simplificar, enviamos via POST mantendo id como referência.
+            const res = await fetch('http://localhost:3000/api/bancos/cadastrados', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    ...payload,
+                    banco_referencia_id: coraConfig.banco_referencia_id,
+                    nome_exibicao: coraConfig.nome_exibicao,
+                    client_id: coraConfig.client_id,
+                    ambiente: payload.ambiente || coraConfig.ambiente
+                })
+            });
+            const json = await res.json();
+            if (!res.ok) throw new Error(json.error || 'Falha ao salvar');
+            return json;
+        }
+
+        // ─── Emitir Boleto Teste ───
+        async function emitirBoletoTeste() {
+            const result = await fetch('http://localhost:3000/api/cobrancas/sync').then(r => r.json());
+            if (!coraConfig.client_id) return toast('Erro', 'Configure o Cora primeiro.', 'error');
+
+            const ok = confirm('Emitir um boleto de teste no Cora? Valor simbólico R$ 1,00 com vencimento D+5.');
+            if (!ok) return;
+            try {
+                const res = await fetch('http://localhost:3000/api/cobrancas/emitir', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        provider: 'cora',
+                        contractId: 'TEST_' + Date.now(),
+                        clientId: 'test_client',
+                        value: 1.00,
+                        dueDate: new Date(Date.now() + 5 * 86400000).toISOString().split('T')[0],
+                        services: [{ name: 'Boleto de teste', amount: 100 }],
+                        customerPayload: {
+                            name: 'Teste Renostter',
+                            email: 'teste@renostter.com.br',
+                            document: { identity: '12345678000190', type: 'CNPJ' }
+                        }
+                    })
+                });
+                const json = await res.json();
+                if (res.ok && (json.success || json.duplicate)) {
+                    toast('Boleto emitido', `Cobrança ${json.cobrancaId || ''} criada no Cora. Veja em Cobranças.`, 'success');
+                    loadGatewayLogs();
+                } else {
+                    throw new Error(json.error || 'Falha ao emitir');
+                }
+            } catch (e) {
+                toast('Erro', e.message, 'error');
+            }
+        }
+
+        // ─── Provider tiles ───
+        function renderProviderTiles() {
+            const el = document.getElementById('providerTiles');
+            el.innerHTML = providerList.map(p => `
+                <div class="provider-tile ${p.supported ? '' : 'disabled'}" onclick="${p.supported ? `openProviderWizard('${p.id}')` : ''}">
+                    <div style="font-size:1.6rem;margin-bottom:8px">${p.icon}</div>
+                    <div style="font-weight:600;font-size:0.9rem;margin-bottom:4px">${esc(p.name)}</div>
+                    <div style="font-size:0.75rem;color:var(--text-secondary);line-height:1.35">${esc(p.desc)}</div>
+                    ${p.supported
+                        ? '<div style="margin-top:10px;font-size:0.7rem;color:var(--blue);font-weight:600">Pronto para configurar →</div>'
+                        : '<div style="margin-top:10px;font-size:0.7rem;color:var(--text-muted)">🚧 Em breve</div>'}
+                </div>
+            `).join('');
+        }
+
+        function openProviderWizard(providerId) {
+            const p = providerList.find(x => x.id === providerId);
+            if (!p) return;
+            toast('Wizard de provider', `Para configurar ${p.name}, abra uma issue ou entre em contato com o admin — driver ainda não implementado nesta release.`, 'info');
+        }
+
+        // ─── Init ───
+        document.addEventListener('DOMContentLoaded', () => {
+            renderProviderTiles();
+            loadCoraConfig();
+        });
+    </script>
+</body>
+
+</html>

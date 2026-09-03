@@ -1,0 +1,34 @@
+# Dependências
+node_modules/
+
+# Credenciais (NUNCA commitar)
+.env
+.env.local
+.env.*.local
+
+# Certificados e chaves mTLS (CRÍTICO — equivalem a senha bancária)
+certs/
+*.pem
+*.key
+*.crt
+*.cer
+*.p12
+*.pfx
+
+# Banco de dados local
+cora.sqlite
+cora.sqlite-journal
+cora.sqlite-shm
+cora.sqlite-wal
+database.sqlite
+*.db
+
+# Logs
+*.log
+logs/
+test-output.txt
+error.log
+
+# Test artifacts
+coverage/
+.nyc_output/

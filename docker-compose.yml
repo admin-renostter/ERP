@@ -1,0 +1,210 @@
+# ─────────────────────────────────────────────────────────────────────
+# docker-compose.yml — Renostter CRM
+#
+# Sprint 22 — Fase 0: Infraestrutura base para SaaS
+# Sobe: app + postgres + redis + nginx (reverse proxy) + adminer
+#
+# USO:
+#   1. cp .env.example .env
+#   2. Editar .env (chaves, senhas, etc)
+#   3. docker compose up -d
+#   4. docker compose logs -f app
+# ─────────────────────────────────────────────────────────────────────
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  # ── App: API Renostter CRM ──
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: renostter-app
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_DRIVER: ${DB_DRIVER:-postgres}
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      REDIS_URL: redis://redis:6379
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost,http://localhost:3000,http://localhost:5500}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - app-uploads:/app/uploads
+      - app-backups:/app/backups
+      - app-logs:/app/logs
+    networks:
+      - renostter-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging: *default-logging
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 128M
+
+  # ── Postgres 16 (banco principal) ──
+  postgres:
+    image: postgres:16-alpine
+    container_name: renostter-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-renostter}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-renostter_crm}
+      PGDATA: /var/lib/postgresql/data/pgdata
+      # Performance
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=pt_BR.UTF-8"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./scripts/postgres-init:/docker-entrypoint-initdb.d:ro
+    networks:
+      - renostter-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-renostter} -d ${POSTGRES_DB:-renostter_crm}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    logging: *default-logging
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+        reservations:
+          cpus: "0.1"
+          memory: 128M
+
+  # ── Redis 7 (cache + fila BullMQ) ──
+  redis:
+    image: redis:7-alpine
+    container_name: renostter-redis
+    restart: unless-stopped
+    command: >
+      redis-server
+      --maxmemory 128mb
+      --maxmemory-policy allkeys-lru
+      --appendonly yes
+      --appendfsync everysec
+      --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis-data:/data
+    networks:
+      - renostter-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    logging: *default-logging
+    deploy:
+      resources:
+        limits:
+          cpus: "0.3"
+          memory: 192M
+        reservations:
+          cpus: "0.05"
+          memory: 64M
+
+  # ── Nginx (reverse proxy + TLS) ──
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: renostter-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+      - nginx-logs:/var/log/nginx
+    depends_on:
+      - app
+    networks:
+      - renostter-net
+    logging: *default-logging
+
+  # ── Adminer (UI pra gerenciar Postgres) — apenas em dev/staging ──
+  adminer:
+    image: adminer:4.8.1
+    container_name: renostter-adminer
+    restart: unless-stopped
+    profiles: ["dev", "staging"]  # não sobe em prod
+    ports:
+      - "8080:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+      ADMINER_DESIGN: pepa-linha-dark
+    depends_on:
+      - postgres
+    networks:
+      - renostter-net
+    logging: *default-logging
+
+  # ── Backup automatizado (Sprint 22 — Fase 0) ──
+  backup:
+    image: prodrigestivillo/postgres-backup-local
+    container_name: renostter-backup
+    restart: unless-stopped
+    profiles: ["backup"]  # opcional, sobe com `docker compose --profile backup up -d`
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_DB: ${POSTGRES_DB:-renostter_crm}
+      POSTGRES_USER: ${POSTGRES_USER:-renostter}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      SCHEDULE: "@daily"  # cron: roda 1x por dia às 00:00
+      BACKUP_KEEP_DAYS: 7
+      BACKUP_KEEP_WEEKS: 4
+      BACKUP_KEEP_MONTHS: 6
+      # S3-compatible (Backblaze B2)
+      S3_BUCKET: ${BACKBLAZE_BUCKET:-}
+      S3_ENDPOINT: ${BACKBLAZE_ENDPOINT:-}
+      AWS_ACCESS_KEY_ID: ${BACKBLAZE_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${BACKBLAZE_APP_KEY:-}
+      S3_REGION: us-east-1
+    volumes:
+      - app-backups:/backups
+    depends_on:
+      - postgres
+    networks:
+      - renostter-net
+    logging: *default-logging
+
+volumes:
+  postgres-data:
+    name: renostter-postgres-data
+  redis-data:
+    name: renostter-redis-data
+  app-uploads:
+    name: renostter-uploads
+  app-backups:
+    name: renostter-backups
+  app-logs:
+    name: renostter-logs
+  nginx-logs:
+    name: renostter-nginx-logs
+
+networks:
+  renostter-net:
+    name: renostter-net
+    driver: bridge

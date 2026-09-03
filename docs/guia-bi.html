@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="robots" content="noindex, nofollow"/>
+<title>Guia de Uso — BI Dashboard | Renostter CRM</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+:root { --bg-base:#0d1117; --bg-card:#161b22; --bg-surface:#1c2129; --bg-hover:#21262d; --border:#30363d; --border-soft:rgba(255,255,255,0.06); --text-primary:#e6edf3; --text-secondary:#8b949e; --text-muted:#6b7280; --blue:#00AEEF; --blue-dim:rgba(0,174,239,0.12); --green:#22c55e; --green-dim:rgba(34,197,94,0.12); --orange:#f59e0b; --orange-dim:rgba(245,158,11,0.12); --red:#ef4444; --red-dim:rgba(239,68,68,0.12); --purple:#8b5cf6; --purple-dim:rgba(139,92,246,0.12); --cyan:#06b6d4; --cyan-dim:rgba(6,182,212,0.12); --shadow-md:0 4px 16px rgba(0,0,0,0.3); }
+* { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-behavior:smooth; }
+body { font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif; background:var(--bg-base); color:var(--text-primary); line-height:1.65; font-size:15px; }
+code, .mono { font-family:'JetBrains Mono',Consolas,monospace; font-size:.88em; }
+.hero { background:linear-gradient(135deg,#0d1117 0%,#0a1a2e 50%,#0d1117 100%); border-bottom:1px solid var(--border); padding:60px 40px 50px; position:relative; overflow:hidden; }
+.hero::before { content:''; position:absolute; top:-50%; right:-10%; width:600px; height:600px; background:radial-gradient(circle,var(--cyan-dim) 0%,transparent 60%); pointer-events:none; }
+.hero-inner { max-width:1280px; margin:0 auto; position:relative; z-index:1; }
+.hero-breadcrumb { display:inline-flex; align-items:center; gap:8px; padding:6px 14px; background:var(--bg-card); border:1px solid var(--border); border-radius:50px; font-size:.75rem; color:var(--text-secondary); margin-bottom:24px; }
+.hero-breadcrumb .dot { width:6px; height:6px; border-radius:50%; background:var(--green); box-shadow:0 0 8px var(--green); }
+.hero h1 { font-size:2.6rem; font-weight:800; margin-bottom:14px; background:linear-gradient(90deg,#fff 0%,var(--cyan) 100%); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; letter-spacing:-.02em; }
+.hero .subtitle { color:var(--text-secondary); font-size:1.1rem; max-width:720px; margin-bottom:28px; }
+.hero-meta { display:flex; gap:14px; flex-wrap:wrap; }
+.meta-chip { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; font-size:.8rem; color:var(--text-secondary); }
+.meta-chip strong { color:var(--text-primary); font-weight:600; }
+.meta-chip .icon { font-size:1rem; }
+.layout { max-width:1280px; margin:0 auto; padding:40px; display:grid; grid-template-columns:240px 1fr; gap:50px; }
+@media (max-width:900px) { .layout { grid-template-columns:1fr; padding:24px; } .toc { position:static !important; } }
+.toc { position:sticky; top:24px; align-self:start; max-height:calc(100vh - 48px); overflow-y:auto; padding-right:12px; }
+.toc-title { font-size:.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.08em; margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--border-soft); }
+.toc ul { list-style:none; }
+.toc li { margin-bottom:2px; }
+.toc a { display:block; padding:6px 10px; color:var(--text-secondary); text-decoration:none; font-size:.83rem; border-radius:6px; border-left:2px solid transparent; transition:all .15s; }
+.toc a:hover { color:var(--text-primary); background:var(--bg-card); }
+.toc a.active { color:var(--cyan); border-left-color:var(--cyan); background:var(--cyan-dim); }
+.toc .sub { padding-left:24px; font-size:.78rem; }
+.content { min-width:0; }
+h2 { font-size:1.75rem; font-weight:700; margin:56px 0 20px; padding-bottom:12px; border-bottom:1px solid var(--border); letter-spacing:-.01em; scroll-margin-top:24px; }
+h2:first-of-type { margin-top:0; }
+h2 .num { display:inline-block; width:36px; height:36px; line-height:36px; text-align:center; background:var(--cyan-dim); color:var(--cyan); border-radius:8px; font-size:1.1rem; font-weight:800; margin-right:12px; vertical-align:middle; }
+h3 { font-size:1.2rem; font-weight:700; margin:32px 0 12px; color:var(--text-primary); }
+h4 { font-size:1rem; font-weight:700; margin:20px 0 8px; color:var(--text-primary); }
+p { margin-bottom:14px; color:var(--text-secondary); }
+strong { color:var(--text-primary); font-weight:600; }
+ul, ol { margin:0 0 14px 24px; color:var(--text-secondary); }
+li { margin-bottom:4px; }
+hr { border:none; border-top:1px solid var(--border-soft); margin:40px 0; }
+.callout { display:flex; gap:14px; padding:16px 18px; background:var(--bg-card); border:1px solid var(--border); border-left:4px solid var(--blue); border-radius:8px; margin:18px 0; }
+.callout-icon { font-size:1.3rem; flex-shrink:0; line-height:1; padding-top:2px; }
+.callout-body { flex:1; }
+.callout-title { font-weight:700; color:var(--text-primary); margin-bottom:4px; font-size:.92rem; }
+.callout-body p:last-child { margin-bottom:0; font-size:.92rem; }
+.callout.tip { border-left-color:var(--green); background:linear-gradient(90deg,var(--green-dim),var(--bg-card) 30%); }
+.callout.warn { border-left-color:var(--orange); background:linear-gradient(90deg,var(--orange-dim),var(--bg-card) 30%); }
+.callout.danger { border-left-color:var(--red); background:linear-gradient(90deg,var(--red-dim),var(--bg-card) 30%); }
+.callout.info { border-left-color:var(--blue); }
+pre { background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:14px 16px; overflow-x:auto; font-size:.85rem; line-height:1.55; margin:12px 0; }
+pre code { color:var(--text-primary); }
+.kw { color:#ff7b72; } .fn { color:#d2a8ff; } .st { color:#a5d6ff; } .nm { color:#79c0ff; } .cm { color:var(--text-muted); font-style:italic; }
+.table-wrap { border:1px solid var(--border); border-radius:8px; overflow:hidden; margin:14px 0; }
+table { width:100%; border-collapse:collapse; font-size:.88rem; }
+thead { background:var(--bg-surface); }
+th { text-align:left; padding:10px 14px; font-weight:700; font-size:.72rem; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.05em; border-bottom:1px solid var(--border); }
+td { padding:10px 14px; border-bottom:1px solid var(--border-soft); color:var(--text-primary); vertical-align:top; }
+tbody tr:last-child td { border-bottom:none; }
+tbody tr:hover { background:var(--bg-hover); }
+td code { background:var(--bg-surface); padding:2px 6px; border-radius:4px; font-size:.82rem; color:var(--text-primary); }
+.shot { margin:18px 0; border:1px solid var(--border); border-radius:10px; overflow:hidden; background:var(--bg-card); box-shadow:var(--shadow-md); }
+.shot img { display:block; width:100%; height:auto; }
+.shot-caption { padding:10px 16px; background:var(--bg-surface); border-top:1px solid var(--border-soft); font-size:.82rem; color:var(--text-secondary); display:flex; align-items:center; gap:8px; }
+.shot-caption strong { color:var(--text-primary); }
+kbd { display:inline-block; padding:2px 6px; background:var(--bg-surface); border:1px solid var(--border); border-bottom-width:2px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:.78rem; color:var(--text-primary); font-weight:600; }
+.steps { counter-reset:step; list-style:none; margin:18px 0; padding:0; }
+.steps > li { counter-increment:step; position:relative; padding-left:48px; margin-bottom:20px; min-height:36px; }
+.steps > li::before { content:counter(step); position:absolute; left:0; top:0; width:32px; height:32px; background:var(--cyan); color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.9rem; }
+.badge-i { display:inline-block; padding:2px 8px; background:var(--blue-dim); color:var(--blue); border-radius:4px; font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.03em; vertical-align:middle; }
+.badge-g { background:var(--green-dim); color:var(--green); }
+.badge-o { background:var(--orange-dim); color:var(--orange); }
+.badge-r { background:var(--red-dim); color:var(--red); }
+footer { margin-top:60px; padding:32px 40px; border-top:1px solid var(--border); background:var(--bg-card); text-align:center; color:var(--text-muted); font-size:.85rem; }
+footer .row { display:flex; justify-content:space-between; align-items:center; max-width:1280px; margin:0 auto; flex-wrap:wrap; gap:12px; }
+footer a { color:var(--cyan); text-decoration:none; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="hero-breadcrumb"><span class="dot"></span><span>Renostter CRM · Documentação</span></div>
+    <h1>Guia de Uso — BI Dashboard</h1>
+    <p class="subtitle">Como ler e interpretar os 12 KPIs, 6 charts, funil de vendas, mix de equipamentos e métricas de estoque do dashboard consolidado.</p>
+    <div class="hero-meta">
+      <div class="meta-chip"><span class="icon">📊</span> <strong>Módulo:</strong> BI Dashboard</div>
+      <div class="meta-chip"><span class="icon">✅</span> <strong>Status:</strong> 100% operacional</div>
+      <div class="meta-chip"><span class="icon">📅</span> <strong>Versão:</strong> 1.0 (Jul/2026)</div>
+      <div class="meta-chip"><span class="icon">🔄</span> <strong>Auto-refresh:</strong> 5 minutos</div>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="toc" id="toc">
+    <div class="toc-title">Sumário</div>
+    <ul>
+      <li><a href="#visao-geral">1. Visão geral</a></li>
+      <li><a href="#periodo">2. Filtro de período (novo)</a></li>
+      <li><a href="#kpis">3. Os 12 KPIs + deltas</a></li>
+      <li><a href="#financeiro" class="sub">3.1 Financeiro/Cobrança</a></li>
+      <li><a href="#operacional" class="sub">3.2 Operacional/PMOC</a></li>
+      <li><a href="#vendas" class="sub">3.3 Vendas/Pipeline</a></li>
+      <li><a href="#estoque" class="sub">3.4 Estoque/Operacional</a></li>
+      <li><a href="#charts">4. Os 6 charts</a></li>
+      <li><a href="#funil">5. Funil de Vendas</a></li>
+      <li><a href="#mix">6. Mix de Equipamentos</a></li>
+      <li><a href="#top-clientes">7. Top Clientes (novo) 🏆</a></li>
+      <li><a href="#tecnicos">8. Performance Técnicos (novo) 🛠️</a></li>
+      <li><a href="#como-ler">9. Como ler o BI (workflow)</a></li>
+      <li><a href="#api">10. API reference</a></li>
+    </ul>
+  </nav>
+
+  <main class="content">
+
+    <h2 id="visao-geral"><span class="num">1</span>Visão geral</h2>
+    <p>O <strong>BI Dashboard</strong> é o cockpit do Renostter CRM. Consolida 12 KPIs de 8 módulos diferentes (cobrança, contratos, PMOC, chamados, leads, cotações, estoque, RMR) em uma única tela. Atualiza automaticamente a cada <strong>5 minutos</strong>.</p>
+
+    <h3>O que ele NÃO é</h3>
+    <ul>
+      <li><strong>Não é um sistema de BI corporativo</strong> (Power BI, Tableau) — é um dashboard operacional</li>
+      <li><strong>Não tem drill-down</strong> (clique não abre detalhes)</li>
+    </ul>
+
+    <h3>O que ele é</h3>
+    <ul>
+      <li><strong>Foto executiva do negócio</strong> em tempo real</li>
+      <li><strong>Detector de problemas</strong> (SLA vencendo, churn subindo, estoque crítico)</li>
+      <li><strong>Acompanhamento de metas</strong> (receita, conversão, ticket médio, conformidade)</li>
+      <li><strong>Comparativo temporal</strong> (deltas MoM em 4 KPIs principais)</li>
+    </ul>
+
+    <h3>Quem usa</h3>
+    <ul>
+      <li><strong>Diretoria / Sócios</strong> — visão macro, tomada de decisão estratégica</li>
+      <li><strong>Gerente comercial</strong> — acompanha funil e metas de venda</li>
+      <li><strong>Gerente de operações</strong> — monitora SLA, PMOC, chamados</li>
+      <li><strong>Financeiro</strong> — MRR, inadimplência, fluxo de caixa</li>
+    </ul>
+
+    <div class="callout info">
+      <div class="callout-icon">🔄</div>
+      <div class="callout-body">
+        <div class="callout-title">Auto-refresh + botão "Atualizar"</div>
+        <p>O BI atualiza sozinho a cada 5 minutos. Para forçar refresh manual, clique no botão <kbd>Atualizar</kbd> no canto superior direito. Útil após cadastrar um lead novo ou aprovar uma cotação — você vê o impacto imediato.</p>
+      </div>
+    </div>
+
+    <div class="shot">
+      <img src="assets/guia-bi-1-kpis.png" alt="BI Dashboard - KPIs e charts"/>
+      <div class="shot-caption"><strong>Figura 1.</strong> Tela inicial — 12 KPIs no topo (2 fileiras de 6), 4 charts visíveis (Receita Mensal, Cotações vs Convertidas, Tickets, Leads por Origem). Botão "Atualizar" no topo.</div>
+    </div>
+
+    <h2 id="periodo"><span class="num">2</span>Filtro de período <span class="badge-new">novo</span></h2>
+    <p>No topo do dashboard (canto superior direito) tem um seletor de 4 botões que alternam a janela de análise de <strong>todos os módulos de uma vez</strong>:</p>
+    <table class="ref">
+      <thead><tr><th>Botão</th><th>Janela</th><th>Uso típico</th></tr></thead>
+      <tbody>
+        <tr><td><code>7d</code></td><td>Últimos 7 dias</td><td>Acompanhamento diário / semanal</td></tr>
+        <tr><td><code>30d</code></td><td>Últimos 30 dias</td><td>Análise mensal (default pra operação)</td></tr>
+        <tr><td><code>90d</code></td><td>Últimos 90 dias</td><td>Visão trimestral</td></tr>
+        <tr><td><code>12m</code></td><td>Últimos 12 meses</td><td>Default · visão anual estratégica</td></tr>
+      </tbody>
+    </table>
+    <p><strong>Como funciona:</strong> todos os KPIs, gráficos, funil, mix, top clientes e ranking de técnicos recalculam automaticamente. O botão ativo fica destacado em <strong>azul</strong>. As labels dos KPIs também mudam (ex: "Receita Recebida (7 dias)"). PMOC e Estoque <strong>não</strong> são filtrados (são snapshot atual, não histórico).</p>
+
+    <h3>Deltas MoM (Month-over-Month)</h3>
+    <p>Cada KPI principal mostra um <strong>badge de delta</strong> comparando o período atual com o período anterior equivalente (mesmo tamanho):</p>
+    <ul>
+      <li>🟢 <strong>▲ +X%</strong> (verde): crescimento — bom pra receita, leads, chamados resolvidos</li>
+      <li>🔴 <strong>▼ -X%</strong> (vermelho): queda — investigar</li>
+      <li>⚪ <strong>–</strong> (cinza): sem período anterior pra comparar (ex: lead criado ontem, sem 7 dias anteriores)</li>
+    </ul>
+    <p><strong>KPI → Delta exibido:</strong></p>
+    <ul>
+      <li>Receita Recebida → ▲/▼ % vs período anterior</li>
+      <li>SLA Tickets → ▲/▼ % chamados criados</li>
+      <li>Pipeline Cotações → ▲/▼ % cotações criadas</li>
+      <li>Leads Captados → ▲/▼ % leads criados</li>
+    </ul>
+    <blockquote><strong>Exemplo real:</strong> se você tá em 7d e o badge diz "▼ -100%" em Receita, significa que a receita caiu 100% vs os 7 dias anteriores — investigar.</blockquote>
+
+    <h2 id="kpis"><span class="num">3</span>Os 12 KPIs + deltas MoM</h2>
+    <p>Os KPIs estão organizados em <strong>2 fileiras de 6 cards</strong>, cada um com cor semântica. A 1ª fileira mostra indicadores operacionais clássicos. A 2ª fileira mostra pipeline e estoque.</p>
+
+    <h3 id="financeiro">2.1 KPIs Financeiro / Cobrança (fileira 1)</h3>
+
+    <h4>💰 Receita Recebida (12m)</h4>
+    <p><strong>Cor</strong>: verde · <strong>Fonte</strong>: <code>cobrancas</code> · <strong>Janela</strong>: últimos 12 meses</p>
+    <p>Soma de todas as cobranças com status <code>PAID</code> nos últimos 12 meses. É o <strong>faturamento real</strong> da empresa.</p>
+    <div class="callout tip">
+      <div class="callout-icon">💡</div>
+      <div class="callout-body">
+        <div class="callout-title">Como interpretar</div>
+        <p>• Compare mês a mês (gráfico "Receita Mensal") para ver tendência<br>
+        • Queda > 10% em 2 meses consecutivos = alerta vermelho<br>
+        • Concentração: se 1 cliente = &gt; 30% da receita, é dependência perigosa</p>
+      </div>
+    </div>
+
+    <h4>⏳ Valor Vencido</h4>
+    <p><strong>Cor</strong>: vermelho · <strong>Fonte</strong>: <code>cobrancas</code></p>
+    <p>Soma das cobranças com status <code>OVERDUE</code> (vencidas e não pagas). É a <strong>inadimplência acumulada</strong>.</p>
+    <div class="callout warn">
+      <div class="callout-icon">⚠</div>
+      <div class="callout-body">
+        <div class="callout-title">Regra de bolso — limite saudável de inadimplência</div>
+        <p>• <strong>&lt; 5% da receita</strong> = saudável<br>
+        • <strong>5-10%</strong> = atenção (ligar para cliente)<br>
+        • <strong>&gt; 10%</strong> = problema sério (revisar política de crédito)</p>
+      </div>
+    </div>
+
+    <h4>📅 MRR (Receita Mensal Recorrente)</h4>
+    <p><strong>Cor</strong>: azul · <strong>Fonte</strong>: <code>contratos</code></p>
+    <p>Soma do valor mensal de todos os contratos ativos. Veja detalhes completos no <a href="guia-contratos.html" style="color:var(--cyan)">Guia de Contratos</a>.</p>
+
+    <h4>📋 Conformidade PMOC</h4>
+    <p><strong>Cor</strong>: roxo · <strong>Fonte</strong>: <code>manutencoes_preventivas</code></p>
+    <p>Percentual de manutenções preventivas concluídas no prazo. Veja detalhes no <a href="guia-pmoc.html" style="color:var(--cyan)">Guia de PMOC</a>.</p>
+
+    <h4>🎫 SLA Tickets</h4>
+    <p><strong>Cor</strong>: laranja · <strong>Fonte</strong>: <code>chamados</code></p>
+    <p>Percentual de chamados resolvidos dentro do SLA. Veja detalhes no <a href="guia-chamados.html" style="color:var(--cyan)">Guia de Chamados</a>.</p>
+
+    <h4>📄 Contratos Ativos</h4>
+    <p><strong>Cor</strong>: cinza · <strong>Fonte</strong>: <code>contratos</code></p>
+    <p>Total de contratos com status <code>ativo</code>. Use para acompanhar crescimento de base.</p>
+
+    <h3 id="operacional">2.2 KPIs de Vendas / Pipeline (fileira 2)</h3>
+
+    <h4>📐 Pipeline Cotações (12m)</h4>
+    <p><strong>Cor</strong>: azul · <strong>Fonte</strong>: <code>cotacoes</code></p>
+    <p>Soma do <code>custo_total</code> de todas as cotações criadas nos últimos 12 meses (todos os status). É o <strong>valor potencial</strong> em negociação.</p>
+
+    <h4>💵 Ticket Médio Cotação</h4>
+    <p><strong>Cor</strong>: azul · <strong>Fonte</strong>: <code>cotacoes</code></p>
+    <p>Média de <code>custo_total</code> das cotações dos últimos 12 meses. Use para comparar com ticket médio de contrato (alinhamento de preços).</p>
+
+    <h4>✅ Conversão Cotações</h4>
+    <p><strong>Cor</strong>: verde · <strong>Fonte</strong>: <code>cotacoes</code></p>
+    <p>Percentual de cotações com status <code>aprovada</code> ou <code>convertida</code> sobre o total. <strong>Meta saudável</strong>: &gt; 30%.</p>
+    <div class="callout tip">
+      <div class="callout-icon">💡</div>
+      <div class="callout-body">
+        <div class="callout-title">Benchmark do setor HVAC</div>
+        <p>• <strong>Excelente</strong>: &gt; 40%<br>
+        • <strong>Saudável</strong>: 25-40%<br>
+        • <strong>Preocupante</strong>: &lt; 15% (revisar qualidade das cotações ou follow-up)</p>
+      </div>
+    </div>
+
+    <h3 id="estoque">2.3 KPIs de Leads / Estoque (fileira 2)</h3>
+
+    <h4>🎯 Leads Totais</h4>
+    <p><strong>Cor</strong>: roxo · <strong>Fonte</strong>: <code>leads</code></p>
+    <p>Total de leads no sistema (todos os status). Veja <a href="guia-leads.html" style="color:var(--cyan)">Guia de Leads</a>.</p>
+
+    <h4>⭐ Score Médio Leads</h4>
+    <p><strong>Cor</strong>: laranja · <strong>Fonte</strong>: <code>leads</code></p>
+    <p>Média do score (0-100) de todos os leads. Use como termômetro de qualidade da captação.</p>
+    <p><strong>Meta</strong>: &gt; 50 (morno) indica que leads têm fit razoável.</p>
+
+    <h4>📦 Valor em Estoque</h4>
+    <p><strong>Cor</strong>: verde · <strong>Fonte</strong>: <code>inventory</code></p>
+    <p>Soma de <code>preco_venda × estoque_atual</code> de todos os itens ativos. É o <strong>capital parado em estoque</strong> (a preço de venda).</p>
+    <div class="callout warn">
+      <div class="callout-icon">⚠</div>
+      <div class="callout-body">
+        <div class="callout-title">Atenção ao capital empatado</div>
+        <p>Se <strong>Valor em Estoque / MRR &gt; 3</strong>, você tem mais capital parado em peças do que gera de receita mensal. Considere reduzir SKUs de baixa rotação ou fazer promoção.</p>
+      </div>
+    </div>
+
+    <h2 id="charts"><span class="num">4</span>Os 6 charts</h2>
+
+    <h3>3.1 Receita Mensal (12 meses) — barras duplas</h3>
+    <p><strong>Verde</strong>: receita paga · <strong>Vermelho</strong>: valor vencido. Mostra o quanto entrou vs o quanto ficou devendo mês a mês.</p>
+
+    <h3>3.2 Cotações Criadas vs Convertidas (12m) — barras</h3>
+    <p><strong>Azul</strong>: criadas · <strong>Verde</strong>: convertidas (aprovadas + convertidas em contrato). Se a barra verde está sempre pequena, é gargalo no fechamento.</p>
+
+    <h3>3.3 Tickets Abertos vs Fechados — linhas com área</h3>
+    <p>Tendência temporal. Se a linha de "criados" sobe mas "resolvidos" fica estagnada, backlog está crescendo.</p>
+
+    <h3>3.4 Leads por Origem (conversão) — barras horizontais</h3>
+    <p>Para cada canal (whatsapp, site, evento, etc): azul = total, verde = convertidos. <strong>Canal com mais convertidos = onde investir marketing</strong>.</p>
+
+    <h3>3.5 Status das Cobranças — donut</h3>
+    <p>Distribuição de valores: recebido (verde), vencido (vermelho), pendente (amarelo).</p>
+
+    <h3>3.6 Status dos Tickets — donut</h3>
+    <p>Em aberto (amarelo) vs fechados (verde). Se donut for 100% amarelo, equipe técnica sobrecarregada.</p>
+
+    <div class="shot">
+      <img src="assets/guia-bi-2-meio.png" alt="BI Dashboard - parte do meio"/>
+      <div class="shot-caption"><strong>Figura 2.</strong> Parte intermediária do BI — donuts de status de cobranças e tickets, seção PMOC com barra de conformidade.</div>
+    </div>
+
+    <h2 id="funil"><span class="num">5</span>Funil de Vendas</h2>
+    <p>Logo abaixo dos KPIs, há um card com 5 métricas em linha que mostram o caminho do lead até o cliente:</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Etapa</th><th>O que mostra</th><th>Interpretação</th></tr></thead>
+        <tbody>
+          <tr><td>1. Leads Captados</td><td>Total de leads no sistema</td><td>Volume da captação</td></tr>
+          <tr><td>2. Qualificados</td><td>Leads com score ≥ 60 ou marcados manualmente</td><td>Qualidade da captação</td></tr>
+          <tr><td>3. Cotações Criadas</td><td>Total de cotações (12m)</td><td>Produtividade do vendedor</td></tr>
+          <tr><td>4. Aprovadas/Convertidas</td><td>Cotações ganhas</td><td>Taxa de fechamento</td></tr>
+          <tr><td>5. Pipeline Aprovado</td><td>Soma do valor das cotações ganhas</td><td>Receita garantida no curto prazo</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>Use para diagnosticar gargalos: <em>"temos 5 leads qualificados mas só 2 cotações"</em> = problema de produtividade do vendedor, não de captação.</p>
+
+    <h2 id="mix"><span class="num">6</span>Mix de Equipamentos Mais Cotados</h2>
+    <p>Tabela com os 10 SKUs que mais aparecem em cotações, com ranking de vezes cotado, quantidade total, valor e % de participação.</p>
+
+    <div class="callout info">
+      <div class="callout-icon">📌</div>
+      <div class="callout-body">
+        <div class="callout-title">Para usar em decisão de compra</div>
+        <p>SKUs no topo da lista = comprar mais (alta demanda). SKUs no final da lista = avaliar descontinuar. Compare com a margem de cada um (não confundir mais cotado com mais rentável).</p>
+      </div>
+    </div>
+
+    <h3>Leads por Origem (no chart + na KPI)</h3>
+    <p>O BI mostra leads agrupados por canal. <strong>Origem com mais convertidos = onde investir marketing</strong>. Compare com CPL (custo por lead) de cada canal para calcular ROI real.</p>
+
+    <h2 id="top-clientes"><span class="num">7</span>Top Clientes (novo) 🏆 <span class="badge-new">novo</span></h2>
+    <p>Tabela ranqueada dos <strong>10 clientes que mais geraram receita paga</strong> no período selecionado. Mostra também cobranças, valor vencido, chamados e status (Em dia / ⚠ vencido).</p>
+    <table class="ref">
+      <thead><tr><th>Coluna</th><th>O que mostra</th></tr></thead>
+      <tbody>
+        <tr><td><strong>#</strong></td><td>Posição no ranking (🥇🥈🥉 medalhas)</td></tr>
+        <tr><td><strong>Cliente</strong></td><td>Nome do cliente</td></tr>
+        <tr><td><strong>Cobranças</strong></td><td>Qtd de cobranças geradas no período</td></tr>
+        <tr><td><strong>Receita Paga</strong></td><td>Soma de valores com status <code>PAID</code></td></tr>
+        <tr><td><strong>Vencido</strong></td><td>Soma de cobranças vencidas (negativo pro cliente)</td></tr>
+        <tr><td><strong>Chamados</strong></td><td>Qtd de chamados abertos no período</td></tr>
+        <tr><td><strong>Status</strong></td><td>Badge verde "Em dia" ou vermelho com valor</td></tr>
+      </tbody>
+    </table>
+    <div class="callout tip">
+      <div class="callout-icon">📌</div>
+      <div class="callout-body">
+        <div class="callout-title">Para usar em gestão de carteira</div>
+        <p>Clientes nos top 3 merecem tratamento VIP. Cliente com receita alta <strong>e</strong> valor vencido = oportunidade de cobrança ativa (ligar, negociar). Use para priorizar a lista de follow-up comercial.</p>
+      </div>
+    </div>
+    <div class="callout info">
+      <div class="callout-icon">💡</div>
+      <div class="callout-body">
+        <div class="callout-title">Dica de segmentação</div>
+        <p>Separe em 3 grupos — VIP (top 3), Ativos (4-10), Dormentes (sem receita no período). Cada um merece cadência de contato diferente.</p>
+      </div>
+    </div>
+
+    <h2 id="tecnicos"><span class="num">8</span>Performance Técnicos (novo) 🛠️ <span class="badge-new">novo</span></h2>
+    <p>Ranking dos <strong>técnicos ativos com mais chamados</strong> no período. Mostra total, resolvidos, em aberto, taxa de resolução e barra visual de progresso.</p>
+    <table class="ref">
+      <thead><tr><th>Coluna</th><th>O que mostra</th></tr></thead>
+      <tbody>
+        <tr><td><strong>#</strong></td><td>Posição no ranking</td></tr>
+        <tr><td><strong>Técnico</strong></td><td>Nome do técnico</td></tr>
+        <tr><td><strong>Total</strong></td><td>Qtd de chamados atribuídos no período</td></tr>
+        <tr><td><strong>Resolvidos</strong></td><td>Status <code>Resolvido</code> ou <code>Fechado</code></td></tr>
+        <tr><td><strong>Em Aberto</strong></td><td>Status diferente de resolvido/fechado/cancelado</td></tr>
+        <tr><td><strong>Taxa Resolução</strong></td><td>% resolvidos/total (verde ≥80%, laranja ≥50%, vermelho &lt;50%)</td></tr>
+        <tr><td><strong>Barra</strong></td><td>Visual da taxa</td></tr>
+      </tbody>
+    </table>
+    <div class="callout tip">
+      <div class="callout-icon">📌</div>
+      <div class="callout-body">
+        <div class="callout-title">Para usar em gestão de equipe</div>
+        <p>Técnico com <strong>alta taxa de resolução</strong> = eficiente, considere bonificar. Técnico com <strong>muitos chamados mas baixa taxa</strong> = sobrecarregado ou com gargalo de conhecimento. <strong>Poucos chamados + alta taxa</strong> = capacidade ociosa, atribuir mais serviço.</p>
+      </div>
+    </div>
+    <div class="callout warn">
+      <div class="callout-icon">🎯</div>
+      <div class="callout-body">
+        <div class="callout-title">Reunião 1-a-1</div>
+        <p>Use essa tabela na conversa mensal. Não é pra punir, é pra entender — técnico com taxa baixa pode estar com casos complexos demais (rebalancear) ou precisando de treinamento.</p>
+      </div>
+    </div>
+
+    <h2 id="como-ler"><span class="num">9</span>Como ler o BI (workflow recomendado)</h2>
+    <p>Sugestão de leitura diária (5-10 min):</p>
+
+    <ol class="steps">
+      <li><strong>Topo (KPI Row 1)</strong> — Receita subiu? Inadimplência controlada? MRR crescendo? (olhe o <strong>delta MoM</strong> 🟢🔴)</li>
+      <li><strong>Seletor de período</strong> — comece com 7d pra ver o agora, depois 30d/12m pra ver tendência</li>
+      <li><strong>Topo (KPI Row 2)</strong> — Pipeline de cotações saudável? Estoque crítico? Leads crescendo?</li>
+      <li><strong>Charts superiores</strong> — Receita mensal em tendência de alta?</li>
+      <li><strong>Funil de Vendas</strong> — Gargalo em alguma etapa?</li>
+      <li><strong>PMOC + Tickets</strong> — SLA e conformidade em alta?</li>
+      <li><strong>Mix de equipamentos</strong> — Top 3 dominam o portfólio?</li>
+      <li><strong>Top Clientes</strong> 🏆 — Quem são os VIPs? Algum com valor vencido alto?</li>
+      <li><strong>Performance Técnicos</strong> 🛠️ — Equipe equilibrada? Algum sobrecarregado?</li>
+    </ol>
+
+    <div class="callout tip">
+      <div class="callout-icon">🎯</div>
+      <div class="callout-body">
+        <div class="callout-title">Cerimônia semanal sugerida</div>
+        <p>Toda segunda-feira, abra o BI em reunião de 30 min com a equipe. Cada um fala 1 número: <em>"essa semana o MRR subiu 2% porque fechamos o cliente X"</em>. A cultura de dados começa com ritual.</p>
+      </div>
+    </div>
+
+    <h2 id="api"><span class="num">10</span>API reference</h2>
+    <p>O BI consome 1 endpoint principal:</p>
+
+    <h3>GET /api/bi/overview</h3>
+    <p><strong>Query params:</strong></p>
+    <ul>
+      <li><code>period</code> (opcional): <code>7d</code> | <code>30d</code> | <code>90d</code> | <code>12m</code> (default <code>12m</code>)</li>
+    </ul>
+    <p>Retorna o snapshot completo do BI em JSON, com <strong>17 chaves</strong> (a partir de v1.1): <code>cobrancas</code>, <code>pmoc</code>, <code>rmr</code>, <code>tickets</code>, <code>cotacoes</code>, <code>leads</code>, <code>estoque</code>, <code>deltas</code>, <code>topClientes</code>, <code>tecnicoPerformance</code>, <code>monthlyRevenue</code>, <code>ticketsTrend</code>, <code>cotacoesTrend</code>, <code>mixEquipamentos</code>, <code>leadsPorOrigem</code>, <code>period</code>.</p>
+
+    <pre><code>{
+  <span class="st">"success"</span>: <span class="kw">true</span>,
+  <span class="st">"data"</span>: {
+    <span class="st">"cobrancas"</span>: { <span class="st">"totalRecebido"</span>: <span class="nm">368440</span>, <span class="st">"totalVencido"</span>: <span class="nm">365427</span>, ... },
+    <span class="st">"cotacoes"</span>: { <span class="st">"total"</span>: <span class="nm">7</span>, <span class="st">"valorTotal"</span>: <span class="nm">92843.85</span>, <span class="st">"taxaConversao"</span>: <span class="nm">0</span> },
+    <span class="st">"leads"</span>: { <span class="st">"total"</span>: <span class="nm">1</span>, <span class="st">"scoreMedio"</span>: <span class="nm">75</span> },
+    <span class="st">"mixEquipamentos"</span>: [{ <span class="st">"sku"</span>: <span class="st">"AC-LG-30K"</span>, <span class="st">"vezes_cotado"</span>: <span class="nm">6</span>, <span class="st">"valor_total"</span>: <span class="nm">43794</span> }],
+    ...
+  }
+}</code></pre>
+
+    <p>O frontend faz <code>fetch('/api/bi/overview')</code> a cada 5 minutos (configurável em <code>setInterval(loadAll, 300000)</code>).</p>
+
+    <hr>
+
+    <div class="callout tip">
+      <div class="callout-icon">📚</div>
+      <div class="callout-body">
+        <div class="callout-title">Guias relacionados</div>
+        <p>• <a href="README.md" style="color:var(--cyan)">README geral</a> · <a href="guia-cotacao.html" style="color:var(--cyan)">Cotação</a> · <a href="guia-pmoc.html" style="color:var(--cyan)">PMOC</a><br>
+        • <a href="guia-contratos.html" style="color:var(--cyan)">Contratos &amp; RMR</a> · <a href="guia-leads.html" style="color:var(--cyan)">Leads</a> · <a href="guia-chamados.html" style="color:var(--cyan)">Chamados</a></p>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<footer>
+  <div class="row">
+    <div>Renostter Climatização &amp; Manutenção HVAC · contato@renostter.com.br · (11) 9999-9999</div>
+    <div>v1.0 · 22/07/2026 · <a href="README.md">Índice</a> · <a href="guia-cotacao.html">Cotação</a> · <a href="guia-estoque.html">Estoque</a></div>
+  </div>
+</footer>
+
+<script>
+const tocLinks = document.querySelectorAll('.toc a');
+const sections = Array.from(tocLinks).map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    const id = '#' + entry.target.id;
+    const link = document.querySelector('.toc a[href="' + id + '"]');
+    if (link && entry.isIntersecting) {
+      tocLinks.forEach(l => l.classList.remove('active'));
+      link.classList.add('active');
+    }
+  });
+}, { rootMargin: '-20% 0px -70% 0px' });
+sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>

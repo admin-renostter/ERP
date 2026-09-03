@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<title>Cotações & Dimensionamento | Renostter CRM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../css/global.css" />
+<style>
+.wizard-steps { display: flex; align-items: center; gap: 8px; margin-bottom: 24px; padding: 16px; background: var(--bg-surface); border-radius: 10px; border: 1px solid var(--border); }
+.wizard-step { display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); background: var(--bg-card); border: 1px solid var(--border); }
+.wizard-step.active { color: var(--blue); border-color: var(--blue); background: var(--blue-dim); }
+.wizard-step.done { color: var(--green); border-color: var(--green); background: var(--green-dim); }
+.wizard-step .num { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 700; background: var(--border); color: var(--text-secondary); }
+.wizard-step.active .num { background: var(--blue); color: #fff; }
+.wizard-step.done .num { background: var(--green); color: #fff; }
+.wizard-step-sep { color: var(--text-muted); font-size: 0.85rem; }
+
+.wizard-content { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; min-height: 400px; }
+.wizard-step-pane { display: none; }
+.wizard-step-pane.active { display: block; }
+.wizard-step-pane h3 { font-size: 1rem; font-weight: 700; margin-bottom: 6px; }
+.wizard-step-pane .subtitle { color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 20px; }
+
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group label { font-size: 0.78rem; font-weight: 600; color: var(--text-secondary); }
+.form-group input, .form-group select, .form-group textarea { padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-surface); color: var(--text-primary); font-size: 0.85rem; }
+.form-group .hint { font-size: 0.7rem; color: var(--text-muted); }
+
+.calc-result { background: linear-gradient(135deg, var(--blue-dim), var(--purple-dim)); border: 1px solid var(--blue); border-radius: 10px; padding: 20px; margin-top: 16px; }
+.calc-result-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; }
+.calc-result-item { text-align: center; }
+.calc-result-item .lbl { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+.calc-result-item .val { font-size: 1.6rem; font-weight: 800; margin-top: 4px; line-height: 1.1; color: var(--blue); }
+.calc-result-item .val.big { font-size: 2.2rem; }
+.calc-result-item .sub { font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; }
+
+.cost-breakdown { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-top: 16px; }
+.cost-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.cost-row:last-child { border-bottom: none; }
+.cost-row.total { font-weight: 700; font-size: 1.1rem; padding-top: 12px; border-top: 2px solid var(--blue); color: var(--blue); }
+.cost-row .label { color: var(--text-secondary); }
+.cost-row .value { font-weight: 600; }
+
+.action-bar { display: flex; justify-content: space-between; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border); }
+
+.kpi-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-bottom: 20px; }
+.kpi-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+.kpi-card .lbl { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+.kpi-card .val { font-size: 1.6rem; font-weight: 800; margin-top: 4px; line-height: 1.1; }
+.kpi-card .sub { font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; }
+.kpi-card.green .val { color: var(--green); }
+.kpi-card.blue .val { color: var(--blue); }
+.kpi-card.orange .val { color: var(--orange); }
+.kpi-card.red .val { color: var(--red); }
+.kpi-card.purple .val { color: var(--purple); }
+
+@media (max-width: 1024px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body>
+<div class="app-layout">
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <img src="../assets/logo-crm.png" alt="Renostter CRM" style="max-height:52px;object-fit:contain">
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Principal</div>
+    <a class="nav-item" href="dashboard.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span>Dashboard</span></a>
+    <a class="nav-item" href="financeiro.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span>Financeiro</span></a>
+    <a class="nav-item" href="cobrancas.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg><span>Cobranças</span></a>
+    <div class="nav-section-label">Gestão</div>
+    <a class="nav-item" href="clients.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><span>Clientes</span></a>
+    <a class="nav-item" href="leads.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.39a2 2 0 0 1 1.98-2.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span>Leads</span></a>
+    <a class="nav-item" href="contracts.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>Contratos</span></a>
+    <a class="nav-item" href="tickets.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><span>Chamados</span></a>
+    <a class="nav-item active" href="cotacoes.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11H5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2h-4"/><path d="M9 11V7a3 3 0 0 1 6 0v4"/><circle cx="12" cy="15" r="1"/></svg><span>Cotações</span></a>
+    <div class="nav-section-label">Operacional</div>
+    <a class="nav-item" href="dispatch.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg><span>Dispatch</span></a>
+    <a class="nav-item" href="garantia.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><span>Garantia</span></a>
+    <a class="nav-item" href="pmoc.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg><span>PMOC</span></a>
+    <div class="nav-section-label">Análise</div>
+    <a class="nav-item" href="reports.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>Relatórios</span></a>
+  </nav>
+</aside>
+
+<div class="main-content">
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="hamburger btn btn-ghost btn-icon" id="hamburger"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <span class="page-title">Cotações & Dimensionamento HVAC</span>
+    </div>
+    <div class="topbar-right">
+      <button class="btn btn-primary btn-sm" onclick="openNovaCotacao()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nova Cotação
+      </button>
+    </div>
+  </div>
+
+  <div class="page-body">
+
+    <!-- KPIs -->
+    <div class="kpi-grid" id="kpiGrid">
+      <div class="kpi-card blue"><div class="lbl">Total</div><div class="val" id="kpiTotal">—</div><div class="sub">cotações</div></div>
+      <div class="kpi-card green"><div class="lbl">Aprovadas</div><div class="val" id="kpiAprovadas">—</div><div class="sub">últ. 30d</div></div>
+      <div class="kpi-card orange"><div class="lbl">Conversão</div><div class="val" id="kpiConversao">—%</div><div class="sub">aprovadas/total</div></div>
+      <div class="kpi-card purple"><div class="lbl">Ticket Médio</div><div class="val" id="kpiTicket">—</div><div class="sub">aprovadas</div></div>
+      <div class="kpi-card red"><div class="lbl">Vencidas</div><div class="val" id="kpiVencidas">—</div><div class="sub">pendentes</div></div>
+    </div>
+
+    <!-- ABAS: LISTA / NOVA -->
+    <div id="tab-list" class="tab-pane active">
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <input type="text" class="search-input" id="searchInput" placeholder="Buscar cotação, cliente..." oninput="loadCotacoes()">
+          <select class="filter-select" id="filtroStatus" onchange="loadCotacoes()">
+            <option value="">Todos status</option>
+            <option value="rascunho">Rascunho</option>
+            <option value="enviada">Enviada</option>
+            <option value="aprovada">Aprovada</option>
+            <option value="rejeitada">Rejeitada</option>
+            <option value="convertida">Convertida (contrato)</option>
+            <option value="vencida">Vencida</option>
+          </select>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table" id="tblCotacoes">
+          <colgroup><col style="width:18%"><col style="width:14%"><col style="width:8%"><col style="width:8%"><col style="width:8%"><col style="width:14%"><col style="width:10%"><col style="width:10%"><col style="width:18%"></colgroup>
+          <thead>
+            <tr>
+              <th>Cotação</th>
+              <th>Cliente / Lead</th>
+              <th>BTU</th>
+              <th>kW</th>
+              <th>Tipo</th>
+              <th>Equipamento</th>
+              <th>Total</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tblCotacoesBody">
+            <tr><td colspan="9" style="text-align:center;padding:40px"><div style="opacity:0.6">Carregando...</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- WIZARD NOVA COTAÇÃO -->
+    <div id="tab-wizard" class="tab-pane" style="display:none">
+
+      <div class="wizard-steps">
+        <div class="wizard-step active" data-step="1"><div class="num">1</div> Cliente</div>
+        <div class="wizard-step-sep">→</div>
+        <div class="wizard-step" data-step="2"><div class="num">2</div> Ambiente</div>
+        <div class="wizard-step-sep">→</div>
+        <div class="wizard-step" data-step="3"><div class="num">3</div> Cálculo</div>
+        <div class="wizard-step-sep">→</div>
+        <div class="wizard-step" data-step="4"><div class="num">4</div> Revisão</div>
+      </div>
+
+      <div class="wizard-content">
+
+        <!-- STEP 1: Cliente/Lead -->
+        <div class="wizard-step-pane active" data-step="1">
+          <h3>👥 Vincular Cliente ou Lead</h3>
+          <p class="subtitle">Escolha para quem é a cotação. Pode ser um cliente existente, um lead qualificado ou um contato avulso.</p>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Cliente existente</label>
+              <select id="w_cliente" onchange="preencherContato('cliente')">
+                <option value="">— Nenhum —</option>
+              </select>
+              <span class="hint">Cotação será vinculada a este cliente</span>
+            </div>
+            <div class="form-group">
+              <label>Ou Lead (qualificado)</label>
+              <select id="w_lead" onchange="preencherContato('lead')">
+                <option value="">— Nenhum —</option>
+              </select>
+              <span class="hint">Cotação pode ser convertida em cliente na aprovação</span>
+            </div>
+          </div>
+          <div class="form-grid" style="margin-top:14px">
+            <div class="form-group">
+              <label>Contato (nome)</label>
+              <input type="text" id="w_contato_nome" placeholder="Nome do responsável">
+            </div>
+            <div class="form-group">
+              <label>Contato (e-mail)</label>
+              <input type="email" id="w_contato_email" placeholder="email@empresa.com">
+            </div>
+            <div class="form-group">
+              <label>Contato (telefone)</label>
+              <input type="tel" id="w_contato_telefone" placeholder="(11) 99999-9999">
+            </div>
+          </div>
+          <div class="form-group" style="margin-top:14px">
+            <label>Endereço da Obra</label>
+            <input type="text" id="w_endereco" placeholder="Av. Paulista, 1000 - Bela Vista - São Paulo/SP">
+          </div>
+        </div>
+
+        <!-- STEP 2: Ambiente -->
+        <div class="wizard-step-pane" data-step="2">
+          <h3>📐 Dados do Ambiente</h3>
+          <p class="subtitle">Informe as características do ambiente para dimensionar a carga térmica corretamente.</p>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Tipo de ambiente</label>
+              <select id="w_ambiente_tipo">
+                <option value="residencial">Residencial</option>
+                <option value="comercial">Comercial</option>
+                <option value="industrial">Industrial / Galpão</option>
+                <option value="servidor">Sala de Servidor</option>
+                <option value="cozinha">Cozinha Industrial</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Área (m²) *</label>
+              <input type="number" id="w_area_m2" min="1" step="0.1" placeholder="Ex: 35" oninput="autoCalcular()">
+              <span class="hint">Metragem quadrada do ambiente</span>
+            </div>
+            <div class="form-group">
+              <label> Pé-direito (m)</label>
+              <input type="number" id="w_pe_direito" min="2" max="6" step="0.1" value="2.8" oninput="autoCalcular()">
+              <span class="hint">Padrão: 2.8m (teto) — afeta fator</span>
+            </div>
+            <div class="form-group">
+              <label>Tipo de uso</label>
+              <select id="w_tipo_uso" onchange="autoCalcular()">
+                <option value="leve">Leve (escritório, dormitório)</option>
+                <option value="normal" selected>Normal (sala, loja)</option>
+                <option value="intensivo">Intensivo (cozinha, academia)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-grid" style="margin-top:14px">
+            <div class="form-group">
+              <label>Número de pessoas</label>
+              <input type="number" id="w_num_pessoas" min="0" value="0" oninput="autoCalcular()">
+            </div>
+            <div class="form-group">
+              <label>Equipamentos elétricos</label>
+              <input type="number" id="w_num_equipamentos" min="0" value="0" oninput="autoCalcular()">
+              <span class="hint">PCs, TVs, geladeiras...</span>
+            </div>
+            <div class="form-group">
+              <label>Janelas</label>
+              <input type="number" id="w_num_janelas" min="0" value="1" oninput="autoCalcular()">
+            </div>
+            <div class="form-group">
+              <label>Orientação solar</label>
+              <select id="w_orientacao" onchange="autoCalcular()">
+                <option value="sul">Sul (menos sol)</option>
+                <option value="leste">Leste</option>
+                <option value="norte">Norte</option>
+                <option value="oeste">Oeste (mais sol)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-grid" style="margin-top:14px">
+            <div class="form-group">
+              <label>Insolação</label>
+              <select id="w_insolacao" onchange="autoCalcular()">
+                <option value="nenhuma">Nenhuma (sem janelas)</option>
+                <option value="fraca" selected>Fraca (sombra, árvores)</option>
+                <option value="media">Média</option>
+                <option value="forte">Forte (sol direto)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Refrigerante</label>
+              <select id="w_refrigerante" onchange="autoCalcular()">
+                <option value="R-410A" selected>R-410A (padrão atual)</option>
+                <option value="R-32">R-32 (ecológico)</option>
+                <option value="R-22">R-22 (legado)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 3: Cálculo (preview) -->
+        <div class="wizard-step-pane" data-step="3">
+          <h3>🧮 Resultado do Dimensionamento</h3>
+          <p class="subtitle">Cálculo automático baseado em norma técnica. Pode ajustar a margem de lucro e custos.</p>
+          <div class="calc-result">
+            <div class="calc-result-grid">
+              <div class="calc-result-item">
+                <div class="lbl">BTU Calculado</div>
+                <div class="val" id="r_btu_calc">—</div>
+                <div class="sub">demanda térmica</div>
+              </div>
+              <div class="calc-result-item">
+                <div class="lbl">BTU Recomendado</div>
+                <div class="val big" id="r_btu_recom">—</div>
+                <div class="sub">comercial padrão</div>
+              </div>
+              <div class="calc-result-item">
+                <div class="lbl">Potência (kW)</div>
+                <div class="val" id="r_potencia">—</div>
+                <div class="sub">consumo estimado</div>
+              </div>
+              <div class="calc-result-item">
+                <div class="lbl">Equipamento Sugerido</div>
+                <div class="val" id="r_equip" style="font-size:0.95rem;line-height:1.3">—</div>
+                <div class="sub" id="r_equip_sub">—</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-grid" style="margin-top:16px">
+            <div class="form-group">
+              <label>Margem de Lucro (%)</label>
+              <input type="number" id="w_margem" min="0" max="100" value="30" oninput="autoCalcular()">
+            </div>
+            <div class="form-group">
+              <label>Custo Instalação (R$)</label>
+              <input type="number" id="w_custo_inst" min="0" step="50" value="800" oninput="autoCalcular()">
+            </div>
+            <div class="form-group">
+              <label>Custo Equipamento (R$)</label>
+              <input type="number" id="w_custo_equip" min="0" step="100" oninput="autoCalcular()">
+              <span class="hint">Sugerido do estoque</span>
+            </div>
+            <div class="form-group">
+              <label>Validade (dias)</label>
+              <input type="number" id="w_validade" min="1" max="90" value="15">
+            </div>
+          </div>
+
+          <div class="cost-breakdown">
+            <div class="cost-row"><span class="label">Equipamento</span><span class="value" id="b_equip">R$ 0,00</span></div>
+            <div class="cost-row"><span class="label">Instalação (materiais + deslocamento)</span><span class="value" id="b_inst">R$ 0,00</span></div>
+            <div class="cost-row"><span class="label">Mão de obra (4h × R$ 80/h)</span><span class="value" id="b_obra">R$ 0,00</span></div>
+            <div class="cost-row"><span class="label">Subtotal</span><span class="value" id="b_sub">R$ 0,00</span></div>
+            <div class="cost-row"><span class="label">Margem de Lucro (<span id="b_margem_pct">30</span>%)</span><span class="value" id="b_lucro">R$ 0,00</span></div>
+            <div class="cost-row total"><span class="label">TOTAL</span><span class="value" id="b_total">R$ 0,00</span></div>
+          </div>
+        </div>
+
+        <!-- STEP 4: Revisão e salvar -->
+        <div class="wizard-step-pane" data-step="4">
+          <h3>📋 Revisão Final</h3>
+          <p class="subtitle">Confirme os dados e salve a cotação como rascunho (você pode enviar depois).</p>
+          <div class="form-group">
+            <label>Título da cotação</label>
+            <input type="text" id="w_titulo" placeholder="Será gerado automaticamente se vazio">
+          </div>
+          <div class="form-group" style="margin-top:14px">
+            <label>Observações internas</label>
+            <textarea id="w_obs" rows="4" placeholder="Notas, condições especiais, observações para a equipe..."></textarea>
+          </div>
+          <div id="resumo" style="background:var(--bg-surface);border:1px solid var(--border);border-radius:10px;padding:16px;margin-top:16px"></div>
+        </div>
+
+      </div>
+
+      <div class="action-bar">
+        <button class="btn btn-ghost btn-sm" onclick="wizardVoltar()" id="btnVoltar" style="display:none">← Voltar</button>
+        <div></div>
+        <button class="btn btn-primary btn-sm" onclick="wizardProximo()" id="btnProximo">Próximo →</button>
+        <button class="btn btn-primary btn-sm" onclick="salvarCotacao()" id="btnSalvar" style="display:none">💾 Salvar Cotação</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+const BASE = '/api';
+let currentStep = 1;
+let calcResult = null;
+let allClientes = [];
+let allLeads = [];
+let editingId = null;
+
+document.addEventListener('DOMContentLoaded', async () => {
+  initSidebar();
+  await Promise.all([loadClientes(), loadLeads()]);
+  await Promise.all([loadCotacoes(), loadStats()]);
+});
+
+function initSidebar() {
+  const hamburger = document.getElementById('hamburger');
+  const sidebar = document.getElementById('sidebar');
+  hamburger?.addEventListener('click', () => sidebar?.classList.toggle('collapsed'));
+}
+
+async function loadClientes() {
+  try {
+    const r = await fetch(BASE + '/clientes');
+    const j = await r.json();
+    if (j.success) {
+      allClientes = j.data || [];
+      const sel = document.getElementById('w_cliente');
+      sel.innerHTML = '<option value="">— Nenhum —</option>' + allClientes.map(c => `<option value="${c.id}">${esc(c.fantasia || c.nome)}</option>`).join('');
+    }
+  } catch (e) { console.error('clientes:', e); }
+}
+
+async function loadLeads() {
+  try {
+    const r = await fetch(BASE + '/leads?limit=200');
+    const j = await r.json();
+    if (j.success) {
+      allLeads = (j.data || []).filter(l => l.status === 'qualificado' || l.status === 'proposta' || l.status === 'negociacao');
+      const sel = document.getElementById('w_lead');
+      sel.innerHTML = '<option value="">— Nenhum —</option>' + allLeads.map(l => `<option value="${l.id}">${esc(l.nome)} (${l.pontuacao || 0}pts)</option>`).join('');
+    }
+  } catch (e) { console.error('leads:', e); }
+}
+
+function preencherContato(tipo) {
+  if (tipo === 'cliente') {
+    const id = document.getElementById('w_cliente').value;
+    if (id) {
+      const c = allClientes.find(x => x.id === id);
+      if (c) {
+        document.getElementById('w_contato_nome').value = c.contato || c.nome || '';
+        document.getElementById('w_contato_email').value = c.email || '';
+        document.getElementById('w_contato_telefone').value = c.celular || c.telefone || '';
+        document.getElementById('w_endereco').value = [c.logradouro, c.numero, c.bairro, c.cidade].filter(Boolean).join(', ');
+      }
+    }
+  } else if (tipo === 'lead') {
+    const id = document.getElementById('w_lead').value;
+    if (id) {
+      const l = allLeads.find(x => x.id === id);
+      if (l) {
+        document.getElementById('w_contato_nome').value = l.nome || '';
+        document.getElementById('w_contato_email').value = l.email || '';
+        document.getElementById('w_contato_telefone').value = l.telefone || '';
+      }
+    }
+  }
+}
+
+function openNovaCotacao() {
+  editingId = null;
+  document.getElementById('tab-list').style.display = 'none';
+  document.getElementById('tab-wizard').style.display = 'block';
+  currentStep = 1;
+  updateWizardUI();
+}
+
+function cancelarWizard() {
+  editingId = null;
+  document.getElementById('tab-wizard').style.display = 'none';
+  document.getElementById('tab-list').style.display = 'block';
+}
+
+function wizardProximo() {
+  if (currentStep === 1) {
+    const cliente = document.getElementById('w_cliente').value;
+    const lead = document.getElementById('w_lead').value;
+    if (!cliente && !lead) {
+      alert('Selecione um cliente ou lead (ou preencha o contato manualmente)');
+      return;
+    }
+  }
+  if (currentStep === 2) {
+    if (!document.getElementById('w_area_m2').value || parseFloat(document.getElementById('w_area_m2').value) <= 0) {
+      alert('Informe a área do ambiente (m²)');
+      return;
+    }
+    autoCalcular();
+  }
+  if (currentStep === 3) {
+    autoCalcular();
+    if (!calcResult) { alert('Calcule primeiro'); return; }
+  }
+  if (currentStep < 4) {
+    currentStep++;
+    updateWizardUI();
+  }
+}
+
+function wizardVoltar() {
+  if (currentStep > 1) {
+    currentStep--;
+    updateWizardUI();
+  } else {
+    cancelarWizard();
+  }
+}
+
+function updateWizardUI() {
+  document.querySelectorAll('.wizard-step').forEach(el => {
+    const step = parseInt(el.dataset.step);
+    el.classList.remove('active', 'done');
+    if (step === currentStep) el.classList.add('active');
+    else if (step < currentStep) el.classList.add('done');
+  });
+  document.querySelectorAll('.wizard-step-pane').forEach(el => {
+    el.classList.toggle('active', parseInt(el.dataset.step) === currentStep);
+  });
+  document.getElementById('btnVoltar').style.display = currentStep === 1 ? 'inline-flex' : 'inline-flex';
+  document.getElementById('btnProximo').style.display = currentStep === 4 ? 'none' : 'inline-flex';
+  document.getElementById('btnSalvar').style.display = currentStep === 4 ? 'inline-flex' : 'none';
+
+  if (currentStep === 4) renderResumo();
+}
+
+let calcDebounce = null;
+function autoCalcular() {
+  clearTimeout(calcDebounce);
+  calcDebounce = setTimeout(executarCalculo, 300);
+}
+
+async function executarCalculo() {
+  const payload = {
+    ambiente_tipo: document.getElementById('w_ambiente_tipo').value,
+    area_m2: parseFloat(document.getElementById('w_area_m2').value) || 0,
+    pe_direito_m: parseFloat(document.getElementById('w_pe_direito').value) || 2.8,
+    num_pessoas: parseInt(document.getElementById('w_num_pessoas').value) || 0,
+    num_equipamentos_eletricos: parseInt(document.getElementById('w_num_equipamentos').value) || 0,
+    num_janelas: parseInt(document.getElementById('w_num_janelas').value) || 0,
+    orientacao_solar: document.getElementById('w_orientacao').value,
+    insolacao: document.getElementById('w_insolacao').value,
+    tipo_uso: document.getElementById('w_tipo_uso').value,
+    refrigerante: document.getElementById('w_refrigerante').value,
+    custo_instalacao: parseFloat(document.getElementById('w_custo_inst').value) || 0,
+    custo_equipamento: parseFloat(document.getElementById('w_custo_equip').value) || 0,
+    margem_lucro_percent: parseFloat(document.getElementById('w_margem').value) || 30
+  };
+
+  if (payload.area_m2 <= 0) return;
+
+  try {
+    const r = await fetch(BASE + '/cotacoes/calcular', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const j = await r.json();
+    if (j.success) {
+      calcResult = j.data;
+      renderCalcResult(calcResult);
+    } else {
+      console.error('calc error:', j.error);
+    }
+  } catch (e) { console.error('calc fetch error:', e); }
+}
+
+function renderCalcResult(d) {
+  const c = d.calculo;
+  document.getElementById('r_btu_calc').textContent = c.btu_calculado.toLocaleString('pt-BR') + ' BTU';
+  document.getElementById('r_btu_recom').textContent = c.btu_recomendado.toLocaleString('pt-BR') + ' BTU';
+  document.getElementById('r_potencia').textContent = c.potencia_kw + ' kW';
+
+  if (d.equipamento) {
+    document.getElementById('r_equip').innerHTML = `${esc(d.equipamento.marca || '')}<br>${esc(d.equipamento.modelo || '')}`;
+    document.getElementById('r_equip_sub').textContent = `R$ ${(d.equipamento.preco_venda || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+    document.getElementById('w_custo_equip').value = d.equipamento.preco_venda || 0;
+  } else {
+    document.getElementById('r_equip').textContent = 'Nenhum compatível no estoque';
+    document.getElementById('r_equip_sub').textContent = '—';
+  }
+
+  // Custos
+  const ct = d.custos;
+  document.getElementById('b_equip').textContent = fmtCurrency(ct.custo_equipamento);
+  document.getElementById('b_inst').textContent = fmtCurrency(ct.custo_instalacao);
+  document.getElementById('b_obra').textContent = fmtCurrency(ct.custo_mao_obra);
+  document.getElementById('b_sub').textContent = fmtCurrency(ct.subtotal);
+  document.getElementById('b_margem_pct').textContent = ct.margem_lucro_percent;
+  document.getElementById('b_lucro').textContent = fmtCurrency(ct.lucro);
+  document.getElementById('b_total').textContent = fmtCurrency(ct.custo_total);
+}
+
+function renderResumo() {
+  if (!calcResult) return;
+  const c = calcResult.calculo;
+  const ct = calcResult.custos;
+  const equip = calcResult.equipamento;
+  const clienteNome = allClientes.find(x => x.id === document.getElementById('w_cliente').value)?.fantasia
+    || allLeads.find(x => x.id === document.getElementById('w_lead').value)?.nome
+    || document.getElementById('w_contato_nome').value || '—';
+  document.getElementById('resumo').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;font-size:0.85rem">
+      <div><strong style="color:var(--text-secondary);font-size:0.72rem;text-transform:uppercase">Cliente/Lead</strong><br>${esc(clienteNome)}</div>
+      <div><strong style="color:var(--text-secondary);font-size:0.72rem;text-transform:uppercase">BTU Recomendado</strong><br><span style="color:var(--blue);font-weight:700">${c.btu_recomendado.toLocaleString('pt-BR')} BTU</span></div>
+      <div><strong style="color:var(--text-secondary);font-size:0.72rem;text-transform:uppercase">Equipamento</strong><br>${equip ? esc(equip.marca + ' ' + equip.modelo) : '—'}</div>
+      <div><strong style="color:var(--text-secondary);font-size:0.72rem;text-transform:uppercase">Validade</strong><br>${document.getElementById('w_validade').value} dias</div>
+      <div style="grid-column:1/-1;padding-top:10px;border-top:1px solid var(--border)"><strong style="color:var(--text-secondary);font-size:0.72rem;text-transform:uppercase">Total</strong><br><span style="color:var(--blue);font-size:1.4rem;font-weight:800">${fmtCurrency(ct.custo_total)}</span></div>
+    </div>
+  `;
+}
+
+async function salvarCotacao() {
+  if (!calcResult) { alert('Calcule primeiro'); return; }
+  const payload = {
+    cliente_id: document.getElementById('w_cliente').value || null,
+    lead_id: document.getElementById('w_lead').value || null,
+    titulo: document.getElementById('w_titulo').value || null,
+    contato_nome: document.getElementById('w_contato_nome').value || null,
+    contato_email: document.getElementById('w_contato_email').value || null,
+    contato_telefone: document.getElementById('w_contato_telefone').value || null,
+    endereco_obra: document.getElementById('w_endereco').value || null,
+    ambiente_tipo: document.getElementById('w_ambiente_tipo').value,
+    area_m2: parseFloat(document.getElementById('w_area_m2').value),
+    pe_direito_m: parseFloat(document.getElementById('w_pe_direito').value) || 2.8,
+    num_janelas: parseInt(document.getElementById('w_num_janelas').value) || 0,
+    orientacao_solar: document.getElementById('w_orientacao').value,
+    insolacao: document.getElementById('w_insolacao').value,
+    num_pessoas: parseInt(document.getElementById('w_num_pessoas').value) || 0,
+    num_equipamentos_eletricos: parseInt(document.getElementById('w_num_equipamentos').value) || 0,
+    tipo_uso: document.getElementById('w_tipo_uso').value,
+    refrigerante: document.getElementById('w_refrigerante').value,
+    custo_instalacao: parseFloat(document.getElementById('w_custo_inst').value) || 0,
+    custo_equipamento: parseFloat(document.getElementById('w_custo_equip').value) || 0,
+    margem_lucro_percent: parseFloat(document.getElementById('w_margem').value) || 30,
+    validade_dias: parseInt(document.getElementById('w_validade').value) || 15,
+    observacoes: document.getElementById('w_obs').value || null,
+    status: 'rascunho'
+  };
+
+  try {
+    const r = await fetch(BASE + '/cotacoes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const j = await r.json();
+    if (j.success) {
+      alert('✓ Cotação criada com sucesso!');
+      cancelarWizard();
+      loadCotacoes();
+      loadStats();
+    } else {
+      alert('Erro: ' + j.error);
+    }
+  } catch (e) { alert('Erro de rede: ' + e.message); }
+}
+
+async function loadCotacoes() {
+  const search = document.getElementById('searchInput')?.value || '';
+  const status = document.getElementById('filtroStatus')?.value || '';
+  const params = new URLSearchParams();
+  if (search) params.set('search', search);
+  if (status) params.set('status', status);
+  params.set('limite', '100');
+
+  try {
+    const r = await fetch(BASE + '/cotacoes?' + params);
+    const j = await r.json();
+    if (j.success) renderCotacoes(j.data || []);
+  } catch (e) { console.error('loadCotacoes:', e); }
+}
+
+function renderCotacoes(rows) {
+  const tbody = document.getElementById('tblCotacoesBody');
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px"><div style="opacity:0.6">Nenhuma cotação encontrada</div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map(c => {
+    const statusCls = { rascunho: 'badge-gray', enviada: 'badge-blue', aprovada: 'badge-green', rejeitada: 'badge-red', convertida: 'badge-green', vencida: 'badge-orange' }[c.status] || 'badge-gray';
+    const statusLabel = { rascunho: 'Rascunho', enviada: 'Enviada', aprovada: 'Aprovada', rejeitada: 'Rejeitada', convertida: 'Convertida', vencida: 'Vencida' }[c.status] || c.status;
+    const destinatario = c.cliente_fantasia || c.cliente_nome || c.lead_nome || c.contato_nome || '—';
+    const equip = c.equipamento_sugerido_nome || '—';
+    return `
+      <tr style="cursor:pointer" onclick="verCotacao('${c.id}')">
+        <td><div style="font-weight:600;font-size:0.82rem">${esc(c.titulo || 'Cotação')}</div><div style="font-size:0.7rem;color:var(--text-muted)">${formatDate(c.created_at)}</div></td>
+        <td>${esc(destinatario)}</td>
+        <td><span style="font-weight:600;color:var(--blue)">${c.btu_calculado ? c.btu_calculado.toLocaleString('pt-BR') : '—'}</span></td>
+        <td>${c.potencia_kw || '—'}</td>
+        <td><span class="badge badge-gray">${esc(c.ambiente_tipo || '—')}</span></td>
+        <td style="font-size:0.78rem">${esc(equip)}</td>
+        <td style="font-weight:700">${fmtCurrency(c.custo_total)}</td>
+        <td><span class="badge ${statusCls}">${statusLabel}</span></td>
+        <td onclick="event.stopPropagation()">
+          <button class="btn btn-ghost btn-sm" onclick="aprovarCotacao('${c.id}')" title="Aprovar">✓</button>
+          <button class="btn btn-ghost btn-sm" onclick="verCotacao('${c.id}')" title="Ver detalhes">👁</button>
+          <button class="btn btn-ghost btn-sm" onclick="imprimirCotacao('${c.id}')" title="Baixar PDF">📄</button>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+async function aprovarCotacao(id) {
+  if (!confirm('Aprovar esta cotação?')) return;
+  const r = await fetch(`${BASE}/cotacoes/${id}/aprovar`, { method: 'POST' });
+  const j = await r.json();
+  if (j.success) { alert('✓ Aprovada'); loadCotacoes(); loadStats(); }
+  else alert('Erro: ' + j.error);
+}
+
+async function verCotacao(id) {
+  const r = await fetch(`${BASE}/cotacoes/${id}`);
+  const j = await r.json();
+  if (!j.success) { alert('Erro: ' + (j.error || 'desconhecido')); return; }
+  const c = j.data;
+  const itens = c.itens || [];
+  const itensHtml = itens.length
+    ? `<table class="data-table" style="width:100%;font-size:0.8rem;margin-top:8px">
+        <thead><tr><th>Item</th><th>Tipo</th><th>Qtd</th><th>Unit.</th><th>Subtotal</th></tr></thead>
+        <tbody>${itens.map(i => `<tr>
+          <td>${esc(i.nome || i.descricao || '—')}</td>
+          <td><span class="badge badge-gray">${esc(i.tipo || 'material')}</span></td>
+          <td>${i.quantidade}</td>
+          <td>${fmtCurrency(i.preco_unitario)}</td>
+          <td style="font-weight:600">${fmtCurrency(i.subtotal)}</td>
+        </tr>`).join('')}</tbody>
+      </table>`
+    : '<div style="opacity:0.6;padding:12px;text-align:center">Sem itens</div>';
+  showModal({
+    title: 'Cotação ' + (c.codigo || '#' + c.id),
+    body: `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:0.85rem;margin-bottom:14px">
+        <div><b>Cliente:</b><br>${esc(c.cliente_fantasia || c.cliente_nome || c.lead_nome || '—')}</div>
+        <div><b>Status:</b><br><span class="badge badge-blue">${esc(c.status)}</span></div>
+        <div><b>Ambiente:</b><br>${esc(c.ambiente_tipo || '—')} · ${c.area_m2 || '—'} m²</div>
+        <div><b>Validade:</b><br>${formatDate(c.validade_em)}</div>
+        <div><b>BTU calculado:</b><br>${c.btu_calculado ? c.btu_calculado.toLocaleString('pt-BR') : '—'}</div>
+        <div><b>Equipamento:</b><br>${esc(c.equipamento_sugerido_nome || '—')}</div>
+        <div style="grid-column:1/-1;padding:10px;background:var(--bg-hover);border-radius:6px;text-align:right">
+          <span style="opacity:0.7">Total: </span>
+          <span style="font-size:1.3rem;font-weight:700;color:var(--blue)">${fmtCurrency(c.custo_total)}</span>
+        </div>
+      </div>
+      <h4 style="margin:8px 0 4px">BOM (Bill of Materials)</h4>
+      ${itensHtml}`,
+    actions: [
+      { label: 'Fechar', class: 'btn-ghost', onclick: 'closeModal()' },
+      { label: '📄 Baixar PDF', class: 'btn-primary', onclick: `imprimirCotacao('${c.id}'); closeModal();` }
+    ]
+  });
+}
+
+function imprimirCotacao(id) {
+  // Abre a rota /api/cotacoes/:id/pdf?format=pdf em nova aba — o server devolve o PDF binário (Playwright/Chromium)
+  window.open(`${BASE}/cotacoes/${id}/pdf?format=pdf`, '_blank');
+}
+
+async function loadStats() {
+  try {
+    const r = await fetch(BASE + '/cotacoes/stats?since=30');
+    const j = await r.json();
+    if (j.success) {
+      const s = j.data;
+      document.getElementById('kpiTotal').textContent = s.total;
+      document.getElementById('kpiAprovadas').textContent = (s.por_status?.aprovada || 0) + (s.por_status?.convertida || 0);
+      document.getElementById('kpiConversao').textContent = s.taxa_conversao + '%';
+      document.getElementById('kpiTicket').textContent = fmtCurrency(s.ticket_medio_aprovado);
+      document.getElementById('kpiVencidas').textContent = s.vencidas;
+    }
+  } catch (e) { console.error('stats:', e); }
+}
+
+function esc(s) { return s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : ''; }
+function formatDate(iso) { if (!iso) return '—'; try { return new Date(iso).toLocaleDateString('pt-BR'); } catch { return '—'; } }
+function fmtCurrency(v) { return 'R$ ' + (v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+
+// ===== Modal genérico =====
+function showModal({ title = '', body = '', actions = [] }) {
+  closeModal();
+  const overlay = document.createElement('div');
+  overlay.id = 'modalOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  const actionsHtml = actions.map((a, i) => `<button class="btn ${a.class || 'btn-ghost'}" data-idx="${i}">${a.label}</button>`).join('');
+  overlay.innerHTML = `
+    <div style="background:var(--bg-card);border-radius:10px;max-width:680px;width:100%;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.4)">
+      <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+        <h3 style="margin:0;font-size:1.05rem">${esc(title)}</h3>
+        <button onclick="closeModal()" style="background:none;border:none;color:var(--text-muted);font-size:1.4rem;cursor:pointer;padding:0 6px">&times;</button>
+      </div>
+      <div style="padding:20px;overflow-y:auto;flex:1">${body}</div>
+      <div style="padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end">${actionsHtml}</div>
+    </div>`;
+  document.body.appendChild(overlay);
+  actions.forEach((a, i) => {
+    overlay.querySelector(`[data-idx="${i}"]`).onclick = () => {
+      try { (new Function('return (' + a.onclick + ')()'))(); } catch (e) { console.error('modal action:', e); }
+    };
+  });
+  overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+}
+function closeModal() {
+  const m = document.getElementById('modalOverlay');
+  if (m) m.remove();
+}
+</script>
+</body>
+</html>

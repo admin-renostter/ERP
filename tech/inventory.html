@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Consultar Estoque — Renostter CRM</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="../css/global.css" />
+    <style>
+        .part-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 16px;
+            margin-top: 16px
+        }
+
+        .part-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            transition: .2s;
+            display: flex;
+            flex-direction: column;
+            gap: 10px
+        }
+
+        .part-card:hover {
+            border-color: var(--blue);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 174, 239, .1)
+        }
+
+        .part-img {
+            width: 100%;
+            height: 100px;
+            border-radius: 8px;
+            background: var(--bg-hover);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            overflow: hidden
+        }
+
+        .part-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover
+        }
+
+        .stock-num {
+            font-size: 2rem;
+            font-weight: 700;
+            line-height: 1
+        }
+
+        .loc-badge {
+            background: var(--bg-hover);
+            border-radius: 6px;
+            padding: 4px 10px;
+            font-size: .75rem;
+            color: var(--text-secondary);
+            display: inline-block
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <img src="../assets/logo-crm.png" alt="Renostter CRM">
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section-label">Minha Área</div>
+                <a class="nav-item" href="tickets.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                        <polyline points="22 4 12 14.01 9 11.01" />
+                    </svg><span>Meus Chamados</span></a>
+                <a class="nav-item active" href="inventory.html"><svg width="16" height="16" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2">
+                        <path
+                            d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                    </svg><span>Consultar Estoque</span></a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-card" onclick="auth.logout()">
+                    <div class="user-avatar" id="sidebarAvatar">T</div>
+                    <div class="user-info">
+                        <div class="user-name" id="sidebarName">Técnico</div>
+                        <div class="user-role" id="sidebarRole">tecnico</div>
+                    </div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg>
+                </div>
+            </div>
+        </aside>
+        <div class="main-content">
+            <div class="topbar">
+                <div class="topbar-left"><button class="hamburger btn btn-ghost btn-icon" id="hamburger"><svg width="18"
+                            height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="3" y1="6" x2="21" y2="6" />
+                            <line x1="3" y1="12" x2="21" y2="12" />
+                            <line x1="3" y1="18" x2="21" y2="18" />
+                        </svg></button><span class="page-title">🔍 Consultar Estoque</span></div>
+            </div>
+            <div class="page-body">
+                <div class="card"
+                    style="padding:16px;margin-bottom:20px;background:rgba(0,174,239,.06);border-color:rgba(0,174,239,.2)">
+                    <p style="font-size:.85rem;color:var(--text-secondary);margin:0">ℹ️ Aqui você pode consultar a
+                        disponibilidade de peças em tempo real. Para registrar a utilização de peças, solicite a baixa
+                        ao administrador ou registre no chamado.</p>
+                </div>
+
+                <div class="filters-bar" style="margin-bottom:4px">
+                    <div class="search-box" style="flex:1">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="11" cy="11" r="8" />
+                            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                        </svg>
+                        <input type="text" id="searchInput" placeholder="Buscar por SKU, nome ou categoria..."
+                            oninput="renderCards()" autofocus />
+                    </div>
+                    <select class="filter-select" id="fCat" onchange="renderCards()">
+                        <option value="">Todas as categorias</option>
+                        <option value="eletrica">⚡ Elétrica</option>
+                        <option value="eletronica">🔌 Eletrônica</option>
+                        <option value="mecanica">⚙️ Mecânica</option>
+                        <option value="consumivel">🧴 Consumível</option>
+                        <option value="outros">📦 Outros</option>
+                    </select>
+                    <select class="filter-select" id="fAvail" onchange="renderCards()">
+                        <option value="">Todos</option>
+                        <option value="available">Disponível</option>
+                        <option value="zero">Sem estoque</option>
+                    </select>
+                </div>
+                <div id="resultCount" style="font-size:.8rem;color:var(--text-secondary);margin-bottom:12px"></div>
+                <div class="part-grid" id="partsGrid"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastContainer" class="toast-container"></div>
+    <script src="../js/storage.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/utils.js"></script>
+    <script>
+        const session = auth.protect(['tecnico']);
+        const CAT_LABELS = { eletrica: '⚡ Elétrica', eletronica: '🔌 Eletrônica', mecanica: '⚙️ Mecânica', consumivel: '🧴 Consumível', outros: '📦 Outros' };
+
+        function stockColor(p) { if (p.currentStock <= 0) return '#8B949E'; if (p.currentStock <= p.minStock) return '#DA3633'; if (p.currentStock <= p.safetyStock) return '#D29922'; return '#2EA043'; }
+        function stockLabel(p) { if (p.currentStock <= 0) return 'Sem estoque'; if (p.currentStock <= p.minStock) return '⚠️ Estoque低'; return 'Disponível'; }
+
+        function renderCards() {
+            const q = (document.getElementById('searchInput').value || '').toLowerCase();
+            const cat = document.getElementById('fCat').value;
+            const avail = document.getElementById('fAvail').value;
+            let items = db.get('inventory').filter(p => p.status === 'ativo');
+            if (q) items = items.filter(p => p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q) || (p.category || '').includes(q) || (p.description || '').toLowerCase().includes(q));
+            if (cat) items = items.filter(p => p.category === cat);
+            if (avail === 'available') items = items.filter(p => p.currentStock > 0);
+            if (avail === 'zero') items = items.filter(p => p.currentStock <= 0);
+            document.getElementById('resultCount').textContent = `${items.length} produto(s) encontrado(s)`;
+            document.getElementById('partsGrid').innerHTML = items.map(p => `
+    <div class="part-card">
+      <div class="part-img">${p.imageBase64 ? `<img src="${p.imageBase64}">` : '📦'}</div>
+      <div>
+        <div style="font-weight:600;font-size:.95rem;margin-bottom:2px">${esc(p.name)}</div>
+        <div style="font-size:.75rem;color:var(--text-secondary)">SKU: ${esc(p.sku)} · ${CAT_LABELS[p.category] || p.category || '—'}</div>
+      </div>
+      <div style="display:flex;align-items:baseline;gap:6px">
+        <span class="stock-num" style="color:${stockColor(p)}">${p.currentStock}</span>
+        <span style="font-size:.8rem;color:var(--text-secondary)">${p.unit} disponível${p.currentStock !== 1 ? 'is' : ''}</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        ${p.location ? `<span class="loc-badge">📍 ${esc(p.location)}</span>` : ''}
+        <span style="font-size:.72rem;color:${stockColor(p)}">${stockLabel(p)}</span>
+      </div>
+      ${p.description ? `<div style="font-size:.75rem;color:var(--text-muted);border-top:1px solid var(--border);padding-top:8px">${esc(p.description.slice(0, 100))}${p.description.length > 100 ? '…' : ''}</div>` : ''}
+    </div>`).join('') || '<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--text-secondary)"><div style="font-size:3rem;margin-bottom:10px">🔍</div><div>Nenhum produto encontrado</div></div>';
+        }
+
+        renderCards(); initSidebar();
+    </script>
+</body>
+
+</html>

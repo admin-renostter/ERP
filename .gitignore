@@ -1,0 +1,120 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# RENOSTTER CRM — Root .gitignore
+# Sprint 0 — Segurança Crítica
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# REGRA DE OURO: qualquer arquivo que contenha credencial, chave privada,
+# certificado, token de produção, dump de banco, ou log com dado sensível
+# DEVE estar listado aqui. Quando em dúvida, liste.
+#
+# Ver também:
+#   - cora-api/.gitignore        (ignora deps e artefatos do backend)
+#   - SECURITY.md                 (procedimento de rotação de credenciais)
+#   - docs/arquitetura-erp.html   (mapa de módulos do ERP)
+
+# ─── Dependências ────────────────────────────────────────────────────────
+node_modules/
+**/node_modules/
+
+# ─── Variáveis de ambiente (CRÍTICO) ────────────────────────────────────
+# Qualquer .env em qualquer lugar do projeto.
+.env
+.env.*
+**/.env
+**/.env.*
+!.env.example
+!**/.env.example
+
+# ─── Certificados e chaves privadas mTLS (CRÍTICO) ─────────────────────
+# Equivalem a senha bancária. Se você commitou algum, RODE O SCRIPT DE
+# ROTAÇÃO IMEDIATAMENTE: `node cora-api/scripts/rotate-secrets.js`
+*.pem
+*.key
+*.crt
+*.cer
+*.p12
+*.pfx
+*.p7b
+*.der
+**/certs/
+**/private-key*
+**/certificate*
+**/*.jks
+**/*.keystore
+
+# ─── Bancos de dados (NUNCA commitar) ──────────────────────────────────
+*.sqlite
+*.sqlite3
+*.sqlite-journal
+*.sqlite-shm
+*.sqlite-wal
+*.db
+*.sql.gz
+**/cora.sqlite*
+**/database.sqlite*
+**/backups/
+
+# ─── Logs (podem conter dados sensíveis) ───────────────────────────────
+*.log
+**/*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+server-*.log
+test_output*.txt
+
+# ─── Credenciais avulsas e cofres ─────────────────────────────────────
+secrets/
+credentials/
+.gcp-key.json
+.aws/
+*.kubeconfig
+*.dockercfg
+
+# ─── Artefatos de teste / CI ───────────────────────────────────────────
+playwright-report/
+test-results/
+tests-e2e/playwright/.cache/
+.nyc_output/
+coverage/
+.nyc_output/
+
+# ─── Editores e SOs ─────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ─── Builds e artefatos ────────────────────────────────────────────────
+dist/
+build/
+out/
+*.tsbuildinfo
+.next/
+.nuxt/
+.turbo/
+
+# ─── Uploads locais (são regeneráveis) ─────────────────────────────────
+uploads/
+tmp/
+temp/
+*.tmp
+
+# ─── Cache de ferramentas ──────────────────────────────────────────────
+.eslintcache
+.parcel-cache/
+.cache/
+.pnp.*
+
+# ─── Backups automáticos (Sprint 4+) ──────────────────────────────────
+# Pastas com snapshots do estado do projeto em pontos de rollback.
+# Nunca commitar — podem conter credenciais, bancos de dados, etc.
+BACKUPS/
+backups/
+*.bak
+*.backup
+*.pre-sprint*

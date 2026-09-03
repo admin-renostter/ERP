@@ -1,0 +1,58 @@
+# ─────────────────────────────────────────────────────────────────────
+# docker-compose.wazuh-agent.yml — Renostter CRM (Sprint Security Infra)
+#
+# Agente Wazuh "de log" — roda dentro da rede do app (renostter-net) só
+# pra ler (read-only) os volumes de log que já existem e mandar pro
+# Wazuh manager. NÃO substitui o agente nativo do host (veja
+# scripts/install-wazuh-agent-host.sh) — esse container não enxerga o
+# SO por fora dele, então não faz FIM/rootcheck de verdade. A missão
+# dele é só ingestão de log estruturado da aplicação e do nginx.
+#
+# Pré-requisito: Wazuh manager já no ar (scripts/setup-wazuh.sh) e
+# acessível pela VPS em localhost:1514/1515 (mesma máquina).
+#
+# USO:
+#   cp .env .env.wazuh-agent   # garanta WAZUH_REGISTRATION_PASSWORD nele
+#   docker compose -f docker-compose.wazuh-agent.yml --env-file .env up -d
+# ─────────────────────────────────────────────────────────────────────
+
+services:
+  wazuh-agent:
+    image: wazuh/wazuh-agent:5.0.1
+    container_name: renostter-wazuh-agent
+    restart: unless-stopped
+    hostname: renostter-app-logs
+    # Deixa o agente enxergar o Wazuh manager rodando no host (mesma
+    # VPS, fora do compose principal, subido por scripts/setup-wazuh.sh)
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - WAZUH_MANAGER=${WAZUH_MANAGER_HOST:-host.docker.internal}
+      - WAZUH_AGENT_NAME=renostter-app-logs
+      - WAZUH_REGISTRATION_PASSWORD=${WAZUH_REGISTRATION_PASSWORD:?defina WAZUH_REGISTRATION_PASSWORD no .env}
+    volumes:
+      # Logs estruturados do SecurityLogger (security-*.jsonl) — mesmo
+      # volume nomeado que o container 'app' usa (docker-compose.yml,
+      # serviço app, volume app-logs → nome real 'renostter-logs').
+      # Read-only: o agente só lê, nunca escreve nos logs da app.
+      - renostter-logs:/var/ossec/logs-source/app:ro
+      - renostter-nginx-logs:/var/ossec/logs-source/nginx:ro
+      - ./wazuh-agent/ossec-localfiles.conf:/var/ossec/etc/ossec.conf.d/renostter-localfiles.conf:ro
+    networks:
+      - renostter-net
+
+networks:
+  renostter-net:
+    external: true
+    name: renostter-net
+
+volumes:
+  # Precisam ser os MESMOS nomes reais definidos em docker-compose.yml
+  # (bloco "volumes:" no final do arquivo raiz), marcados como externos
+  # porque já existem e pertencem ao stack principal.
+  renostter-logs:
+    external: true
+    name: renostter-logs
+  renostter-nginx-logs:
+    external: true
+    name: renostter-nginx-logs

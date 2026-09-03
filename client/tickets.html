@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Meus Chamados — Renostter</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="../css/global.css" />
+    <style>
+        .detail-meta {
+            display: flex;
+            justify-content: space-between;
+            padding: 9px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.85rem;
+        }
+
+        .detail-meta:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            color: var(--text-secondary);
+        }
+
+        .detail-val {
+            font-weight: 500;
+            text-align: right;
+            max-width: 65%;
+        }
+
+        /* ─── CSAT Banner ─── */
+        .csat-banner {
+            background: linear-gradient(135deg, rgba(240, 173, 0, .12) 0%, rgba(255, 107, 0, .1) 100%);
+            border: 1px solid rgba(240, 173, 0, .35);
+            border-radius: var(--radius);
+            padding: 14px 18px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .csat-banner-icon {
+            font-size: 1.8rem;
+            animation: pulse-star 1.6s ease-in-out infinite;
+        }
+
+        @keyframes pulse-star {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.18);
+            }
+        }
+
+        .csat-banner-body {
+            flex: 1;
+            min-width: 160px;
+        }
+
+        .csat-banner-title {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #F0AD00;
+            margin-bottom: 2px;
+        }
+
+        .csat-banner-sub {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+        }
+
+        /* ─── Stars ─── */
+        .star {
+            cursor: pointer;
+            transition: transform .15s, color .15s;
+        }
+
+        .star:hover {
+            transform: scale(1.15);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <img src="../assets/logo-crm.png" alt="Renostter CRM">
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section-label">Minha Área</div>
+                <a class="nav-item" href="dashboard.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7" />
+                        <rect x="14" y="3" width="7" height="7" />
+                        <rect x="14" y="14" width="7" height="7" />
+                        <rect x="3" y="14" width="7" height="7" />
+                    </svg><span>Início</span></a>
+                <a class="nav-item active" href="tickets.html"><svg width="16" height="16" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 11l3 3L22 4" />
+                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                    </svg><span>Meus Chamados</span><span class="nav-badge notif-badge"
+                        style="display:none">0</span></a>
+                <a class="nav-item" href="contracts.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                    </svg><span>Meus Contratos</span></a>
+                <a class="nav-item" href="faturas.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg><span>Minhas Faturas</span></a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-card" onclick="auth.logout()">
+                    <div class="user-avatar" id="sidebarAvatar">C</div>
+                    <div class="user-info"><strong id="sidebarUserName">Cliente</strong><span
+                            id="sidebarUserRole">Cliente</span></div>
+                </div>
+            </div>
+        </aside>
+
+        <div class="main-content">
+            <div class="topbar">
+                <div class="topbar-left">
+                    <button class="hamburger btn btn-ghost btn-icon" id="hamburger"><svg width="18" height="18"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="3" y1="6" x2="21" y2="6" />
+                            <line x1="3" y1="12" x2="21" y2="12" />
+                            <line x1="3" y1="18" x2="21" y2="18" />
+                        </svg></button>
+                    <span class="page-title">Meus Chamados</span>
+                </div>
+                <div class="topbar-right">
+                    <button class="btn btn-primary" onclick="openNewTicketModal()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19" />
+                            <line x1="5" y1="12" x2="19" y2="12" />
+                        </svg>
+                        Abrir Chamado
+                    </button>
+                </div>
+            </div>
+
+            <div class="page-body">
+                <!-- CSAT Banner — shown when there are pending ratings -->
+                <div id="csatBanner" style="display:none" class="csat-banner">
+                    <div class="csat-banner-icon">⭐</div>
+                    <div class="csat-banner-body">
+                        <div class="csat-banner-title">Avalie seu atendimento!</div>
+                        <div class="csat-banner-sub" id="csatBannerMsg">Você tem chamados resolvidos aguardando
+                            avaliação.</div>
+                    </div>
+                    <div id="csatBannerBtns" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+                </div>
+
+                <div class="tabs" style="margin-bottom:20px">
+                    <button class="tab-btn active" id="tabAllBtn" onclick="filterTab('all',this)">Todos</button>
+                    <button class="tab-btn" onclick="filterTab('aberto',this)">Abertos</button>
+                    <button class="tab-btn" onclick="filterTab('andamento',this)">Em Andamento</button>
+                    <button class="tab-btn" onclick="filterTab('resolvido',this)">Resolvidos</button>
+                </div>
+
+                <div id="ticketCards"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: New Ticket -->
+    <div class="modal-overlay" id="modalNewTicket">
+        <div class="modal">
+            <div class="modal-header"><span class="modal-title">📨 Abrir Chamado de Suporte</span><button
+                    class="modal-close" onclick="closeModal('modalNewTicket')">✕</button></div>
+            <div class="modal-body">
+                <div
+                    style="background:var(--blue-dim);border:1px solid rgba(0,174,239,.3);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:16px;font-size:0.82rem;color:var(--blue)">
+                    💡 Nosso SLA garante resposta em até <strong id="slaHint">—</strong>h conforme seu contrato.
+                </div>
+                <div class="form-grid">
+                    <div class="form-group col-span-2"><label class="form-label">Assunto / Título <span
+                                class="form-required">*</span></label><input class="form-input" id="ntTitle"
+                            placeholder="Ex: Ar-condicionado não resfria na sala 3" /></div>
+                    <div class="form-group"><label class="form-label">Categoria</label>
+                        <select class="form-select" id="ntCat">
+                            <option value="corretiva">Manutenção Corretiva (pane/defeito)</option>
+                            <option value="preventiva">Manutenção Preventiva</option>
+                            <option value="instalacao">Instalação de novo equipamento</option>
+                            <option value="higienizacao">Higienização</option>
+                            <option value="gas">Suspeita de falta de gás</option>
+                            <option value="outros">Outro / Dúvida</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="grpUrgency"><label class="form-label">Urgência</label>
+                        <select class="form-select" id="ntPriority">
+                            <option value="baixa">🟢 Baixa — pode aguardar</option>
+                            <option value="media" selected>🔵 Média — preciso em breve</option>
+                            <option value="alta">🟡 Alta — está impactando operação</option>
+                            <option value="critica">🔴 Crítica — parado agora</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-span-2"><label class="form-label">Descrição detalhada <span
+                                class="form-required">*</span></label><textarea class="form-textarea" id="ntDesc"
+                            rows="4"
+                            placeholder="Descreva o problema: modelo do aparelho, localização, o que acontece, quando começou..."></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('modalNewTicket')">Cancelar</button>
+                <button class="btn btn-primary" onclick="submitTicket()">📨 Enviar Chamado</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Ticket Detail -->
+    <div class="modal-overlay" id="modalDetail">
+        <div class="modal modal-lg">
+            <div class="modal-header">
+                <div><span class="modal-title" id="dtTitle">Chamado</span>
+                    <div id="dtNum" style="font-size:.75rem;color:var(--text-secondary);margin-top:2px"></div>
+                </div><button class="modal-close" onclick="closeModal('modalDetail')">✕</button>
+            </div>
+            <div class="modal-body" id="dtBody"></div>
+        </div>
+    </div>
+
+    <!-- MODAL: CSAT Rating -->
+    <div class="modal-overlay" id="modalCsat">
+        <div class="modal modal-sm">
+            <div class="modal-header"><span class="modal-title">⭐ Como foi seu atendimento?</span><button
+                    class="modal-close" onclick="closeModal('modalCsat')">✕</button></div>
+            <div class="modal-body">
+                <p style="font-size:0.875rem;color:var(--text-secondary);margin-bottom:16px;text-align:center">Avalie o
+                    chamado <strong id="csatNum"></strong></p>
+                <div class="star-rating" id="starRating" style="justify-content:center;font-size:2.5rem;gap:10px">
+                    <span class="star" onclick="selectStar(1)">★</span><span class="star"
+                        onclick="selectStar(2)">★</span>
+                    <span class="star" onclick="selectStar(3)">★</span><span class="star"
+                        onclick="selectStar(4)">★</span><span class="star" onclick="selectStar(5)">★</span>
+                </div>
+                <div style="text-align:center;font-size:.8rem;color:var(--text-secondary);margin:8px 0 12px"
+                    id="starLabel">Toque para avaliar</div>
+                <textarea class="form-textarea" id="csatComment"
+                    placeholder="Comentário opcional (elogio, crítica, sugestão)..." rows="3"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('modalCsat')">Pular</button>
+                <button class="btn btn-primary" onclick="submitCsat()">⭐ Enviar Avaliação</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastContainer" class="toast-container"></div>
+    <script src="../js/storage.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/proposals.js"></script>
+    <script>
+        const session = auth.protect(['cliente']);
+        const clientId = session.clientId;
+        const client = db.find('clients', clientId) || {};
+        const myContracts = db.findBy('contracts', 'clientId', clientId).filter(c => c.status === 'ativo');
+        const contract = myContracts[0] || null;
+
+        // SLA hint
+        document.getElementById('slaHint').textContent = SLA_CONFIG[contract?.type || 'basico']?.responseH || '—';
+
+        let tabFilter = 'all', csatTicketId = null;
+
+        function filterTab(val, btn) {
+            tabFilter = val;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn?.classList.add('active');
+            renderCards();
+        }
+
+        function getTickets() {
+            const all = db.get('tickets').filter(t =>
+                (clientId && t.clientId === clientId) ||
+                t.clientId === session.userId ||
+                t.userId === session.userId
+            );
+
+            if (tabFilter === 'all') return all;
+            if (tabFilter === 'aberto') return all.filter(t => t.status === 'aberto');
+            if (tabFilter === 'andamento') return all.filter(t => t.status === 'andamento');
+            if (tabFilter === 'resolvido') return all.filter(t => t.status === 'resolvido');
+
+            return all.filter(t => t.status === tabFilter);
+        }
+
+        const catIcons = { corretiva: '🔧', preventiva: '🛡', instalacao: '🏗', higienizacao: '🫧', gas: '💨', pmoc: '📅', outros: '📌' };
+
+        function renderCards() {
+            const tickets = getTickets().sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+            if (!tickets.length) {
+                document.getElementById('ticketCards').innerHTML = `<div class="empty-state" style="padding:60px 0">
+      <div style="font-size:3rem">🎉</div>
+      <h4>Nenhum chamado encontrado</h4>
+      <p>Tudo certo! Caso precise de suporte, abra um novo chamado.</p>
+      <button class="btn btn-primary btn-sm" style="margin-top:12px" onclick="openNewTicketModal()">Abrir Chamado</button>
+    </div>`;
+                return;
+            }
+
+            document.getElementById('ticketCards').innerHTML = tickets.map(t => {
+                const sla = calcSLA(t, t.contractType);
+                const needsCsat = t.status === 'resolvido' && !t.csatRating;
+                return `<div class="card" style="margin-bottom:12px;cursor:pointer" onclick="viewDetail('${t.id}')">
+      <div style="display:flex;align-items:flex-start;gap:14px;justify-content:space-between">
+        <div style="display:flex;align-items:flex-start;gap:12px;flex:1;min-width:0">
+          <div style="font-size:1.6rem;margin-top:2px">${catIcons[t.category] || '🎫'}</div>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
+              <span style="font-family:monospace;font-size:0.72rem;color:var(--text-muted)">${t.num}</span>
+              ${badgeTicketStatus(t.status)} ${badgePriority(t.priority)}
+            </div>
+            <div style="font-weight:600;font-size:0.95rem;margin-bottom:4px">${t.title}</div>
+            <div style="font-size:0.78rem;color:var(--text-secondary)">Aberto em ${fmt.datetime(t.createdAt)} · ${t.assignedName ? 'Técnico: ' + t.assignedName : 'Aguardando atribuição'}</div>
+          </div>
+        </div>
+        <div style="flex-shrink:0;min-width:140px">
+          ${['resolvido', 'fechado', 'cancelado'].includes(t.status) ? '' : `<div style="margin-bottom:8px">${renderSLABar(t)}</div>`}
+          ${needsCsat ? `<button class="btn btn-orange btn-sm btn-full" onclick="event.stopPropagation();openCsat('${t.id}','${t.num}')">⭐ Avaliar atendimento</button>` : t.csatRating ? `<div style="text-align:center;font-size:0.75rem;color:var(--text-secondary)">${renderStars(t.csatRating, '0.9rem')}<div style="margin-top:2px">Avaliado</div></div>` : ''}
+        </div>
+      </div>
+    </div>`;
+            }).join('');
+        }
+
+        function viewDetail(id) {
+            const t = db.find('tickets', id); if (!t) return;
+
+            // V3: Check for expiration before rendering
+            try {
+                if (Proposals.checkExpiration(t)) {
+                    return viewDetail(id);
+                }
+            } catch(e) { /* proposals.js not loaded yet, skip */ }
+
+            document.getElementById('dtTitle').textContent = t.title;
+            document.getElementById('dtNum').textContent = t.num + ' · Aberto em ' + fmt.datetime(t.createdAt);
+            const comments = db.findBy('comments', 'ticketId', id).filter(function(c){ return !c.internal; }).sort(function(a,b){ return new Date(a.createdAt) - new Date(b.createdAt); });
+            const parts = db.get('stock_movements').filter(function(m){ return m.ticketId === id; });
+
+            // Pre-render parts list to avoid nested template literal issues
+            const stMap = {
+                pendente: { lbl: '⏳ Pendente', color: '#D29922', bg: 'rgba(210,153,34,.15)' },
+                aprovado: { lbl: '✅ Aprovado', color: '#2EA043', bg: 'rgba(46,160,67,.15)' },
+                reprovado: { lbl: '❌ Reprovado', color: '#DA3633', bg: 'rgba(218,54,51,.15)' },
+                expirado: { lbl: '⚠️ Expirado', color: '#8B949E', bg: 'rgba(139,148,158,.15)' }
+            };
+            let partsHtml = '';
+            if (parts.length) {
+                parts.forEach(function(p) {
+                    const isPending = p.status === 'pendente';
+                    const st = stMap[p.status] || stMap.pendente;
+                    const approveBtn = isPending
+                        ? '<div style="display:flex;gap:4px"><button class="btn btn-primary btn-sm" style="padding:4px 10px;font-size:0.7rem" onclick="Proposals.approveItem(\'' + p.id + '\', session)">Aprovar</button><button class="btn btn-ghost btn-sm" style="padding:4px 10px;font-size:0.7rem;border-color:var(--danger);color:var(--danger)" onclick="rejectItemPrompt(\'' + p.id + '\')">Reprovar</button></div>'
+                        : '';
+                    partsHtml += '<div style="display:flex;justify-content:space-between;align-items:center;padding:12px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;background:var(--bg-inset)">'
+                        + '<div style="flex:1"><div style="font-size:0.9rem;font-weight:600">' + esc(p.productName) + '</div>'
+                        + '<div style="font-size:0.75rem;color:var(--text-secondary)">Qtd: ' + Math.abs(p.quantity) + ' · Preço: ' + (function(){ var inv = db.find('inventory', p.productId); var price = p.unitPrice || (inv && (inv.salePrice || inv.sellPrice)) || 0; return fmt.currency(price); })() + '</div></div>'
+                        + '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">'
+                        + '<span style="font-size:0.7rem;font-weight:700;padding:2px 8px;border-radius:12px;background:' + st.bg + ';color:' + st.color + '">' + st.lbl + '</span>'
+                        + approveBtn + '</div></div>';
+                });
+                partsHtml = '<div id="clientPartsList" style="margin-bottom:20px">' + partsHtml + '</div>';
+            } else {
+                partsHtml = '<p style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:20px">Nenhuma peça solicitada.</p>';
+            }
+
+            // Pre-render comments
+            let commentsHtml = '';
+            if (comments.length) {
+                comments.forEach(function(c) {
+                    const attach = c.attachment ? '<div style="margin-top:8px"><img src="' + c.attachment + '" style="max-width:100%;max-height:300px;border-radius:8px;border:1px solid var(--border);cursor:pointer" onclick="window.open(\'' + c.attachment + '\')"></div>' : '';
+                    commentsHtml += '<div class="timeline-item"><div class="timeline-dot" style="background:var(--bg-surface);font-size:.8rem">' + (c.authorRole === 'tecnico' ? '🔧' : '👤') + '</div><div class="timeline-content"><div class="timeline-meta">' + esc(c.authorName) + ' · ' + fmt.datetime(c.createdAt) + '</div><div class="timeline-text">' + esc(c.text) + attach + '</div></div></div>';
+                });
+                commentsHtml = '<div class="timeline">' + commentsHtml + '</div>';
+            } else {
+                commentsHtml = '<p style="font-size:0.82rem;color:var(--text-secondary)">Aguardando retorno da equipe técnica.</p>';
+            }
+
+            document.getElementById('dtBody').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 260px;gap:20px">
+      <div>
+        <div style="margin-bottom:16px">
+          <h4 style="font-size:.8rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Descrição</h4>
+          <p style="font-size:0.875rem;line-height:1.7;color:var(--text-secondary)">${esc(t.description) || '—'}</p>
+        </div>
+        <div>
+          <h4 style="font-size:.8rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Peças e Insumos</h4>
+          ${partsHtml}
+        </div>
+        <div>
+          <h4 style="font-size:.8rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Histórico de Atualizações</h4>
+          ${commentsHtml}
+        </div>
+        ${t.status === 'aguardando_aprovacao_pecas' ? renderProposalApproval(t) : ''}
+        ${!['resolvido', 'fechado', 'cancelado', 'aguardando_aprovacao'].includes(t.status) ? `
+        <div style="margin-top:20px">
+          <h4 style="font-size:.8rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Adicionar Informação</h4>
+          <textarea class="form-textarea" id="clientComment" placeholder="Adicione mais detalhes, fotos, informações que possam ajudar..." rows="3"></textarea>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+            <div>
+              <label class="btn btn-ghost btn-sm" style="cursor:pointer;color:var(--blue);display:flex;align-items:center;gap:4px">
+                📷 Anexar Evidência <input type="file" accept="image/*" style="display:none" onchange="attachEvidence(this)">
+              </label>
+              <div id="attachInfo" style="font-size:0.75rem;color:var(--text-secondary);margin-top:4px;display:none"></div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="addClientComment('${id}')">Enviar</button>
+          </div>
+        </div>`: ''}
+        ${t.status === 'resolvido' && !t.csatRating ? `<div style="margin-top:16px;padding:16px;background:linear-gradient(135deg,rgba(240,173,0,.12),rgba(255,107,0,.08));border:1px solid rgba(240,173,0,.3);border-radius:var(--radius-sm);text-align:center">
+          <div style="font-size:1.5rem;margin-bottom:8px">⭐</div>
+          <p style="font-size:0.85rem;font-weight:600;color:#F0AD00;margin-bottom:4px">Seu chamado foi resolvido!</p>
+          <p style="font-size:0.78rem;color:var(--text-secondary);margin-bottom:12px">Avalie o atendimento do técnico — sua opinião é muito importante.</p>
+          <button class="btn btn-sm" style="background:#F0AD00;color:#000;font-weight:700" onclick="openCsat('${id}','${t.num}')">Avaliar Atendimento</button>
+        </div>` : ''}
+      </div>
+      <div>
+        <h4 style="font-size:.8rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Detalhes</h4>
+        ${[['Status', badgeTicketStatus(t.status)], ['Prioridade', badgePriority(t.priority)], ['Categoria', t.category || '—'], ['Técnico Responsável', t.assignedName || 'Aguardando'], ['Abertura', fmt.datetime(t.createdAt)], ['Última atualização', fmt.datetime(t.updatedAt)]].map(([l, v]) => `<div class="detail-meta"><span class="detail-label">${l}</span><span class="detail-val">${v}</span></div>`).join('')}
+        ${!['resolvido', 'fechado', 'cancelado'].includes(t.status) ? `<div style="margin-top:14px">${renderSLABar(t)}<div style="font-size:.72rem;color:var(--text-secondary);margin-top:4px">Prazo: ${t.slaResolutionDeadline === 'cronograma' ? 'Conforme Cronograma' : fmt.datetime(t.slaResolutionDeadline)}</div></div>` : ''}
+        ${t.csatRating ? `<div style="margin-top:14px;padding:10px;background:var(--bg-surface);border-radius:var(--radius-sm);text-align:center"><div style="font-size:0.75rem;color:var(--text-secondary);margin-bottom:6px">Sua avaliação</div>${renderStars(t.csatRating)}<div style="font-size:0.72rem;color:var(--text-muted);margin-top:4px">${t.csatComment || ''}</div></div>` : ''}
+      </div>
+    </div>`;
+            openModal('modalDetail');
+        }
+
+        let pendingAttachment = null;
+
+        function attachEvidence(input) {
+            const file = input.files[0];
+            if (!file) return;
+            if (!/^image\//.test(file.type)) { toast('Erro', 'Por favor, selecione apenas imagens.', 'error'); return; }
+            if (file.size > 2 * 1024 * 1024) { toast('Erro', 'A imagem deve ter no máximo 2MB.', 'error'); return; }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                pendingAttachment = e.target.result;
+                const info = document.getElementById('attachInfo');
+                info.innerHTML = `📎 ${file.name} <button class="btn btn-ghost btn-sm btn-icon" style="color:var(--danger);padding:0 4px" onclick="clearAttachment(event)">✕</button>`;
+                info.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearAttachment(e) {
+            if (e) e.preventDefault();
+            pendingAttachment = null;
+            document.getElementById('attachInfo').innerHTML = '';
+            document.getElementById('attachInfo').style.display = 'none';
+        }
+
+        function addClientComment(tid) {
+            const text = document.getElementById('clientComment')?.value?.trim();
+            if (!text) { toast('Erro', 'Escreva uma mensagem.', 'error'); return; }
+            db.insert('comments', { ticketId: tid, authorId: session.userId, authorName: session.name, authorRole: 'cliente', text, internal: false, attachment: pendingAttachment });
+            toast('Informação enviada', 'Nossa equipe receberá sua mensagem.', 'success');
+            clearAttachment();
+            viewDetail(tid);
+        }
+
+        function openNewTicketModal() {
+            document.getElementById('ntTitle').value = ''; document.getElementById('ntDesc').value = '';
+            document.getElementById('ntPriority').value = 'media'; document.getElementById('ntCat').value = 'corretiva';
+
+            if (session && session.role === 'cliente') {
+                const grpUrgency = document.getElementById('grpUrgency');
+                if (grpUrgency) grpUrgency.style.display = 'none';
+            }
+            openModal('modalNewTicket');
+        }
+
+        function submitTicket() {
+            const title = document.getElementById('ntTitle').value.trim();
+            const desc = document.getElementById('ntDesc').value.trim();
+            if (!title || !desc) { toast('Obrigatório', 'Preencha o assunto e a descrição.', 'error'); return; }
+            const t = db.insert('tickets', {
+                num: nextTicketNum(), clientId, userId: session.userId, clientName: client?.fantasia || session.name,
+                contractId: contract?.id || null, contractType: contract?.type || 'basico',
+                title, category: document.getElementById('ntCat').value, priority: document.getElementById('ntPriority').value,
+                status: 'aberto', assignedTo: null, assignedName: null, description: desc
+            });
+            toast('Chamado aberto!', t.num + ' — Nossa equipe entrará em contato.', 'success');
+            closeModal('modalNewTicket'); renderCards();
+            if (window.updateTicketBadge) window.updateTicketBadge();
+        }
+
+        // ─── CSAT ───
+        let selectedStar = 0, csatTid = null;
+        const starLbls = ['', '😤 Muito insatisfeito', '😕 Insatisfeito', '😐 Neutro', '😊 Satisfeito', '😍 Excelente!'];
+
+        function openCsat(id, num) {
+            csatTid = id;
+            selectedStar = 0;
+            document.getElementById('csatNum').textContent = num;
+            document.getElementById('csatComment').value = '';
+            document.querySelectorAll('.star').forEach(s => s.style.color = '#484F58');
+            document.getElementById('starLabel').textContent = 'Toque para avaliar';
+            openModal('modalCsat');
+        }
+
+        function selectStar(n) {
+            selectedStar = n;
+            document.querySelectorAll('#modalCsat .star').forEach((s, i) => s.style.color = i < n ? '#F0AD00' : '#484F58');
+            document.getElementById('starLabel').textContent = starLbls[n] || '';
+        }
+
+        function submitCsat() {
+            if (!selectedStar) { toast('Erro', 'Selecione uma avaliação de 1 a 5 estrelas.', 'error'); return; }
+            const comment = document.getElementById('csatComment').value.trim();
+            db.update('tickets', csatTid, { csatRating: selectedStar, csatComment: comment, awaitingCsat: false });
+            db.insert('csat', { ticketId: csatTid, clientId, clientName: client?.fantasia || session.name, rating: selectedStar, comment });
+            // Mark associated csat_request notifications as read
+            db.get('notifications')
+                .filter(n => n.type === 'csat_request' && n.ticketId === csatTid)
+                .forEach(n => db.update('notifications', n.id, { read: true }));
+            toast('Obrigado! ⭐', 'Sua avaliação foi registrada com sucesso.', 'success');
+            closeModal('modalCsat');
+            renderCards();
+            renderCsatBanner();
+        }
+
+        // ─── CSAT Notification Banner ───
+        function renderCsatBanner() {
+            const pending = db.get('notifications').filter(n =>
+                n.type === 'csat_request' && !n.read &&
+                (n.targetClientId === clientId || n.targetUserId === session.userId)
+            );
+            const banner = document.getElementById('csatBanner');
+            if (!pending.length) { banner.style.display = 'none'; return; }
+            banner.style.display = 'flex';
+            const plural = pending.length > 1
+                ? `${pending.length} chamados aguardando avaliação`
+                : `Um chamado aguardando sua avaliação`;
+            document.getElementById('csatBannerMsg').textContent = plural;
+            document.getElementById('csatBannerBtns').innerHTML = pending.map(n => {
+                const t = db.find('tickets', n.ticketId);
+                if (!t) return '';
+                return `<button class="btn btn-sm" style="background:#F0AD00;color:#000;font-weight:700" onclick="openCsat('${t.id}','${t.num}')">Avaliar ${t.num}</button>`;
+            }).join('');
+        }
+
+        // ─── Proposal Approval ───
+        function renderProposalApproval(t) {
+            const pendingParts = db.get('stock_movements').filter(m => m.ticketId === t.id && m.status === 'pendente');
+            if (pendingParts.length === 0) return '';
+
+            return `
+            <div style="margin-top:20px; padding:20px; background:var(--bg-inset); border:1px solid var(--orange); border-radius:12px; animation: fadeInUp 0.3s ease">
+                <div style="display:flex; align-items:center; gap:10px; margin-bottom:15px">
+                    <span style="font-size:1.5rem">📄</span>
+                    <div>
+                        <h4 style="margin:0; font-size:1rem; color:var(--orange)">Aprovação de Peças Pendente</h4>
+                        <p style="margin:0; font-size:0.75rem; color:var(--text-secondary)">Você tem itens aguardando sua autorização. Prazo de 10 dias.</p>
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:10px">
+                    <button class="btn btn-primary" style="flex:2" onclick="Proposals.approveAll('${t.id}', session)">✅ Aprovar Todos os Itens</button>
+                    <button class="btn btn-ghost" style="flex:1; border:1px solid var(--danger); color:var(--danger)" onclick="rejectBatchPrompt('${t.id}')">✕ Reprovar Todos</button>
+                </div>
+            </div>`;
+        }
+
+        function rejectItemPrompt(mid) {
+            const reason = prompt('Por favor, informe o motivo da reprovação:');
+            if (reason === null) return;
+            Proposals.rejectItem(mid, session, reason);
+        }
+
+        function rejectBatchPrompt(id) {
+            const reason = prompt('Por favor, informe o motivo da reprovação em lote:');
+            if (reason === null) return;
+            const parts = db.get('stock_movements').filter(m => m.ticketId === id && m.status === 'pendente');
+            parts.forEach(p => Proposals.rejectItem(p.id, session, reason));
+        }
+
+        function rejectWithPrompt(id) {
+            const reason = prompt('Por favor, informe o motivo da reprovação (mínimo 5 caracteres):');
+            if (reason === null) return;
+            Proposals.reject(id, session, reason);
+        }
+
+        initSidebar(); renderCards(); renderCsatBanner();
+    </script>
+</body>
+
+</html>

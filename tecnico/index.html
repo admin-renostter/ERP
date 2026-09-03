@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="theme-color" content="#00AEEF"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="icon" href="../assets/logo-crm.png" type="image/png"/>
+<title>Renostter Técnico</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#00AEEF;--blue-dim:rgba(0,174,239,.12);--blue-dark:#0088CC;
+  --orange:#FF6B00;--orange-dim:rgba(255,107,0,.12);
+  --green:#22c55e;--green-dim:rgba(34,197,94,.12);
+  --red:#ef4444;--red-dim:rgba(239,68,68,.12);
+  --bg:#0D1117;--surface:#161B22;--card:#1C2333;--border:rgba(255,255,255,.08);
+  --text:#E6EDF3;--text2:#8B949E;--text3:#484F58;
+  --radius:12px;--radius-sm:8px;
+}
+html{font-size:16px;background:var(--bg);color:var(--text)}
+body{font-family:'Inter',sans-serif;min-height:100dvh;display:flex;flex-direction:column;max-width:480px;margin:0 auto}
+
+/* ─── Status Bar ─── */
+.statusbar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
+.statusbar .logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:.9rem}
+.statusbar .logo img{width:28px;height:28px;border-radius:6px}
+.online-badge{display:flex;align-items:center;gap:5px;font-size:.72rem;font-weight:600;padding:4px 10px;border-radius:50px}
+.online-badge.on{background:var(--green-dim);color:var(--green)}
+.online-badge.off{background:var(--red-dim);color:var(--red)}
+.dot{width:7px;height:7px;border-radius:50%;background:currentColor;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ─── Main Content ─── */
+.main{flex:1;overflow-y:auto;padding:16px;padding-bottom:80px}
+
+/* ─── Bottom Nav ─── */
+.bottom-nav{display:flex;gap:4px;padding:8px 12px;background:var(--surface);border-top:1px solid var(--border);position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;z-index:10}
+.bottom-nav .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px;border-radius:var(--radius-sm);cursor:pointer;transition:.2s;border:none;background:none;color:var(--text2);font-size:.68rem;font-weight:600;text-decoration:none}
+.bottom-nav .nav-item.active{background:var(--blue-dim);color:var(--blue)}
+.bottom-nav .nav-item svg{width:22px;height:22px}
+.bottom-nav .badge-notif{position:absolute;top:2px;right:50%;transform:translateX(12px);background:var(--red);color:#fff;font-size:.6rem;font-weight:700;padding:1px 5px;border-radius:50px;min-width:16px;text-align:center}
+
+/* ─── Section Header ─── */
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.section-title{font-size:.78rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em}
+
+/* ─── Cards ─── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:10px;cursor:pointer;transition:.2s}
+.card:active{transform:scale(.99);background:var(--surface)}
+.card:hover{background:var(--surface)}
+.card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:8px}
+.card-title{font-weight:700;font-size:.88rem;line-height:1.3;flex:1}
+.card-meta{font-size:.72rem;color:var(--text2);margin-top:4px;display:flex;flex-direction:column;gap:2px}
+.card-footer{display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+
+/* ─── Badges ─── */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:50px;font-size:.65rem;font-weight:700;white-space:nowrap}
+.bg-green{background:var(--green-dim);color:var(--green)}
+.bg-orange{background:var(--orange-dim);color:var(--orange)}
+.bg-red{background:var(--red-dim);color:var(--red)}
+.bg-blue{background:var(--blue-dim);color:var(--blue)}
+.bg-gray{background:rgba(255,255,255,.06);color:var(--text2)}
+
+/* ─── KPI Strip ─── */
+.kpi-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px}
+.kpi-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 8px;text-align:center}
+.kpi-box .num{font-size:1.4rem;font-weight:800;line-height:1}
+.kpi-box .lbl{font-size:.6rem;color:var(--text2);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-top:3px}
+
+/* ─── Checklist ─── */
+.cl-item{display:flex;align-items:flex-start;gap:10px;padding:12px 0;border-bottom:1px solid var(--border)}
+.cl-item:last-child{border-bottom:none}
+.cl-item input[type="checkbox]{width:18px;height:18px;accent-color:var(--blue);flex-shrink:0;margin-top:2px}
+.cl-body{flex:1;min-width:0}
+.cl-desc{font-size:.83rem;font-weight:600;margin-bottom:4px}
+.cl-cat{font-size:.68rem;color:var(--text2);margin-bottom:6px}
+.cl-btns{display:flex;gap:6px;flex-wrap:wrap}
+.cl-btn{padding:4px 10px;border-radius:6px;font-size:.72rem;font-weight:700;cursor:pointer;border:1px solid var(--border);background:none;color:var(--text2);transition:.2s}
+.cl-btn.ok{border-color:var(--green);color:var(--green)}
+.cl-btn.ok.active{background:var(--green-dim)}
+.cl-btn.nok{border-color:var(--red);color:var(--red)}
+.cl-btn.nok.active{background:var(--red-dim)}
+.cl-btn.na{color:var(--text3)}
+.cl-btn.na.active{background:rgba(255,255,255,.06)}
+
+/* ─── Photo Input ─── */
+.photo-area{border:2px dashed var(--border);border-radius:var(--radius-sm);padding:20px;text-align:center;cursor:pointer;transition:.2s;margin-top:8px}
+.photo-area:hover{border-color:var(--blue);background:var(--blue-dim)}
+.photo-area input{display:none}
+.photo-area .icon{font-size:1.8rem;margin-bottom:6px}
+.photo-area p{font-size:.78rem;color:var(--text2)}
+.photo-preview{max-width:100%;border-radius:var(--radius-sm);margin-top:8px;display:none}
+.photo-preview.show{display:block}
+
+/* ─── Modal ─── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:flex;align-items:flex-end;justify-content:center;padding:0}
+.modal-overlay.hidden{display:none}
+.modal{background:var(--card);border-radius:var(--radius) var(--radius) 0 0;width:100%;max-height:90vh;overflow-y:auto;padding-bottom:env(safe-area-inset-bottom,16px)}
+.modal-header{display:flex;justify-content:space-between;align-items:center;padding:16px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--card);z-index:1}
+.modal-title{font-weight:700;font-size:1rem}
+.modal-close{background:none;border:none;color:var(--text2);cursor:pointer;font-size:1.2rem;padding:4px 8px;border-radius:6px}
+.modal-close:hover{background:var(--border)}
+.modal-body{padding:16px}
+.modal-footer{display:flex;gap:8px;padding:14px 16px;border-top:1px solid var(--border);position:sticky;bottom:0;background:var(--card)}
+
+/* ─── Buttons ─── */
+.btn{flex:1;padding:12px;border-radius:var(--radius-sm);font-size:.88rem;font-weight:700;cursor:pointer;border:none;transition:.2s;text-align:center}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-primary:hover{background:var(--blue-dark)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-ghost{background:rgba(255,255,255,.06);color:var(--text);border:1px solid var(--border)}
+.btn-success{background:var(--green);color:#fff}
+.btn-danger{background:var(--red);color:#fff}
+
+/* ─── Form ─── */
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:.78rem;font-weight:600;color:var(--text2);margin-bottom:5px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);font-size:.9rem;font-family:inherit}
+.form-group textarea{resize:vertical;min-height:80px}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:var(--blue)}
+
+/* ─── Empty state ─── */
+.empty-state{text-align:center;padding:40px 20px;color:var(--text2)}
+.empty-state .icon{font-size:2.5rem;margin-bottom:10px}
+.empty-state p{font-size:.83rem}
+
+/* ─── Toast ─── */
+.toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px 20px;font-size:.83rem;z-index:9999;display:flex;align-items:center;gap:8px;box-shadow:0 8px 32px rgba(0,0,0,.5);transition:opacity .3s,transform .3s;max-width:90%}
+.toast.hidden{opacity:0;transform:translateX(-50%) translateY(-10px);pointer-events:none}
+.toast.success{border-color:var(--green)}
+.toast.error{border-color:var(--red)}
+
+/* ─── Login ─── */
+.login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100dvh;padding:24px;text-align:center;background:var(--bg)}
+.login-screen .logo-area{margin-bottom:32px}
+.login-screen .logo-area img{width:72px;height:72px;border-radius:16px;margin-bottom:12px}
+.login-screen h1{font-size:1.4rem;font-weight:800;margin-bottom:4px}
+.login-screen p{color:var(--text2);font-size:.83rem}
+.login-screen .form-group{width:100%;text-align:left}
+.login-btn{margin-top:16px;width:100%}
+.tech-hint{font-size:.72rem;color:var(--text3);margin-top:12px}
+
+/* ─── Page titles ─── */
+.page-title{font-size:1.1rem;font-weight:800;margin-bottom:16px}
+
+/* ─── Offline indicator ─── */
+.sync-bar{display:flex;align-items:center;gap:6px;padding:8px 12px;background:var(--orange-dim);border:1px solid var(--orange);border-radius:var(--radius-sm);margin-bottom:12px;font-size:.78rem;color:var(--orange);font-weight:600}
+.sync-bar.hidden{display:none}
+
+/* ─── Observação input ─── */
+.obs-input{width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-size:.78rem;margin-top:4px}
+
+/* ─── Pending sync badge ─── */
+.pending-sync{font-size:.72rem;color:var(--orange);font-weight:600}
+
+/* ─── Scroll ─── */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+</style>
+</head>
+<body>
+
+<!-- ═══ LOGIN SCREEN ═══ -->
+<div class="login-screen" id="loginScreen">
+  <div class="logo-area">
+    <img src="../assets/logo-crm.png" alt="Renostter">
+    <h1>Renostter Técnico</h1>
+    <p>App de campo — Manutenção PMOC</p>
+  </div>
+  <div class="form-group">
+    <label>Seu nome ou ID</label>
+    <input type="text" id="tecnicoId" placeholder="Ex: João Silva" autocomplete="off">
+  </div>
+  <div class="form-group">
+    <label>Senha (opcional em dev)</label>
+    <input type="password" id="tecnicoPass" placeholder="••••••">
+  </div>
+  <button class="btn btn-primary login-btn" onclick="handleLogin()">Entrar</button>
+  <p class="tech-hint">🔒 Dados sincronizados localmente. Use sem conexão.</p>
+</div>
+
+<!-- ═══ APP ═══ -->
+<div id="appScreen" style="display:none">
+
+  <!-- Status Bar -->
+  <div class="statusbar">
+    <div class="logo">
+      <img src="../assets/logo-crm.png" alt="Renostter">
+      <div>
+        <div style="font-size:.72rem;color:var(--text2)">Técnico</div>
+        <div style="font-weight:700;font-size:.85rem" id="tecnicoName">–</div>
+      </div>
+    </div>
+    <div>
+      <div class="online-badge" id="onlineBadge">
+        <div class="dot"></div>
+        <span id="onlineLabel">Online</span>
+      </div>
+      <div style="font-size:.6rem;color:var(--text3);margin-top:3px;text-align:right" id="geoStatus">GPS: aguardando</div>
+      <div style="font-size:.65rem;color:var(--text3);margin-top:2px;text-align:right" id="pendingCount"></div>
+    </div>
+  </div>
+
+  <!-- Sync bar -->
+  <div class="sync-bar hidden" id="syncBar">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+    <span id="syncMsg">Dados pendentes de sincronização</span>
+    <button onclick="syncNow()" style="margin-left:auto;background:none;border:none;color:inherit;font-size:.75rem;font-weight:700;cursor:pointer;text-decoration:underline">Sincronizar</button>
+  </div>
+
+  <!-- Main -->
+  <div class="main" id="mainContent">
+
+    <!-- PAGE: Tarefas (default) -->
+    <div id="page-tarefas">
+      <div class="kpi-strip">
+        <div class="kpi-box"><div class="num" id="kpiPmoc" style="color:var(--blue)">–</div><div class="lbl">PMOC Hoje</div></div>
+        <div class="kpi-box"><div class="num" id="kpiPendentes" style="color:var(--orange)">–</div><div class="lbl">Pendentes</div></div>
+        <div class="kpi-box"><div class="num" id="kpiConcluidas" style="color:var(--green)">–</div><div class="lbl">Concluídas</div></div>
+      </div>
+
+      <div class="section-header">
+        <span class="section-title">📅 Manutenções PMOC</span>
+        <button onclick="loadTarefas()" style="background:none;border:none;color:var(--blue);cursor:pointer;font-size:.78rem">🔄</button>
+      </div>
+      <div id="pmocList"><div class="empty-state"><div class="icon">📅</div><p>Carregando…</p></div></div>
+
+      <div class="section-header" style="margin-top:20px">
+        <span class="section-title">🎫 Meus Chamados</span>
+      </div>
+      <div id="ticketsList"><div class="empty-state"><div class="icon">🎫</div><p>Carregando…</p></div></div>
+    </div>
+
+    <!-- PAGE: Agenda -->
+    <div id="page-agenda" style="display:none">
+      <div class="page-title">📅 Agenda da Semana</div>
+      <div id="agendaList"><div class="empty-state"><div class="icon">📅</div><p>Carregando…</p></div></div>
+    </div>
+
+    <!-- PAGE: Histórico -->
+    <div id="page-historico" style="display:none">
+      <div class="page-title">✅ Histórico</div>
+      <div id="historicoList"><div class="empty-state"><div class="icon">✅</div><p>Nenhuma manutenção concluída.</p></div></div>
+    </div>
+
+  </div><!-- /main -->
+
+  <!-- Bottom Nav -->
+  <div class="bottom-nav">
+    <a class="nav-item active" onclick="switchPage('tarefas')" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      <span>Tarefas</span>
+    </a>
+    <a class="nav-item" onclick="switchPage('agenda')" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <span>Agenda</span>
+    </a>
+    <a class="nav-item" onclick="switchPage('historico')" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      <span>Histórico</span>
+    </a>
+  </div>
+</div><!-- /appScreen -->
+
+<!-- ═══ MODAL: Executar PMOC ═══ -->
+<div class="modal-overlay hidden" id="modalExec">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">▶️ Executar Manutenção</span>
+      <button class="modal-close" onclick="closeModal('modalExec')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="execInfo" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;margin-bottom:14px;font-size:.82rem">
+      </div>
+      <div id="execChecklist"></div>
+      <div class="section-title" style="margin-top:14px">Dados da Execução</div>
+      <div class="form-group"><label>Observações gerais</label>
+        <textarea id="execObs" placeholder="Observações sobre a execução…"></textarea>
+      </div>
+      <div class="form-group"><label>Custo Mão de Obra (R$)</label>
+        <input type="number" id="execCustoMO" step="0.01" min="0" placeholder="0.00">
+      </div>
+      <div class="form-group"><label>Custo Peças (R$)</label>
+        <input type="number" id="execCustoPecas" step="0.01" min="0" placeholder="0.00">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalExec')">Cancelar</button>
+      <button class="btn btn-success" onclick="submitExec()" id="btnSubmitExec">Concluir</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast hidden" id="toast"><span id="toastMsg"></span></div>
+
+<script>
+// ─── State ───
+const tecnicoId = localStorage.getItem('tecnicoId') || '';
+const BASE = '/api';
+let currentPage = 'tarefas';
+let currentManut = null;
+let isOnline = navigator.onLine;
+let geoWatchId = null;
+let lastGeoSync = null;
+let pendingGeoQueue = []; // fila de localizações pendentes (offline)
+
+// ─── Init ───
+document.addEventListener('DOMContentLoaded', () => {
+  // Register service worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('service-worker.js')
+      .then(reg => console.log('[PWA] SW registered'))
+      .catch(e => console.warn('[PWA] SW registration failed:', e));
+  }
+
+  // Online/offline listeners
+  window.addEventListener('online', () => { isOnline = true; updateOnlineStatus(); syncNow(); flushGeoQueue(); });
+  window.addEventListener('offline', () => { isOnline = false; updateOnlineStatus(); });
+
+  // Carrega fila pendente do localStorage
+  try {
+    const saved = localStorage.getItem('geoQueue');
+    if (saved) pendingGeoQueue = JSON.parse(saved);
+  } catch (_) { pendingGeoQueue = []; }
+
+  // Resume session
+  if (tecnicoId) {
+    showApp(tecnicoId);
+  } else {
+    showLogin();
+  }
+});
+
+// ─── Auth ───
+function handleLogin() {
+  const id = document.getElementById('tecnicoId').value.trim();
+  if (!id) { toast('error', 'Informe seu nome ou ID'); return; }
+  localStorage.setItem('tecnicoId', id);
+  showApp(id);
+}
+
+function showLogin() {
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('appScreen').style.display = 'none';
+}
+
+function showApp(id) {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('appScreen').style.display = 'block';
+  document.getElementById('tecnicoName').textContent = id;
+  updateOnlineStatus();
+  loadTarefas();
+  loadHistorico();
+  updatePendingCount();
+  startGeolocation();
+  // Flush qualquer fila pendente
+  if (isOnline) flushGeoQueue();
+}
+
+// ─── Geolocalização ───
+function startGeolocation() {
+  if (!('geolocation' in navigator)) {
+    console.warn('[Geo] API de geolocalização indisponível');
+    updateGeoStatus('Indisponível');
+    return;
+  }
+
+  // Permissão (silenciosa — PWA já foi autorizado no install)
+  if (navigator.permissions && navigator.permissions.query) {
+    navigator.permissions.query({ name: 'geolocation' }).then(r => {
+      if (r.state === 'denied') {
+        updateGeoStatus('Permissão negada');
+        console.warn('[Geo] Permissão negada pelo usuário');
+      }
+    }).catch(() => {});
+  }
+
+  // Watch position — high accuracy, atualiza a cada ~30s ou 50m
+  geoWatchId = navigator.geolocation.watchPosition(
+    onGeoSuccess,
+    onGeoError,
+    {
+      enableHighAccuracy: true,
+      timeout: 30000,
+      maximumAge: 15000,
+      distanceFilter: 25 // re-envia se moveu mais de 25m
+    }
+  );
+
+  // Backup: reenvia a cada 60s mesmo parado (heartbeat de "ainda em campo")
+  setInterval(sendHeartbeatGeo, 60000);
+  updateGeoStatus('Rastreando...');
+}
+
+function onGeoSuccess(pos) {
+  const data = {
+    tecnicoId: localStorage.getItem('tecnicoId'),
+    latitude: pos.coords.latitude,
+    longitude: pos.coords.longitude,
+    precisao: pos.coords.accuracy,
+    speed: pos.coords.speed,
+    heading: pos.coords.heading,
+    batteryLevel: null, // preenchido depois
+    appVersion: '1.0.0'
+  };
+
+  // Pega bateria (nem todos os browsers suportam)
+  if (navigator.getBattery) {
+    navigator.getBattery().then(b => {
+      data.batteryLevel = Math.round(b.level * 100);
+      sendGeoToServer(data);
+    }).catch(() => sendGeoToServer(data));
+  } else {
+    sendGeoToServer(data);
+  }
+
+  // Geocoding reverso opcional (se o backend suportar)
+  // Pega nome da rua/bairro via API leve (deixar para depois)
+}
+
+function onGeoError(err) {
+  console.warn('[Geo] Erro:', err.message);
+  if (err.code === 1) updateGeoStatus('Permissão negada');
+  else if (err.code === 2) updateGeoStatus('Sem sinal GPS');
+  else if (err.code === 3) updateGeoStatus('Timeout');
+}
+
+function sendHeartbeatGeo() {
+  if (!('geolocation' in navigator)) return;
+  navigator.geolocation.getCurrentPosition(
+    pos => onGeoSuccess(pos),
+    () => {},
+    { enableHighAccuracy: false, timeout: 10000, maximumAge: 30000 }
+  );
+}
+
+async function sendGeoToServer(data) {
+  if (!data.tecnicoId) return;
+  if (!isOnline) {
+    pendingGeoQueue.push({ ...data, _ts: Date.now() });
+    saveGeoQueue();
+    return;
+  }
+  try {
+    await api('/tecnico/localizacao', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    lastGeoSync = Date.now();
+    updateGeoStatus('✓ Sincronizado ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
+  } catch (e) {
+    console.warn('[Geo] Falhou ao enviar, enfileirando:', e.message);
+    pendingGeoQueue.push({ ...data, _ts: Date.now() });
+    saveGeoQueue();
+  }
+}
+
+function flushGeoQueue() {
+  if (!pendingGeoQueue.length || !isOnline) return;
+  const queue = [...pendingGeoQueue];
+  pendingGeoQueue = [];
+  saveGeoQueue();
+  Promise.allSettled(queue.map(d => api('/tecnico/localizacao', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(d)
+  }))).then(results => {
+    const failed = results.filter(r => r.status === 'rejected').length;
+    if (failed > 0) {
+      // Recoloca na fila só os que falharam
+      results.forEach((r, i) => {
+        if (r.status === 'rejected') pendingGeoQueue.push(queue[i]);
+      });
+      saveGeoQueue();
+    } else {
+      lastGeoSync = Date.now();
+      updateGeoStatus('✓ ' + pendingGeoQueue.length + ' localizações sincronizadas');
+    }
+  });
+}
+
+function saveGeoQueue() {
+  // Limita a 500 pontos para não estourar localStorage
+  if (pendingGeoQueue.length > 500) {
+    pendingGeoQueue = pendingGeoQueue.slice(-500);
+  }
+  try { localStorage.setItem('geoQueue', JSON.stringify(pendingGeoQueue)); } catch (_) {}
+}
+
+function updateGeoStatus(msg) {
+  const el = document.getElementById('geoStatus');
+  if (el) el.textContent = msg;
+}
+
+// ─── Online status ───
+function updateOnlineStatus() {
+  const badge = document.getElementById('onlineBadge');
+  const label = document.getElementById('onlineLabel');
+  if (isOnline) {
+    badge.className = 'online-badge on';
+    label.textContent = 'Online';
+  } else {
+    badge.className = 'online-badge off';
+    label.textContent = 'Offline';
+  }
+}
+
+// ─── Navigation ───
+function switchPage(page) {
+  currentPage = page;
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  event?.currentTarget?.classList.add('active');
+  document.querySelectorAll('[id^="page-"]').forEach(p => p.style.display = 'none');
+  document.getElementById('page-' + page).style.display = 'block';
+  if (page === 'tarefas') loadTarefas();
+  if (page === 'agenda') loadAgenda();
+  if (page === 'historico') loadHistorico();
+}
+
+// ─── API ───
+async function api(path, opts = {}) {
+  const r = await fetch(BASE + path, opts);
+  const j = await r.json();
+  if (!r.ok && !j.success) throw new Error(j.error || 'Erro');
+  return j;
+}
+
+// ─── Load Tarefas ───
+async function loadTarefas() {
+  const tid = localStorage.getItem('tecnicoId');
+  try {
+    const [pendentesRes, todasRes] = await Promise.all([
+      api('/api/pmoc/pendentes'),
+      api('/api/pmoc/manutencoes?status=Pendente&size=50')
+    ]);
+
+    const pendentes = pendentesRes.data || [];
+    const todas = todasRes.data || [];
+
+    const kpiPmoc = pendentes.filter(p => isToday(p.proxima_data)).length;
+    const kpiPend = pendentes.length;
+    document.getElementById('kpiPmoc').textContent = kpiPmoc || pendentes.slice(0,1).length;
+    document.getElementById('kpiPendentes').textContent = kpiPend;
+    document.getElementById('kpiConcluidas').textContent = '–';
+
+    // PMOC List
+    if (!todas.length) {
+      document.getElementById('pmocList').innerHTML = '<div class="empty-state"><div class="icon">🎉</div><p>Nenhuma manutenção pendente. Bom trabalho!</p></div>';
+    } else {
+      document.getElementById('pmocList').innerHTML = todas.map(m => {
+        const dias = Math.round((new Date(m.proxima_data) - new Date()) / 86400000);
+        const overdue = dias < 0;
+        const color = overdue ? 'var(--red)' : dias <= 3 ? 'var(--orange)' : 'var(--text2)';
+        return `<div class="card" onclick="openExecModal('${m.id}')">
+          <div class="card-header">
+            <div class="card-title">${escHtml(m.marca || '')} ${escHtml(m.modelo || '')}</div>
+            <span class="badge ${overdue ? 'bg-red' : dias <= 3 ? 'bg-orange' : 'bg-blue'}">${m.tipo_manutencao}</span>
+          </div>
+          <div class="card-meta">
+            <span>${escHtml(m.local_instalacao || '–')}</span>
+            <span style="color:${color}">${overdue ? Math.abs(dias)+'d atrasada' : dias+'d'}</span>
+          </div>
+          <div class="card-footer">
+            <span style="font-size:.72rem;color:var(--text2)">${fmtDate(m.proxima_data)}</span>
+            <span class="badge bg-green">▶ Executar</span>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    // Tickets (placeholder — from local storage)
+    const myTickets = JSON.parse(localStorage.getItem('tecnico_tickets') || '[]');
+    document.getElementById('ticketsList').innerHTML = myTickets.length
+      ? myTickets.map(t => `<div class="card">
+          <div class="card-header">
+            <div class="card-title">${escHtml(t.title || t.num || '')}</div>
+            <span class="badge bg-orange">${escHtml(t.status || 'Aberto')}</span>
+          </div>
+          <div class="card-meta"><span>${escHtml(t.cliente || '')}</span></div>
+        </div>`).join('')
+      : '<div class="empty-state"><div class="icon">🎫</div><p>Use o admin para criar chamados.</p></div>';
+
+  } catch(e) {
+    console.warn('Load error (offline?):', e.message);
+    document.getElementById('pmocList').innerHTML = '<div class="empty-state"><div class="icon">📵</div><p>Sem conexão. Carregue a página online ao menos uma vez.</p></div>';
+    document.getElementById('ticketsList').innerHTML = '<div class="empty-state"><div class="icon">📵</div><p>Sem conexão.</p></div>';
+  }
+}
+
+// ─── Load Agenda ───
+async function loadAgenda() {
+  try {
+    const d = await api('/api/pmoc/manutencoes?status=Pendente&size=30');
+    const rows = d.data || [];
+    if (!rows.length) { document.getElementById('agendaList').innerHTML = '<div class="empty-state"><div class="icon">📅</div><p>Nada agendado.</p></div>'; return; }
+    document.getElementById('agendaList').innerHTML = rows.map(m => {
+      const dt = new Date(m.proxima_data);
+      const dia = dt.toLocaleDateString('pt-BR', { weekday:'short', day:'numeric', month:'short' });
+      return `<div class="card" onclick="openExecModal('${m.id}')">
+        <div class="card-header">
+          <div class="card-title">${escHtml(m.marca || '')} ${escHtml(m.modelo || '')} — ${m.tipo_manutencao}</div>
+        </div>
+        <div class="card-meta"><span>${dia}</span><span>${escHtml(m.local_instalacao || '')}</span></div>
+        <div class="card-footer"><span class="badge bg-orange">⏰ Pendente</span><span class="badge bg-green">▶</span></div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    document.getElementById('agendaList').innerHTML = '<div class="empty-state"><div class="icon">📵</div><p>Sem conexão.</p></div>';
+  }
+}
+
+// ─── Load Histórico ───
+async function loadHistorico() {
+  try {
+    const tid = localStorage.getItem('tecnicoId');
+    // Load from IndexedDB first
+    const localDone = await loadLocalExecucoes();
+    if (localDone.length) {
+      document.getElementById('historicoList').innerHTML = localDone.map(m => `
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">${escHtml(m.marca || '')} ${escHtml(m.modelo || '')}</div>
+            <span class="badge ${m.synced ? 'bg-green' : 'bg-orange'}">${m.synced ? '✅ Sincronizado' : '⏳ Pendente'}</span>
+          </div>
+          <div class="card-meta"><span>${escHtml(m.tipo_manutencao || '')}</span><span>${fmtDate(m.executedAt)}</span></div>
+        </div>`).join('');
+      return;
+    }
+    document.getElementById('historicoList').innerHTML = '<div class="empty-state"><div class="icon">✅</div><p>Nenhuma manutenção concluída ainda.</p></div>';
+  } catch(e) {
+    document.getElementById('historicoList').innerHTML = '<div class="empty-state"><div class="icon">📵</div><p>Sem conexão.</p></div>';
+  }
+}
+
+// ─── Execute Modal ───
+async function openExecModal(manutId) {
+  currentManut = manutId;
+  document.getElementById('execObs').value = '';
+  document.getElementById('execCustoMO').value = '';
+  document.getElementById('execCustoPecas').value = '';
+  document.getElementById('execChecklist').innerHTML = '<div class="empty-state"><div class="icon">⏳</div><p>Carregando checklist…</p></div>';
+
+  try {
+    const d = await api('/api/pmoc/manutencoes/' + manutId);
+    const m = d.data;
+
+    document.getElementById('execInfo').innerHTML = `
+      <strong>${escHtml(m.marca)} ${escHtml(m.modelo)}</strong><br>
+      <span style="color:var(--text2)">${escHtml(m.local_instalacao)}</span><br>
+      <span class="badge bg-blue" style="margin-top:4px;display:inline-block">${m.tipo_manutencao}</span>
+    `;
+
+    const itens = m.itens || [];
+    document.getElementById('execChecklist').innerHTML = `<div class="section-title" style="margin-bottom:10px">Checklist — ${m.tipo_manutencao}</div>` +
+      (itens.length ? itens.map((item, i) => `
+        <div class="cl-item">
+          <div class="cl-body">
+            <div class="cl-desc">${escHtml(item.item_descricao || item.descricao || '')}</div>
+            <div class="cl-cat">${item.obrigatorio ? '🔴 Obrigatório' : 'Optional'} · ${escHtml(item.item_categoria || '')}</div>
+            <input type="hidden" id="cl-res-${i}" value="">
+            <div class="cl-btns">
+              <button class="cl-btn ok" onclick="setClResult(${i},'OK')" id="cl-ok-${i}">✅ OK</button>
+              <button class="cl-btn nok" onclick="setClResult(${i},'NOK')" id="cl-nok-${i}">❌ NOK</button>
+              <button class="cl-btn na" onclick="setClResult(${i},'N/A')" id="cl-na-${i}">N/A</button>
+            </div>
+            <input type="text" class="obs-input" id="cl-obs-${i}" placeholder="Observação (opcional)">
+          </div>
+        </div>`).join('') : '<p style="color:var(--text2);font-size:.82rem">Nenhum item no checklist.</p>');
+
+    // Store items for submission
+    window._execItens = itens;
+
+  } catch(e) {
+    document.getElementById('execChecklist').innerHTML = '<div class="empty-state"><div class="icon">📵</div><p>Sem conexão. Checklist não disponível offline.</p></div>';
+  }
+
+  openModal('modalExec');
+}
+
+function setClResult(idx, result) {
+  document.getElementById('cl-res-' + idx).value = result;
+  ['ok','nok','na'].forEach(t => document.getElementById('cl-' + t + '-' + idx)?.classList.remove('active'));
+  document.getElementById('cl-' + result.toLowerCase() + '-' + idx)?.classList.add('active');
+}
+
+// ─── Submit Execution ───
+async function submitExec() {
+  if (!currentManut || !window._execItens) return;
+
+  const tid = localStorage.getItem('tecnicoId');
+  const itensExec = [];
+  let valid = true;
+
+  window._execItens.forEach((item, i) => {
+    const result = document.getElementById('cl-res-' + i)?.value;
+    if (item.obrigatorio && !result) valid = false;
+    if (result) {
+      itensExec.push({
+        itemId: item.id,
+        resultado: result,
+        observacao: document.getElementById('cl-obs-' + i)?.value || ''
+      });
+    }
+  });
+
+  if (!valid) { toast('error', 'Marque todos os itens obrigatórios.'); return; }
+  if (!itensExec.length) { toast('error', 'Marque ao menos um item.'); return; }
+
+  const payload = {
+    itens: itensExec,
+    tecnicoId: tid,
+    observacoesGerais: document.getElementById('execObs').value,
+    custoMaoObra: parseFloat(document.getElementById('execCustoMO').value) || null,
+    custoPecas: parseFloat(document.getElementById('execCustoPecas').value) || null
+  };
+
+  if (isOnline) {
+    try {
+      await api(`/api/pmoc/manutencoes/${currentManut}/executar`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      toast('success', 'Manutenção registrada!');
+      closeModal('modalExec');
+      loadTarefas();
+      loadHistorico();
+      return;
+    } catch(e) {
+      console.warn('Online submit failed, queuing offline:', e);
+    }
+  }
+
+  // Offline: save to IndexedDB
+  await saveOfflineExecucao(currentManut, payload);
+  toast('success', 'Salvo offline! Será sincronizado quando online.');
+  closeModal('modalExec');
+  loadTarefas();
+  loadHistorico();
+  updatePendingCount();
+}
+
+// ─── Offline DB ───
+function openIDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open('RenostterTec', 1);
+    req.onupgradeneeded = e => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains('execucoes')) {
+        db.createObjectStore('execucoes', { keyPath: 'id', autoIncrement: true });
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function saveOfflineExecucao(manutId, payload) {
+  const db = await openIDB();
+  const tx = db.transaction('execucoes', 'readwrite');
+  tx.objectStore('execucoes').add({ manutId, payload, synced: false, createdAt: new Date().toISOString() });
+}
+
+async function loadLocalExecucoes() {
+  try {
+    const db = await openIDB();
+    const tx = db.transaction('execucoes', 'readonly');
+    return new Promise((resolve, reject) => {
+      const req = tx.objectStore('execucoes').getAll();
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = () => reject(req.error);
+    });
+  } catch { return []; }
+}
+
+async function updatePendingCount() {
+  try {
+    const items = await loadLocalExecucoes();
+    const pending = items.filter(i => !i.synced).length;
+    const el = document.getElementById('pendingCount');
+    if (el) el.textContent = pending > 0 ? `${pending} pendente${pending > 1 ? 's' : ''}` : '';
+    const syncBar = document.getElementById('syncBar');
+    if (syncBar) syncBar.classList.toggle('hidden', pending === 0);
+  } catch {}
+}
+
+async function syncNow() {
+  if (!isOnline) { toast('error', 'Sem conexão.'); return; }
+  try {
+    const items = await loadLocalExecucoes();
+    let synced = 0;
+    for (const item of items) {
+      if (item.synced) continue;
+      try {
+        await api(`/api/pmoc/manutencoes/${item.manutId}/executar`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(item.payload)
+        });
+        // Mark as synced
+        const db = await openIDB();
+        const tx = db.transaction('execucoes', 'readwrite');
+        const store = tx.objectStore('execucoes');
+        item.synced = true;
+        store.put(item);
+        synced++;
+      } catch(e) { console.warn('Sync failed for', item.id, e); }
+    }
+    if (synced > 0) {
+      toast('success', `${synced} registro(s) sincronizado(s)!`);
+      loadTarefas();
+      loadHistorico();
+    } else {
+      toast('success', 'Tudo em dia!');
+    }
+    updatePendingCount();
+  } catch(e) { toast('error', 'Erro na sincronização.'); }
+}
+
+// ─── Utils ───
+function escHtml(s) { return s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : ''; }
+function fmtDate(d) { if (!d) return '–'; try { return new Date(d).toLocaleDateString('pt-BR'); } catch { return '–'; } }
+function isToday(d) { if (!d) return false; const t = new Date(d); const now = new Date(); return t.toDateString() === now.toDateString(); }
+function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+function toast(type, msg) {
+  const t = document.getElementById('toast');
+  t.className = 'toast ' + type + ' hidden';
+  document.getElementById('toastMsg').textContent = msg;
+  setTimeout(() => t.classList.remove('hidden'), 10);
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.classList.add('hidden'), 4000);
+}
+
+// Message from service worker
+if (navigator.serviceWorker) {
+  navigator.serviceWorker.addEventListener('message', e => {
+    if (e.data?.type === 'SYNC_SUCCESS') {
+      toast('success', 'Manutenção sincronizada!');
+      updatePendingCount();
+      loadHistorico();
+    }
+  });
+}
+</script>
+</body>
+</html>
