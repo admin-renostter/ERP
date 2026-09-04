@@ -17,6 +17,7 @@ const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
 const { dbGet, dbRun, dbAll } = require('../database');
+const { dbGetTenant, dbAllTenant, dbRunTenant } = require('../infra/tenantAwareDb');
 const { requireRole } = require('../middleware/authJWT');
 const { asyncHandler, handleError } = require('../middleware/errorHandler');
 const Financeiro = require('../services/FinanceiroService');
@@ -96,7 +97,7 @@ router.get('/', requireRole(...ALLOWED), asyncHandler(async (req, res) => {
                  ${where.length ? 'WHERE ' + where.join(' AND ') : ''}
                  ORDER BY c.created_at DESC LIMIT ? OFFSET ?`;
     params.push(parseInt(limit), parseInt(offset));
-    const data = await dbAll(sql, params);
+    const data = await dbAllTenant(sql, params);
     res.json({ success: true, data, total: data.length });
 }));
 
@@ -108,6 +109,11 @@ router.get('/next-numero', requireRole(...ALLOWED), asyncHandler(async (req, res
     const year = new Date().getFullYear();
     const prefix = `CT-${year}-`;
     // Pega os últimos 4 dígitos do ID no formato CT-YYYY-NNNN
+    // NAO usa dbGetTenant aqui de proposito: `id` e chave primaria GLOBAL da
+    // tabela (nao composta com tenant_id). Se a numeracao fosse por tenant,
+    // dois tenants gerariam o mesmo proximo numero (ex: ambos CT-2026-0001)
+    // e o segundo INSERT quebraria por violacao de PK. O contador e global;
+    // o isolamento por tenant e aplicado em todas as outras leituras/escritas.
     const row = await dbGet(
         `SELECT MAX(CAST(SUBSTR(id, ?) AS INTEGER)) AS last_num
          FROM contratos WHERE id LIKE ?`,
@@ -123,7 +129,7 @@ router.get('/next-numero', requireRole(...ALLOWED), asyncHandler(async (req, res
  * Lista contratos de um cliente específico
  */
 router.get('/cliente/:id', requireRole(...ALLOWED), asyncHandler(async (req, res) => {
-    const data = await dbAll(`SELECT * FROM contratos WHERE cliente_id = ? ORDER BY data_inicio DESC`, [req.params.id]);
+    const data = await dbAllTenant(`SELECT * FROM contratos WHERE cliente_id = ? ORDER BY data_inicio DESC`, [req.params.id]);
     res.json({ success: true, data, total: data.length });
 }));
 
@@ -135,11 +141,11 @@ router.get('/cliente/:id/historico', requireRole(...ALLOWED), asyncHandler(async
     const clienteId = req.params.id;
 
     // 1. Dados do cliente
-    const cliente = await dbGet(`SELECT * FROM clientes WHERE id = ?`, [clienteId]);
+    const cliente = await dbGetTenant(`SELECT * FROM clientes WHERE id = ?`, [clienteId]);
     if (!cliente) return res.status(404).json({ success: false, error: 'Cliente não encontrado' });
 
     // 2. Contratos anteriores
-    const contratos = await dbAll(
+    const contratos = await dbAllTenant(
         `SELECT id, tipo_contrato, valor_mensal, valor_anual, data_inicio, data_fim, status, observacoes
          FROM contratos WHERE cliente_id = ? ORDER BY data_inicio DESC`,
         [clienteId]
@@ -163,7 +169,7 @@ router.get('/cliente/:id/historico', requireRole(...ALLOWED), asyncHandler(async
     // 6. Ticket médio (chamados)
     let ticketMedio = null;
     try {
-        const tickets = await dbGet(
+        const tickets = await dbGetTenant(
             `SELECT COUNT(*) as total, AVG(valor) as ticket_medio FROM chamados WHERE cliente_id = ? AND status IN ('Resolvido', 'Fechado')`,
             [clienteId]
         );
@@ -206,7 +212,7 @@ router.get('/cliente/:id/historico', requireRole(...ALLOWED), asyncHandler(async
  * Busca contrato por ID com dados completos
  */
 router.get('/:id', requireRole(...ALLOWED), asyncHandler(async (req, res) => {
-    const row = await dbGet(
+    const row = await dbGetTenant(
         `SELECT c.*, cl.nome as cliente_nome, cl.cnpj as cnpj_cpf, cl.email as cliente_email
          FROM contratos c LEFT JOIN clientes cl ON cl.id = c.cliente_id
          WHERE c.id = ?`,
@@ -261,18 +267,19 @@ router.post('/', requireRole(...ALLOWED), asyncHandler(async (req, res) => {
         return res.status(400).json({ success: false, error: 'valor_mensal deve ser maior que zero', code: 'INVALID_VALOR' });
     }
 
-    // Verifica se cliente existe
-    const cliente = await dbGet(`SELECT id, nome FROM clientes WHERE id = ?`, [cliente_id]);
+    // Verifica se cliente existe (escopado ao tenant — evita criar contrato
+    // vinculado a um cliente de outro tenant)
+    const cliente = await dbGetTenant(`SELECT id, nome FROM clientes WHERE id = ?`, [cliente_id]);
     if (!cliente) return res.status(404).json({ success: false, error: 'Cliente não encontrado', code: 'CLIENTE_NOT_FOUND' });
 
-    // Verifica se já tem contrato ativo no mesmo período
-    const conflito = await dbGet(
+    // Verifica se já tem contrato ativo no mesmo período (só do próprio tenant)
+    const conflito = await dbGetTenant(
         `SELECT id FROM contratos WHERE cliente_id = ? AND status = 'Ativo' AND data_fim >= ? LIMIT 1`,
         [cliente_id, data_inicio]
     );
     // Não bloqueia — apenas avisa no response
 
-    // Gera número sequencial
+    // Gera número sequencial (contador GLOBAL — ver comentário em /next-numero)
     const year = new Date().getFullYear();
     const prefix = `CT-${year}-`;
     const numRow = await dbGet(
@@ -287,8 +294,8 @@ router.post('/', requireRole(...ALLOWED), asyncHandler(async (req, res) => {
     // Salva servicos como JSON
     const servicosJson = JSON.stringify(servicos);
 
-    // Cria
-    await dbRun(
+    // Cria (dbRunTenant injeta tenant_id automaticamente)
+    await dbRunTenant(
         `INSERT INTO contratos (
             id, cliente_id, titulo, valor_mensal, valor_anual,
             frequencia_cobranca, tipo_contrato, renovacao_automatica,
@@ -317,10 +324,12 @@ router.post('/', requireRole(...ALLOWED), asyncHandler(async (req, res) => {
     }
 
     // Notificação interna (audit)
+    // NAO usa dbRunTenant aqui: o VALUES tem datetime('now') com parenteses
+    // aninhados, e o regex de INSERT do dbRunTenant (infra/tenantAwareDb.js)
+    // para no primeiro ")" — gera SQL quebrado nesse caso. Mantido em dbRun puro.
     if (notificar_time) {
         try {
-            const { dbRun: dbR } = require('../database');
-            await dbR(
+            await dbRun(
                 `INSERT INTO logs_auditoria (entidade, entidade_id, acao, user_id, user_name, ip_address, detalhes_json, created_at)
                  VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))`,
                 ['contrato', id, 'criar', req.auditInfo?.userId || 'system', req.auditInfo?.userName || 'Sistema', req.ip,
@@ -342,7 +351,7 @@ router.post('/', requireRole(...ALLOWED), asyncHandler(async (req, res) => {
  * Atualiza dados de um contrato
  */
 router.patch('/:id', requireRole(...ALLOWED), asyncHandler(async (req, res) => {
-    const existing = await dbGet(`SELECT * FROM contratos WHERE id = ?`, [req.params.id]);
+    const existing = await dbGetTenant(`SELECT * FROM contratos WHERE id = ?`, [req.params.id]);
     if (!existing) return res.status(404).json({ success: false, error: 'Contrato não encontrado' });
 
     const allowed = ['titulo', 'valor_mensal', 'valor_anual', 'frequencia_cobranca', 'tipo_contrato',
@@ -359,6 +368,13 @@ router.patch('/:id', requireRole(...ALLOWED), asyncHandler(async (req, res) => {
     if (updates.length === 0) return res.json({ success: true, message: 'Nada para atualizar' });
     updates.push('updated_at = CURRENT_TIMESTAMP');
     params.push(req.params.id);
+    // dbRun puro (não dbRunTenant): o SELECT acima (dbGetTenant) já garantiu
+    // que este `id` pertence ao tenant do request — como `id` é PK global,
+    // isso já é suficiente. NÃO trocar por dbRunTenant aqui: quando o SET
+    // tem seus próprios placeholders (como este), dbRunTenant desalinha os
+    // parâmetros (o tenant_id extra é inserido no início do array, não na
+    // posição correta após os valores do SET) — grava valor errado na coluna
+    // e a comparação de tenant_id nunca bate. Ver aviso em infra/tenantAwareDb.js.
     await dbRun(`UPDATE contratos SET ${updates.join(', ')} WHERE id = ?`, params);
     res.json({ success: true });
 }));
@@ -368,6 +384,10 @@ router.patch('/:id', requireRole(...ALLOWED), asyncHandler(async (req, res) => {
  * Cancela contrato (status = 'Cancelado')
  */
 router.delete('/:id', requireRole(...ALLOWED), asyncHandler(async (req, res) => {
+    const existing = await dbGetTenant(`SELECT id FROM contratos WHERE id = ?`, [req.params.id]);
+    if (!existing) return res.status(404).json({ success: false, error: 'Contrato não encontrado' });
+    // dbRun puro — mesma razão do PATCH acima: o dbGetTenant já validou o
+    // tenant, e dbRunTenant tem um bug de alinhamento de parâmetros em UPDATE.
     await dbRun(`UPDATE contratos SET status = 'Cancelado', updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [req.params.id]);
     res.json({ success: true, message: 'Contrato cancelado' });
 }));

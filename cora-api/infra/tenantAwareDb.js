@@ -94,8 +94,13 @@ function injectTenantFilter(sql, tenantId) {
     if (!tenantId) return { sql, params: [] };
     if (!sql || typeof sql !== 'string') return { sql, params: [] };
 
-    // Detecta tabela alvo — pega o primeiro FROM <tabela>
-    const fromMatch = sql.match(/\bFROM\s+([a-zA-Z_][a-zA-Z0-9_]*)/i);
+    // Detecta tabela alvo — pega o primeiro FROM <tabela> (SELECT/DELETE FROM)
+    // ou, na ausência de FROM, o alvo de um UPDATE <tabela> SET ... (BUGFIX:
+    // sem este fallback, dbRunTenant() nunca filtrava UPDATE por tenant —
+    // só SELECT/DELETE FROM tem a palavra-chave FROM. Achado durante o
+    // isolamento de routes/contratos.js.)
+    const fromMatch = sql.match(/\bFROM\s+([a-zA-Z_][a-zA-Z0-9_]*)/i)
+        || sql.match(/^\s*UPDATE\s+([a-zA-Z_][a-zA-Z0-9_]*)/i);
     if (!fromMatch) return { sql, params: [] };
 
     const table = fromMatch[1].toLowerCase();
@@ -226,6 +231,28 @@ async function dbAllTenant(sql, params = []) {
  *
  * Ou passe um array de fields e params:
  *   await dbRunTenant('INSERT INTO clientes (nome, email) VALUES (?, ?)', ['João', 'j@x.com']);
+ *
+ * ARMADILHA CONHECIDA: o parser de INSERT abaixo usa [^)]+ para capturar o
+ * VALUES(...) — ele para no PRIMEIRO ")" que encontrar. Se a lista de VALUES
+ * tiver uma função SQL com parênteses aninhados (ex: datetime('now'),
+ * coalesce(a,b)), a captura fica truncada e o SQL gerado sai quebrado.
+ * NÃO use dbRunTenant para um INSERT cru com esse padrão — separe o valor
+ * calculado em parâmetro (?) ou use dbRun puro + tenant_id manual nesse caso.
+ * (Achado em routes/contratos.js, INSERT em logs_auditoria com datetime('now').)
+
+ *
+ * ARMADILHA CONHECIDA #2 (UPDATE/DELETE): o tenant_id extra é sempre
+ * PREPENDED no início do array de params (`[...extraParams, ...params]`),
+ * assumindo que o único placeholder é o do WHERE. Se o SQL original já tiver
+ * placeholders ANTES do WHERE — ex: `UPDATE t SET campo = ? WHERE id = ?` —
+ * os parâmetros ficam fora de ordem: tenant_id vai pro placeholder de
+ * `campo`, e o valor de `campo` vai pro placeholder de tenant_id. Resultado:
+ * grava dado errado na coluna e o filtro de tenant nunca bate (WHERE falha
+ * silenciosamente, 0 linhas afetadas, sem erro).
+ * SÓ é seguro usar dbRunTenant para UPDATE quando o SET não tem `?` (só
+ * valores literais). Para UPDATE com SET dinâmico, valide o tenant antes
+ * (SELECT via dbGetTenant) e rode o UPDATE com dbRun puro pelo id (PK global).
+ * (Achado em routes/contratos.js, PATCH /:id.)
  */
 async function dbRunTenant(sql, paramsOrData = []) {
     const ctx = getContext();
