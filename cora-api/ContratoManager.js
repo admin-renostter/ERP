@@ -12,6 +12,7 @@
 
 const crypto = require('crypto');
 const { dbRun, dbGet, dbAll } = require('./database');
+const { dbGetTenant } = require('./infra/tenantAwareDb');
 
 const TIPOS_CONTRATO = {
     basico:      { label: 'Básico',       slaResposta: 48, slaResolucao: 120 },
@@ -62,7 +63,13 @@ class ContratoManager {
     }
 
     async buscar(id) {
-        const c = await dbGet(
+        // dbGetTenant: escopa por tenant quando chamado dentro de uma request
+        // autenticada (via tenantContext -> runWithTenant no ALS context); sem
+        // esse contexto (ex: dentro de processWebhook, que não tem tenant),
+        // cai automaticamente para busca sem filtro — comportamento inalterado
+        // para esses casos. Achado: IDOR em ContractAutomation.sendForSignature,
+        // que usava este método sem nenhum filtro de tenant.
+        const c = await dbGetTenant(
             `SELECT ct.*, c.nome as cliente_nome, c.email as cliente_email
              FROM contratos ct
              LEFT JOIN clientes c ON ct.cliente_id = c.id

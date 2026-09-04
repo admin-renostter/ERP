@@ -23,6 +23,7 @@
 const express = require('express');
 const crypto = require('crypto');
 const { dbAll, dbGet, dbRun } = require('../database');
+const { dbGetTenant, dbAllTenant, dbRunTenant } = require('../infra/tenantAwareDb');
 const { encrypt, decrypt } = require('../crypto');
 const { requireRole } = require('../middleware/authJWT');
 const router = express.Router();
@@ -73,7 +74,7 @@ router.get('/pending', authorizeAdmin, async (req, res) => {
             CASE status WHEN 'ESCALATED' THEN 0 ELSE 1 END,
             CASE tier WHEN 'compliance' THEN 0 WHEN 'superadmin' THEN 1 ELSE 2 END,
             created_at ASC`;
-        const data = await dbAll(sql);
+        const data = await dbAllTenant(sql);
         res.json({ success: true, data });
     } catch (e) {
         res.status(500).json({ success: false, error: e.message });
@@ -85,7 +86,7 @@ router.get('/count', authorizeReader, async (req, res) => {
     try {
         // Admin e Financeiro veem o mesmo escopo: pendências ativas (qualquer tier).
         const sql = `SELECT COUNT(*) as count FROM pending_approvals WHERE status IN ('PENDING', 'ESCALATED')`;
-        const row = await dbGet(sql);
+        const row = await dbGetTenant(sql);
         res.json({ success: true, count: row.count });
     } catch (e) {
         res.status(500).json({ success: false, error: e.message });
@@ -95,7 +96,7 @@ router.get('/count', authorizeReader, async (req, res) => {
 /* ── Detalhe ── */
 router.get('/:id', authorizeReader, async (req, res) => {
     try {
-        const row = await dbGet(`SELECT * FROM pending_approvals WHERE id = ?`, [req.params.id]);
+        const row = await dbGetTenant(`SELECT * FROM pending_approvals WHERE id = ?`, [req.params.id]);
         if (!row) return res.status(404).json({ success: false, error: 'Não encontrado' });
         res.json({ success: true, data: row });
     } catch (e) {
@@ -114,7 +115,7 @@ router.get('/', authorizeReader, async (req, res) => {
         if (clientId) { sql += ' AND client_id = ?'; params.push(clientId); }
         sql += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
         params.push(parseInt(limit), parseInt(offset));
-        const data = await dbAll(sql, params);
+        const data = await dbAllTenant(sql, params);
         res.json({ success: true, data });
     } catch (e) {
         res.status(500).json({ success: false, error: e.message });
@@ -131,7 +132,7 @@ router.post('/', authorizeAdmin, async (req, res) => {
         }
         const id = 'appr_' + crypto.randomUUID().split('-')[0];
         const tier = calcTier(value);
-        await dbRun(
+        await dbRunTenant(
             `INSERT INTO pending_approvals
              (id, ticket_id, client_id, requested_by, request_value, original_value,
               requires_approval_reason, tier, status)
@@ -148,7 +149,7 @@ router.post('/', authorizeAdmin, async (req, res) => {
 router.post('/:id/approve', authorizeAdmin, async (req, res) => {
     try {
         const audit = getAuditInfo(req);
-        const pa = await dbGet(`SELECT * FROM pending_approvals WHERE id = ?`, [req.params.id]);
+        const pa = await dbGetTenant(`SELECT * FROM pending_approvals WHERE id = ?`, [req.params.id]);
         if (!pa) return res.status(404).json({ success: false, error: 'Não encontrado' });
         if (!['PENDING', 'ESCALATED'].includes(pa.status)) {
             return res.status(400).json({ success: false, error: 'Esta pendência não pode mais ser aprovada (status: ' + pa.status + ')' });
@@ -159,6 +160,10 @@ router.post('/:id/approve', authorizeAdmin, async (req, res) => {
                 error: 'Apenas Admin ou Superadmin pode decidir esta pendência.'
             });
         }
+        // dbRun puro no UPDATE: dbGetTenant acima já validou que este `id`
+        // pertence ao tenant do request (id é PK global); dbRunTenant
+        // desalinharia os parâmetros aqui (SET tem placeholders próprios —
+        // ver aviso em infra/tenantAwareDb.js).
         await dbRun(
             `UPDATE pending_approvals
              SET status = 'APPROVED',
@@ -169,8 +174,8 @@ router.post('/:id/approve', authorizeAdmin, async (req, res) => {
              WHERE id = ?`,
             [audit.userId, req.body.reason || null, req.params.id]
         );
-        // Audit log
-        await dbRun(
+        // Audit log (dbRunTenant: sem parênteses aninhados no VALUES, seguro aqui)
+        await dbRunTenant(
             `INSERT INTO logs_auditoria (user_id, user_name, acao, entidade, entidade_id, detalhes_json, ip_address)
              VALUES (?, '', 'aprovar_pendencia', 'pending_approval', ?, ?, ?)`,
             [audit.userId, pa.id, JSON.stringify({ value: pa.request_value, tier: pa.tier, role: audit.role }), audit.ip]
@@ -185,7 +190,7 @@ router.post('/:id/approve', authorizeAdmin, async (req, res) => {
 router.post('/:id/edit', authorizeAdmin, async (req, res) => {
     try {
         const audit = getAuditInfo(req);
-        const pa = await dbGet(`SELECT * FROM pending_approvals WHERE id = ?`, [req.params.id]);
+        const pa = await dbGetTenant(`SELECT * FROM pending_approvals WHERE id = ?`, [req.params.id]);
         if (!pa) return res.status(404).json({ success: false, error: 'Não encontrado' });
         if (!['PENDING', 'ESCALATED'].includes(pa.status)) {
             return res.status(400).json({ success: false, error: 'Esta pendência não pode mais ser editada' });
@@ -207,6 +212,7 @@ router.post('/:id/edit', authorizeAdmin, async (req, res) => {
                 error: `Motivo deve ter pelo menos ${minReasonLength} caracteres para este tier. Atual: ${reason.length}`
             });
         }
+        // dbRun puro — mesma razão do /approve acima.
         await dbRun(
             `UPDATE pending_approvals
              SET status = 'APPROVED',
@@ -218,7 +224,7 @@ router.post('/:id/edit', authorizeAdmin, async (req, res) => {
              WHERE id = ?`,
             [audit.userId, reason, newValue, req.params.id]
         );
-        await dbRun(
+        await dbRunTenant(
             `INSERT INTO logs_auditoria (user_id, user_name, acao, entidade, entidade_id, detalhes_json, ip_address)
              VALUES (?, '', 'editar_valor_pendencia', 'pending_approval', ?, ?, ?)`,
             [audit.userId, pa.id, JSON.stringify({ original: pa.request_value, novo: newValue, motivo: reason }), audit.ip]
@@ -233,7 +239,7 @@ router.post('/:id/edit', authorizeAdmin, async (req, res) => {
 router.post('/:id/reject', authorizeAdmin, async (req, res) => {
     try {
         const audit = getAuditInfo(req);
-        const pa = await dbGet(`SELECT * FROM pending_approvals WHERE id = ?`, [req.params.id]);
+        const pa = await dbGetTenant(`SELECT * FROM pending_approvals WHERE id = ?`, [req.params.id]);
         if (!pa) return res.status(404).json({ success: false, error: 'Não encontrado' });
         if (!['PENDING', 'ESCALATED'].includes(pa.status)) {
             return res.status(400).json({ success: false, error: 'Esta pendência não pode mais ser rejeitada' });
@@ -245,6 +251,7 @@ router.post('/:id/reject', authorizeAdmin, async (req, res) => {
         if (reason.length < 20) {
             return res.status(400).json({ success: false, error: 'Motivo de rejeição deve ter pelo menos 20 caracteres' });
         }
+        // dbRun puro — mesma razão dos handlers acima.
         await dbRun(
             `UPDATE pending_approvals
              SET status = 'REJECTED',
@@ -255,7 +262,7 @@ router.post('/:id/reject', authorizeAdmin, async (req, res) => {
              WHERE id = ?`,
             [audit.userId, reason, req.params.id]
         );
-        await dbRun(
+        await dbRunTenant(
             `INSERT INTO logs_auditoria (user_id, user_name, acao, entidade, entidade_id, detalhes_json, ip_address)
              VALUES (?, '', 'rejeitar_pendencia', 'pending_approval', ?, ?, ?)`,
             [audit.userId, pa.id, JSON.stringify({ motivo: reason }), audit.ip]
@@ -269,7 +276,7 @@ router.post('/:id/reject', authorizeAdmin, async (req, res) => {
 /* ── Escalonar (uso interno do cron: PENDING → ESCALATED após 24h) ── */
 router.post('/:id/escalate', authorizeAdmin, async (req, res) => {
     try {
-        const pa = await dbGet(`SELECT * FROM pending_approvals WHERE id = ?`, [req.params.id]);
+        const pa = await dbGetTenant(`SELECT * FROM pending_approvals WHERE id = ?`, [req.params.id]);
         if (!pa) return res.status(404).json({ success: false, error: 'Não encontrado' });
         if (pa.status !== 'PENDING') {
             return res.status(400).json({ success: false, error: 'Só PENDING pode ser escalada' });
@@ -287,6 +294,9 @@ router.post('/:id/escalate', authorizeAdmin, async (req, res) => {
 
 /* ── Cron: escalar e expirar ── */
 // SECURITY HARDENING 2 — V02: cron usa requireRole (futuramente apiKeyAuth)
+// NAO usa dbAllTenant/dbGetTenant/dbRunTenant aqui de proposito: é uma
+// varredura GLOBAL de cron (escalar/expirar pendências vencidas de TODOS
+// os tenants), não uma ação escopada a uma empresa.
 router.post('/cron-escalate', requireRole('admin', 'superadmin'), async (req, res) => {
     try {
         // Escalar: PENDING > 24h → ESCALATED com tier superadmin

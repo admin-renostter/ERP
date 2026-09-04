@@ -1628,6 +1628,7 @@ if (DB_DRIVER === 'postgres') {
                 'logs_auditoria',
                 'logs_notificacoes',
                 'webhooks_recebidos',
+                'contratos_gerados',
             ];
 
             const migrateTable = (tableName, cb) => {

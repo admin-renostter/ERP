@@ -81,23 +81,24 @@ router.get('/status', requireRole('admin', 'superadmin', 'financeiro'), async (r
         if (r) lastRun = { at: r.created_at };
     } catch (_) {}
 
-    // Conta pendentes
+    // Conta pendentes (escopado ao tenant de quem consulta — sem isso, um
+    // admin de qualquer empresa via a contagem agregada de TODAS as empresas)
     let pending = {};
     try {
-        const { dbAll } = require('../database');
-        const sigPending = await dbAll(
+        const { dbAllTenant } = require('../infra/tenantAwareDb');
+        const sigPending = await dbAllTenant(
             `SELECT COUNT(*) as n FROM contratos
              WHERE observacoes LIKE '%envelope_id=%'
              AND status != 'Ativo'
              AND created_at < datetime('now', '-1 day')`
         );
-        const renewPending = await dbAll(
+        const renewPending = await dbAllTenant(
             `SELECT COUNT(*) as n FROM contratos
              WHERE data_fim IS NOT NULL
              AND status = 'Ativo'
              AND date(data_fim) IN (date('now', '+30 days'), date('now', '+60 days'))`
         );
-        const overdue = await dbAll(
+        const overdue = await dbAllTenant(
             `SELECT COUNT(*) as n FROM cobrancas
              WHERE data_vencimento < date('now')
              AND status IN ('PENDING', 'OPEN')`

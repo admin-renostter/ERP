@@ -45,6 +45,7 @@ const KNOWN_TENANT_TABLES = new Set([
     'faturas', 'itens_fatura', 'leads', 'cotacoes', 'cotacao_itens',
     'chamados', 'avaliacoes', 'pending_approvals', 'inventory',
     'logs_auditoria', 'logs_notificacoes', 'webhooks_recebidos',
+    'contratos_gerados', // contratos assinados via Autentique (Sprint 21) — ver database.js tenantMigrationTables
 ]);
 
 // Tabelas globais (NÃO filtrar)

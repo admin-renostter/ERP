@@ -253,9 +253,9 @@ async function sendReminders(contractId) {
         return { success: false, error: 'Serviços não configurados' };
     }
 
-    // 1. Busca contrato e envelope
-    const { dbAll } = require('../database');
-    const rows = await dbAll(`SELECT id, observacoes FROM contratos WHERE id = ?`, [contractId]);
+    // 1. Busca contrato e envelope (escopado ao tenant)
+    const { dbAllTenant } = require('../infra/tenantAwareDb');
+    const rows = await dbAllTenant(`SELECT id, observacoes FROM contratos WHERE id = ?`, [contractId]);
     const row = rows[0];
     if (!row) return { success: false, error: 'Contrato não encontrado' };
 
@@ -292,8 +292,12 @@ async function sendReminders(contractId) {
  * Renovação automática de contrato (60 dias antes do fim).
  */
 async function processRenewals() {
-    const { dbAll } = require('../database');
-    const rows = await dbAll(
+    // Escopado ao tenant de quem disparou (rota autenticada, não é cron
+    // global): sem isso, um admin de QUALQUER empresa disparava aviso de
+    // renovação para clientes de TODAS as empresas e via os IDs de contrato
+    // delas na resposta.
+    const { dbAllTenant, dbGetTenant } = require('../infra/tenantAwareDb');
+    const rows = await dbAllTenant(
         `SELECT * FROM contratos
          WHERE data_fim IS NOT NULL
          AND data_fim BETWEEN date('now', '+30 days') AND date('now', '+60 days')
@@ -305,8 +309,7 @@ async function processRenewals() {
     for (const contrato of rows) {
         try {
             // Envia e-mail de aviso de vencimento
-            const { dbGet } = require('../database');
-            const cliente = await dbGet('SELECT nome, email FROM clientes WHERE id = ?', [contrato.cliente_id]);
+            const cliente = await dbGetTenant('SELECT nome, email FROM clientes WHERE id = ?', [contrato.cliente_id]);
             if (cliente?.email) {
                 await email.sendContractRenewal({
                     to: cliente.email,

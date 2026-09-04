@@ -33,6 +33,7 @@ const { requireRole } = require('../middleware/authJWT');
 const TemplateService = require('../services/TemplateService');
 const AutentiqueService = require('../services/AutentiqueService');
 const { dbGet, dbRun, dbAll } = require('../database');
+const { dbGetTenant, dbAllTenant, dbRunTenant } = require('../infra/tenantAwareDb');
 const crypto = require('crypto');
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -143,10 +144,10 @@ router.post('/gerar', requireRole('admin', 'superadmin', 'financeiro', 'tecnico'
         const tpl = await TemplateService.buscarPorId(template_id);
         if (!tpl) return res.status(404).json({ success: false, error: 'Template não encontrado', code: 'TEMPLATE_NOT_FOUND' });
 
-        const cliente = await dbGet('SELECT * FROM clientes WHERE id = ?', [cliente_id]);
+        const cliente = await dbGetTenant('SELECT * FROM clientes WHERE id = ?', [cliente_id]);
         if (!cliente) return res.status(404).json({ success: false, error: 'Cliente não encontrado', code: 'CLIENTE_NOT_FOUND' });
 
-        const contrato = contrato_id ? await dbGet('SELECT * FROM contratos WHERE id = ?', [contrato_id]) : null;
+        const contrato = contrato_id ? await dbGetTenant('SELECT * FROM contratos WHERE id = ?', [contrato_id]) : null;
 
         const empresa = {
             nome: process.env.COMPANY_NAME || 'Renostter Climatização',
@@ -191,7 +192,7 @@ router.post('/gerar', requireRole('admin', 'superadmin', 'financeiro', 'tecnico'
 
         const id = 'cgen-' + crypto.randomBytes(6).toString('hex');
         const nomeDoc = `${tpl.nome} - ${cliente.nome}`;
-        await dbRun(
+        await dbRunTenant(
             `INSERT INTO contratos_gerados
                 (id, template_id, contrato_id, cliente_id, nome_documento, status, html_renderizado, signers_json, created_by)
              VALUES (?, ?, ?, ?, ?, 'pendente', ?, ?, ?)`,
@@ -233,7 +234,7 @@ router.post('/gerar', requireRole('admin', 'superadmin', 'financeiro', 'tecnico'
             }
         }
 
-        const saved = await dbGet('SELECT * FROM contratos_gerados WHERE id = ?', [id]);
+        const saved = await dbGetTenant('SELECT * FROM contratos_gerados WHERE id = ?', [id]);
         res.status(201).json({
             success: true,
             id,
@@ -268,7 +269,7 @@ router.get('/contratos-gerados', requireRole('admin', 'superadmin', 'financeiro'
                      ${where.length ? 'WHERE ' + where.join(' AND ') : ''}
                      ORDER BY cg.created_at DESC LIMIT ?`;
         params.push(parseInt(limit));
-        const data = await dbAll(sql, params);
+        const data = await dbAllTenant(sql, params);
         res.json({ success: true, data, total: data.length });
     } catch (e) {
         res.status(500).json({ success: false, error: e.message });
@@ -280,7 +281,7 @@ router.get('/contratos-gerados', requireRole('admin', 'superadmin', 'financeiro'
  */
 router.get('/contratos-gerados/:id', requireRole('admin', 'superadmin', 'financeiro', 'tecnico'), async (req, res) => {
     try {
-        const row = await dbGet(
+        const row = await dbGetTenant(
             `SELECT cg.*, c.nome as cliente_nome, ct.nome as template_nome, ct.slug as template_slug
              FROM contratos_gerados cg
              LEFT JOIN clientes c ON c.id = cg.cliente_id
@@ -305,13 +306,13 @@ router.get('/contratos-gerados/:id', requireRole('admin', 'superadmin', 'finance
 router.post('/contratos-gerados/:id/enviar', requireRole('admin', 'superadmin'), async (req, res) => {
     try {
         const { signers = [] } = req.body || {};
-        const row = await dbGet('SELECT * FROM contratos_gerados WHERE id = ?', [req.params.id]);
+        const row = await dbGetTenant('SELECT * FROM contratos_gerados WHERE id = ?', [req.params.id]);
         if (!row) return res.status(404).json({ success: false, error: 'Contrato gerado não encontrado' });
         if (row.autentique_document_id) {
             return res.status(400).json({ success: false, error: 'Já enviado ao Autentique', code: 'ALREADY_SENT' });
         }
 
-        const cliente = row.cliente_id ? await dbGet('SELECT email, nome FROM clientes WHERE id = ?', [row.cliente_id]) : null;
+        const cliente = row.cliente_id ? await dbGetTenant('SELECT email, nome FROM clientes WHERE id = ?', [row.cliente_id]) : null;
         const finalSigners = signers.length > 0
             ? signers
             : (cliente ? [{ email: cliente.email, name: cliente.nome }] : []);
@@ -327,6 +328,9 @@ router.post('/contratos-gerados/:id/enviar', requireRole('admin', 'superadmin'),
             signers: finalSigners,
         });
 
+        // dbRun puro: dbGetTenant acima já validou que este documento pertence
+        // ao tenant do request (id é PK global); dbRunTenant desalinharia os
+        // parâmetros aqui (SET tem placeholders próprios).
         await dbRun(
             `UPDATE contratos_gerados
                 SET autentique_document_id = ?, autentique_short_url = ?, status = 'enviado',
@@ -337,6 +341,7 @@ router.post('/contratos-gerados/:id/enviar', requireRole('admin', 'superadmin'),
 
         res.json({ success: true, autentique: result });
     } catch (e) {
+        // Mesma razão acima — só chega aqui depois do dbGetTenant já ter validado o tenant.
         await dbRun(
             `UPDATE contratos_gerados SET status = 'erro', erro = ?, updated_at = datetime('now') WHERE id = ?`,
             [e.message, req.params.id]
@@ -351,7 +356,7 @@ router.post('/contratos-gerados/:id/enviar', requireRole('admin', 'superadmin'),
  */
 router.get('/contratos-gerados/:id/status', requireRole('admin', 'superadmin', 'financeiro', 'tecnico'), async (req, res) => {
     try {
-        const row = await dbGet('SELECT * FROM contratos_gerados WHERE id = ?', [req.params.id]);
+        const row = await dbGetTenant('SELECT * FROM contratos_gerados WHERE id = ?', [req.params.id]);
         if (!row) return res.status(404).json({ success: false, error: 'Contrato gerado não encontrado' });
         if (!row.autentique_document_id) {
             return res.json({ success: true, status: row.status, message: 'Ainda não enviado ao Autentique' });
@@ -364,6 +369,7 @@ router.get('/contratos-gerados/:id/status', requireRole('admin', 'superadmin', '
         };
         const newStatus = statusMap[doc.status] || row.status;
 
+        // dbRun puro — mesma razão do /enviar acima (dbGetTenant já validou o tenant).
         if (newStatus !== row.status) {
             await dbRun(
                 `UPDATE contratos_gerados SET status = ?, data_assinatura = CASE WHEN ? = 'assinado' THEN datetime('now') ELSE data_assinatura END, updated_at = datetime('now') WHERE id = ?`,

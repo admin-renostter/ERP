@@ -59,9 +59,9 @@ router.post('/:id/send-for-signature', requireRole('admin', 'superadmin', 'finan
 router.get('/:id/signature-status', requireRole('admin', 'superadmin', 'financeiro', 'tecnico'), async (req, res) => {
     const { id } = req.params;
 
-    // Busca o envelope_id salvo nas observações
-    const { dbGet } = require('../database');
-    const contrato = await dbGet('SELECT id, observacoes FROM contratos WHERE id = ?', [id]);
+    // Busca o envelope_id salvo nas observações (escopado ao tenant)
+    const { dbGetTenant } = require('../infra/tenantAwareDb');
+    const contrato = await dbGetTenant('SELECT id, observacoes FROM contratos WHERE id = ?', [id]);
     if (!contrato) {
         return res.status(404).json({ success: false, error: 'Contrato não encontrado' });
     }
