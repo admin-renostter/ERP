@@ -196,7 +196,7 @@ router.post('/gerar', requireRole('admin', 'superadmin', 'financeiro', 'tecnico'
             `INSERT INTO contratos_gerados
                 (id, template_id, contrato_id, cliente_id, nome_documento, status, html_renderizado, signers_json, created_by)
              VALUES (?, ?, ?, ?, ?, 'pendente', ?, ?, ?)`,
-            [id, template_id, contrato_id || null, cliente_id, nomeDoc, JSON.stringify(signers), req.auditInfo?.userId || 'system']
+            [id, template_id, contrato_id || null, cliente_id, nomeDoc, htmlFinal, JSON.stringify(signers), req.auditInfo?.userId || 'system']
         );
 
         let autentiqueResult = null;
