@@ -61,6 +61,7 @@ const JWTBlacklist = require('./services/JWTBlacklistService');
 
 // Sprint 13 — middleware de tenant context (multi-tenant SaaS)
 const { tenantContext, requireTenantRole } = require('./middleware/tenantContext');
+const { tenantLimits } = require('./middleware/tenantLimits');
 const tenantsRouter = require('./routes/tenants');
 
 // Sprint 4 — infra (Redis, health)
@@ -286,6 +287,11 @@ app.use(JWTBlacklist.checkRevokedToken);
 //      autenticado. Rotas isentas (auth, health, webhooks, /api/tenants CRUD)
 //      passam direto.
 app.use(tenantContext);
+
+// 3.06 Tenant Limits (Modelo Híbrido — SaaS + self-hosted)
+//      Bloqueia tenant suspenso/cancelado/expirado. Antes desta linha,
+//      status e data_expiracao eram armazenados mas nunca checados.
+app.use(tenantLimits);
 
 // 3.1 Authorization helper (mantido para compatibilidade com código existente)
 //     Agora delega ao req.auditInfo.role (que veio do JWT).
