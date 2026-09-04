@@ -58,6 +58,7 @@ const PUBLIC_PATHS = new Set([
     '/health/ready',
     '/api/auth/login',
     '/api/auth/refresh',
+    '/api/auth/signup', // Modelo Híbrido — self-signup do trial SaaS (sem JWT prévio)
     // UI estática (auth é feita via Authorization header no fetch)
     '/crm',
     '/crm/',

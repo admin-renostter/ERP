@@ -41,6 +41,13 @@ const JWTBlacklist = require('../services/JWTBlacklistService');
 
 const TenantService = require('../services/TenantService');
 const { getUserTenants, userHasAccessTo } = TenantService;
+const { getPlan } = require('../config/plans');
+const crypto = require('crypto');
+const RateLimiter = require('../middleware/rateLimiter');
+
+// Modelo Híbrido: signup cria tenant+usuário sem JWT prévio — limita abuso
+// (10 tentativas / hora / IP, bem mais apertado que o login já limitado).
+const signupLimiter = new RateLimiter({ windowMs: 60 * 60_000, max: 10, message: 'Muitas tentativas de cadastro. Tente novamente mais tarde.' });
 
 const BCRYPT_PREFIX_RE = /^\$2[aby]\$\d{2}\$.{53}$/;
 const FAILED_LOGIN_WINDOW_MS = 15 * 60 * 1000; // 15 min
@@ -87,6 +94,146 @@ async function verifyPassword(plain, stored) {
     // Senha plain text (legado). Sprint 1 vai forçar migração.
     return plain === stored;
 }
+
+/**
+ * POST /api/auth/signup — Modelo Híbrido, canal SaaS (self-signup)
+ *
+ * Cria um novo tenant no plano 'trial' (config/plans.js) + o usuário
+ * dono (role tenant 'owner'). Não passa por Stripe: trial é gratuito por
+ * `trialDurationDays`. Quando esse prazo passar, tenantLimits.js bloqueia
+ * o acesso automaticamente via `data_expiracao` (com dias de tolerância).
+ *
+ * Body: { nome, email, password, empresa, slug? }
+ * Returns: mesmo formato de /login (accessToken, refreshToken, user)
+ */
+router.post('/signup', signupLimiter.middleware(), validate(schemas.authSignup), async (req, res) => {
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+    const { nome, email, password, empresa } = req.body;
+    const emailNorm = String(email).trim().toLowerCase();
+
+    try {
+        const existing = await dbGet(
+            `SELECT id FROM usuarios WHERE LOWER(email) = ? LIMIT 1`,
+            [emailNorm]
+        );
+        if (existing) {
+            return res.status(409).json({
+                success: false,
+                error: 'Já existe uma conta com este email',
+                code: 'EMAIL_IN_USE',
+            });
+        }
+
+        // Slug: usa o informado, ou deriva do nome da empresa.
+        let slug = req.body.slug
+            ? String(req.body.slug).toLowerCase().trim()
+            : String(empresa).toLowerCase().trim()
+                .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // remove acentos
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-+|-+$/g, '')
+                .slice(0, 40);
+        if (slug.length < 2) slug = `empresa-${crypto.randomBytes(3).toString('hex')}`;
+        if (await TenantService.getTenantBySlug(slug)) {
+            slug = `${slug.slice(0, 32)}-${crypto.randomBytes(3).toString('hex')}`;
+        }
+
+        const trialPlan = getPlan('trial');
+        if (!trialPlan) {
+            throw new Error('Plano trial não configurado (config/plans.js)');
+        }
+
+        const passwordHash = await bcrypt.hash(password, parseInt(process.env.BCRYPT_ROUNDS || '10', 10));
+        const userId = `usr_${crypto.randomBytes(8).toString('hex')}`;
+
+        await dbRun(
+            `INSERT INTO usuarios (id, nome, name, username, email, password, role, ativo, password_changed_at, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, 'admin', 1, datetime('now'), datetime('now'), datetime('now'))`,
+            [userId, nome, nome, emailNorm, emailNorm, passwordHash]
+        );
+
+        const dataExpiracao = new Date(Date.now() + trialPlan.trialDurationDays * 24 * 60 * 60 * 1000).toISOString();
+
+        let tenant;
+        try {
+            tenant = await TenantService.createTenant({
+                slug,
+                nome: empresa,
+                email: emailNorm,
+                plano: 'trial',
+                status: 'trial',
+                limite_usuarios: trialPlan.limits.usuarios,
+                limite_contratos: trialPlan.limits.contratos,
+                limite_armazenamento_mb: trialPlan.limits.armazenamento_mb,
+                data_expiracao: dataExpiracao,
+                ownerUserId: userId,
+            });
+        } catch (tenantErr) {
+            // Rollback manual do usuário criado, já que não há transação cross-tabela aqui.
+            await dbRun('DELETE FROM usuarios WHERE id = ?', [userId]).catch(() => {});
+            throw tenantErr;
+        }
+
+        const payload = {
+            userId,
+            username: emailNorm,
+            email: emailNorm,
+            role: 'admin',
+            name: nome,
+            clientId: null,
+            tenantId: tenant.id,
+            tenantRole: 'owner',
+        };
+        const accessToken = signAccessToken(payload);
+        const refreshToken = signRefreshToken({ userId, tokenVersion: 0 });
+
+        try {
+            await dbRun(
+                `INSERT INTO logs_auditoria
+                 (entidade, entidade_id, acao, usuario_id, usuario_nome, ip, detalhes, created_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))`,
+                ['auth', userId, 'SIGNUP_TRIAL', userId, nome, ip, JSON.stringify({ tenantId: tenant.id, slug, plano: 'trial' })]
+            );
+        } catch (e) {
+            console.warn('[Auth] Falha ao logar auditoria de signup:', e.message);
+        }
+
+        return res.status(201).json({
+            success: true,
+            accessToken,
+            refreshToken,
+            tokenType: 'Bearer',
+            expiresIn: process.env.JWT_ACCESS_TTL || '2h',
+            user: {
+                id: userId,
+                username: emailNorm,
+                email: emailNorm,
+                name: nome,
+                role: 'admin',
+                clientId: null,
+                photo: null,
+                tenantId: tenant.id,
+                tenantRole: 'owner',
+            },
+            tenant: {
+                id: tenant.id,
+                slug: tenant.slug,
+                nome: tenant.nome,
+                plano: tenant.plano,
+                trialExpiraEm: tenant.data_expiracao,
+            },
+        });
+    } catch (err) {
+        console.error('[Auth] Erro no signup:', err);
+        if (String(err.message || '').includes('slug já em uso')) {
+            return res.status(409).json({ success: false, error: 'Identificador de empresa já em uso, tente outro', code: 'SLUG_IN_USE' });
+        }
+        return res.status(500).json({
+            success: false,
+            error: 'Erro interno ao criar conta',
+            code: 'SIGNUP_INTERNAL_ERROR',
+        });
+    }
+});
 
 /**
  * POST /api/auth/login

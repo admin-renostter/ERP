@@ -66,6 +66,20 @@ const schemas = {
         return { valid: errors.length === 0, errors, value: errors.length === 0 ? body : null };
     },
 
+    // Modelo Híbrido — self-signup SaaS (trial). Ver routes/auth.js POST /signup.
+    authSignup: (body) => {
+        const errors = [];
+        if (!v.isString(body?.nome, { min: 2, max: 120 })) errors.push({ field: 'nome', message: 'nome obrigatório (2-120 chars)' });
+        if (!v.isEmail(body?.email)) errors.push({ field: 'email', message: 'email inválido' });
+        // Senha de criação de conta é mais rígida que a de login (mín. 8, não 1).
+        if (!v.isString(body?.password, { min: 8, max: 200 })) errors.push({ field: 'password', message: 'senha obrigatória (mínimo 8 chars)' });
+        if (!v.isString(body?.empresa, { min: 2, max: 120 })) errors.push({ field: 'empresa', message: 'nome da empresa obrigatório (2-120 chars)' });
+        if (body?.slug !== undefined && !v.isString(body.slug, { min: 2, max: 40, pattern: /^[a-z0-9-]+$/ })) {
+            errors.push({ field: 'slug', message: 'slug inválido (letras minúsculas, números e hífen)' });
+        }
+        return { valid: errors.length === 0, errors, value: errors.length === 0 ? body : null };
+    },
+
     // Portal
     portalLogin: (body) => schemas.authLogin(body),
     portalForgot: (body) => {
