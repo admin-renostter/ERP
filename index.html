@@ -241,11 +241,11 @@
     <script src="js/auth.js"></script>
     <script src="js/utils.js"></script>
     <script>
-        // Redirect if already logged in
+        // Redirect if already logged in (só conta como logado se tiver um
+        // accessToken real — ver SECURITY FIX em js/auth.js)
         const existing = auth.current();
-        if (existing) redirectToDashboard(existing.role);
+        if (existing && existing.accessToken) redirectToDashboard(existing.role);
 
-        let pendingUser = null;
         let selectedRole = 'admin';
 
         function selectPortal(role, btn) {
@@ -267,7 +267,7 @@
             selectedRole = role;
         }
 
-        function doLogin() {
+        async function doLogin() {
             const email = document.getElementById('loginEmail').value.trim().toLowerCase();
             const pass = document.getElementById('loginPassword').value.trim(); // trim to catch copy-paste spaces
             const errEl = document.getElementById('loginError');
@@ -279,70 +279,32 @@
                 return;
             }
 
-            const user = db.get('users').find(u => u.email === email && u.password === pass);
-            if (!user) {
-                errEl.textContent = 'E-mail ou senha incorretos.';
+            const btn = document.querySelector('.btn-login');
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = 'Entrando...';
+
+            try {
+                // SECURITY FIX (11/09): login real contra o backend (bcrypt + JWT
+                // em cora-api/routes/auth.js), não mais comparação de senha em
+                // texto puro contra o localStorage do próprio navegador — ver
+                // js/auth.js para detalhes e o achado de segurança original.
+                const session = await auth.login(email, pass);
+                redirectToDashboard(session.role);
+            } catch (err) {
+                const messages = {
+                    MISSING_CREDENTIALS: 'Preencha e-mail e senha.',
+                    TOO_MANY_ATTEMPTS: 'Muitas tentativas. Tente novamente em alguns minutos.',
+                    INVALID_CREDENTIALS: 'E-mail ou senha incorretos.',
+                    INVALID_2FA: 'Código de verificação inválido.',
+                    NETWORK_ERROR: 'Não foi possível contatar o servidor. Verifique sua conexão.',
+                };
+                errEl.textContent = messages[err.code] || err.message || 'Não foi possível entrar. Tente novamente.';
                 errEl.classList.add('visible');
-                return;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
             }
-
-            // Block deactivated accounts
-            if (user.deactivated) {
-                errEl.textContent = 'Conta desativada. Entre em contato com o administrador.';
-                errEl.classList.add('visible');
-                return;
-            }
-
-            // 2FA required for admin and superadmin
-            if (user.twofa && (user.role === 'admin' || user.role === 'superadmin')) {
-                pendingUser = user;
-                const code = twoFA.generate();
-                document.getElementById('twofaDisplay').textContent = code;
-                document.getElementById('step1').style.display = 'none';
-                document.getElementById('step2').style.display = 'block';
-                document.getElementById('twofaInput').value = '';
-                document.getElementById('twofaError').classList.remove('visible');
-                document.getElementById('twofaInput').focus();
-                return;
-            }
-
-            auth.login(email, pass);
-            redirectToDashboard(user.role);
-        }
-
-        function verify2FA() {
-            const input = document.getElementById('twofaInput').value.trim();
-            const errEl = document.getElementById('twofaError');
-            errEl.classList.remove('visible');
-
-            if (!input || input.length !== 6) {
-                errEl.textContent = 'Digite o código de 6 dígitos.';
-                errEl.classList.add('visible');
-                return;
-            }
-
-            if (!twoFA.verify(input)) {
-                errEl.textContent = 'Código inválido. Tente novamente.';
-                errEl.classList.add('visible');
-                return;
-            }
-
-            // Success — create full session including isSuperAdmin flag
-            const s = {
-                userId: pendingUser.id,
-                role: pendingUser.role,
-                name: pendingUser.name,
-                clientId: pendingUser.clientId || null,
-                isSuperAdmin: pendingUser.role === 'superadmin',
-            };
-            sessionStorage.setItem('rcrm_session', JSON.stringify(s));
-            redirectToDashboard(pendingUser.role);
-        }
-
-        function back2FA() {
-            document.getElementById('step2').style.display = 'none';
-            document.getElementById('step1').style.display = 'block';
-            pendingUser = null;
         }
 
         function toggleDemo() {

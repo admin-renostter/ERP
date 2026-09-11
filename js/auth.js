@@ -23,27 +23,88 @@ function redirectToDashboard(role) {
     else window.location.href = base + 'client/dashboard.html';
 }
 
+/**
+ * Converte TTL tipo '15m' / '2h' / '7d' em milissegundos.
+ * Usado para calcular quando o access token expira (client-side, só para UX
+ * de redirect — quem realmente barra token expirado/inválido é o backend).
+ */
+function parseTTLToMs(ttl) {
+    const m = String(ttl || '').match(/^(\d+)([smhd])$/);
+    if (!m) return 15 * 60 * 1000; // default: 15min
+    const n = parseInt(m[1], 10);
+    const mult = { s: 1000, m: 60_000, h: 3_600_000, d: 86_400_000 }[m[2]];
+    return n * mult;
+}
+
 const auth = {
     SESSION_KEY: 'rcrm_session',
 
-    login(email, password) {
-        const users = db.get('users');
-        const user = users.find(u => u.email === email && u.password === password);
-        if (!user) return null;
-        if (user.deactivated) return null; // blocked account
+    /**
+     * Login REAL contra o backend (POST /api/auth/login) — bcrypt, rate-limit
+     * e (quando configurado) TOTP já são verificados no servidor.
+     *
+     * SUBSTITUI a versão anterior, que comparava email/senha em texto puro
+     * contra um array salvo no localStorage do próprio navegador — qualquer
+     * pessoa conseguia "logar" sem senha real só escrevendo no DevTools.
+     * (Correção aplicada em 11/09 — ver plano de ativação, achado de segurança.)
+     *
+     * @returns {Promise<Object>} a sessão criada
+     * @throws {Error} com .code igual ao `code` retornado pela API em caso de falha
+     */
+    async login(email, password, totp = null) {
+        let res, data;
+        try {
+            res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password, totp: totp || undefined }),
+            });
+            data = await res.json();
+        } catch (e) {
+            const err = new Error('Não foi possível contatar o servidor. Verifique sua conexão.');
+            err.code = 'NETWORK_ERROR';
+            throw err;
+        }
+        if (!res.ok || !data.success) {
+            const err = new Error(data.error || 'E-mail ou senha incorretos.');
+            err.code = data.code || 'LOGIN_FAILED';
+            throw err;
+        }
+
         const session = {
-            userId: user.id,
-            role: user.role,
-            name: user.name,
-            photo: user.photo || null,
-            clientId: user.clientId || null,
-            isSuperAdmin: user.role === 'superadmin'
+            userId: data.user.id,
+            role: data.user.role,
+            name: data.user.name,
+            email: data.user.email,
+            photo: data.user.photo || null,
+            clientId: data.user.clientId || null,
+            tenantId: data.user.tenantId || null,
+            isSuperAdmin: data.user.role === 'superadmin',
+            accessToken: data.accessToken,
+            refreshToken: data.refreshToken,
+            expiresAt: Date.now() + parseTTLToMs(data.expiresIn),
         };
         sessionStorage.setItem(this.SESSION_KEY, JSON.stringify(session));
-        return user;
+        return session;
     },
 
-    logout() {
+    /** Header pronto para autenticar chamadas reais à API com o token da sessão. */
+    authHeader() {
+        const s = this.current();
+        return s?.accessToken ? { 'Authorization': 'Bearer ' + s.accessToken } : {};
+    },
+
+    async logout() {
+        const session = this.current();
+        if (session?.accessToken) {
+            // Revoga o token no servidor (best-effort — não bloqueia o logout local)
+            try {
+                await fetch('/api/auth/logout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', ...this.authHeader() },
+                });
+            } catch (_) { /* ignora falha de rede no logout */ }
+        }
         sessionStorage.removeItem(this.SESSION_KEY);
         window.location.href = rootPath() + 'index.html';
     },
@@ -55,7 +116,20 @@ const auth = {
 
     protect(allowedRoles) {
         const session = this.current();
-        if (!session) { window.location.href = rootPath() + 'index.html'; return null; }
+        // SECURITY FIX (11/09): exige um accessToken de verdade — não basta mais
+        // gravar um objeto qualquer em sessionStorage para "estar logado".
+        // Isso só protege a navegação/UX: quem de fato barra dado real é o
+        // backend (authJWT.js), que rejeita qualquer token que não seja um
+        // JWT válido assinado pelo servidor.
+        if (!session || !session.accessToken) {
+            window.location.href = rootPath() + 'index.html';
+            return null;
+        }
+        if (session.expiresAt && Date.now() > session.expiresAt) {
+            sessionStorage.removeItem(this.SESSION_KEY);
+            window.location.href = rootPath() + 'index.html';
+            return null;
+        }
         // superadmin has access everywhere that admin has access
         const effectiveRole = session.role === 'superadmin' ? 'admin' : session.role;
         if (allowedRoles && !allowedRoles.includes(session.role) && !allowedRoles.includes(effectiveRole)) {
