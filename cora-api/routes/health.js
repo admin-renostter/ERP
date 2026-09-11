@@ -40,7 +40,7 @@ async function checkRedis() {
     try {
         const r = getRedis();
         const pong = await r.ping();
-        return pong === 'PONG';
+        return pong === 'PONG' || pong === true;
     } catch (e) {
         return false;
     }

@@ -1,0 +1,45 @@
+services:
+  app:
+    container_name: erp-app
+    environment:
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
+
+  postgres:
+    container_name: erp-postgres
+
+  redis:
+    container_name: erp-redis
+
+  nginx:
+    container_name: erp-nginx
+    ports: !reset []
+    networks:
+      - renostter-net
+      - erp-cloudflare-net
+
+  adminer:
+    container_name: erp-adminer
+
+  backup:
+    container_name: erp-backup
+
+networks:
+  renostter-net:
+    name: erp-net
+  erp-cloudflare-net:
+    name: renostter_renostter-net
+    external: true
+
+volumes:
+  postgres-data:
+    name: erp-postgres-data
+  redis-data:
+    name: erp-redis-data
+  app-uploads:
+    name: erp-uploads
+  app-backups:
+    name: erp-backups
+  app-logs:
+    name: erp-logs
+  nginx-logs:
+    name: erp-nginx-logs
