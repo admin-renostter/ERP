@@ -18,6 +18,7 @@
  *   GET  /api/portal/bills/:id
  *   GET  /api/portal/tickets
  *   GET  /api/portal/tickets/:id
+ *   GET  /api/portal/tickets/:id/location  (Fase 1.2 — localização do técnico, só se "Em Andamento")
  *   POST /api/portal/tickets
  *   GET  /api/portal/equipment
  *   GET  /api/portal/notifications
@@ -204,6 +205,16 @@ router.get('/tickets/:id', portalAuthMiddleware, asyncHandler(async (req, res) =
         return res.status(404).json({ success: false, error: 'Chamado não encontrado', code: 'NOT_FOUND' });
     }
     return res.json({ success: true, data: found });
+}));
+
+/**
+ * GET /api/portal/tickets/:id/location
+ * Última posição do técnico designado ao chamado — só enquanto "Em Andamento"
+ * e com ping recente (<=30min). Ver PortalService.getTicketTechnicianLocation.
+ */
+router.get('/tickets/:id/location', portalAuthMiddleware, asyncHandler(async (req, res) => {
+    const result = await PortalService.getTicketTechnicianLocation(req.portalUser.id, req.params.id);
+    return res.json({ success: true, data: result });
 }));
 
 router.post('/tickets', portalAuthMiddleware, validate(schemas.portalTicket), asyncHandler(async (req, res) => {

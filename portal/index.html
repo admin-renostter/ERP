@@ -355,6 +355,17 @@ input, select, textarea {
   </div>
 </div>
 
+<!-- Modal: Localização do técnico (Fase 1.2 do plano de ativação) -->
+<div class="modal-overlay" id="ticketLocationModal">
+  <div class="modal" style="max-width:420px">
+    <h3>📍 Localização do técnico</h3>
+    <div id="ticketLocationBody"><div class="empty">Carregando…</div></div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" onclick="closeTicketLocationModal()">Fechar</button>
+    </div>
+  </div>
+</div>
+
 <div class="notification" id="notification"></div>
 
 <script>
@@ -521,7 +532,7 @@ async function loadDashboard() {
       </div>
     `;
     document.getElementById('dashBills').innerHTML = renderBillsTable(bills.data.slice(0, 5));
-    document.getElementById('dashTickets').innerHTML = renderTicketsTable(tickets.data.slice(0, 5));
+    document.getElementById('dashTickets').innerHTML = renderTicketsTable(tickets.data.slice(0, 5), false);
   } catch (e) {
     document.getElementById('statGrid').innerHTML = `<div class="empty">Erro: ${escapeHtml(e.message)}</div>`;
   }
@@ -538,16 +549,48 @@ function renderBillsTable(bills) {
   }</tbody></table></div>`;
 }
 
-function renderTicketsTable(tickets) {
+function renderTicketsTable(tickets, withActions = true) {
   if (!tickets.length) return '<div class="empty">Nenhum chamado encontrado.</div>';
-  return `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Título</th><th>Status</th><th>Data</th></tr></thead><tbody>${
+  return `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Título</th><th>Status</th><th>Data</th>${withActions ? '<th></th>' : ''}</tr></thead><tbody>${
     tickets.map(t => `<tr>
       <td>${escapeHtml(t.titulo)}</td>
       <td>${statusBadge(t.status)}</td>
       <td>${fmtDate(t.data_abertura)}</td>
+      ${withActions ? `<td>${t.status === 'Em Andamento' ? `<button class="btn btn-sm btn-secondary" onclick="openTicketLocation('${t.id}')">📍 Técnico</button>` : ''}</td>` : ''}
     </tr>`).join('')
   }</tbody></table></div>`;
 }
+
+// Localização do técnico designado ao chamado (Fase 1.2 do plano de ativação)
+async function openTicketLocation(ticketId) {
+  const body = document.getElementById('ticketLocationBody');
+  body.innerHTML = '<div class="empty">Carregando…</div>';
+  document.getElementById('ticketLocationModal').classList.add('active');
+  try {
+    const r = await api(`/tickets/${ticketId}/location`);
+    const d = r.data;
+    if (!d.available) {
+      const msgs = {
+        NOT_IN_PROGRESS: 'Este chamado não está em andamento no momento.',
+        NO_TECHNICIAN: 'Ainda não há um técnico designado para este chamado.',
+        NO_LOCATION_YET: 'O técnico ainda não enviou a localização.',
+        STALE: 'A última localização do técnico é antiga — provavelmente ele está sem sinal.',
+        NOT_FOUND: 'Chamado não encontrado.',
+      };
+      body.innerHTML = `<div class="empty">${escapeHtml(msgs[d.reason] || 'Localização indisponível no momento.')}</div>`;
+      return;
+    }
+    const mapsUrl = `https://www.google.com/maps?q=${d.latitude},${d.longitude}`;
+    const minutesAgo = Math.max(0, Math.round((Date.now() - new Date(d.recorded_at).getTime()) / 60000));
+    body.innerHTML = `
+      <p style="margin:0 0 16px;color:var(--text-secondary);font-size:.88rem">Última posição registrada ${minutesAgo <= 1 ? 'agora mesmo' : `há ${minutesAgo} min`}${d.precisao ? ` (precisão ~${Math.round(d.precisao)}m)` : ''}.</p>
+      <a class="btn" href="${mapsUrl}" target="_blank" rel="noopener">Abrir no Google Maps</a>
+    `;
+  } catch (e) {
+    body.innerHTML = `<div class="empty">Erro: ${escapeHtml(e.message)}</div>`;
+  }
+}
+function closeTicketLocationModal() { document.getElementById('ticketLocationModal').classList.remove('active'); }
 
 async function loadContracts() {
   const el = document.getElementById('contractsContent');

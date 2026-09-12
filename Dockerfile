@@ -65,6 +65,16 @@ COPY --from=deps --chown=renostter:nodejs /app/cora-api/node_modules ./node_modu
 # Copia código-fonte
 COPY --chown=renostter:nodejs cora-api/ ./
 
+COPY --chown=renostter:nodejs index.html 404.html forgot-password.html ./public/
+COPY --chown=renostter:nodejs admin/ ./public/admin/
+COPY --chown=renostter:nodejs assets/ ./public/assets/
+COPY --chown=renostter:nodejs client/ ./public/client/
+COPY --chown=renostter:nodejs css/ ./public/css/
+COPY --chown=renostter:nodejs js/ ./public/js/
+COPY --chown=renostter:nodejs portal/ ./public/portal/
+COPY --chown=renostter:nodejs tech/ ./public/tech/
+COPY --chown=renostter:nodejs tecnico/ ./public/tecnico/
+
 # Volumes para persistência
 RUN mkdir -p /app/uploads /app/backups /app/logs && \
     chown -R renostter:nodejs /app/uploads /app/backups /app/logs

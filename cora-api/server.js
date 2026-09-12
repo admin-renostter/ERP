@@ -272,8 +272,7 @@ app.use((req, res, next) => {
 // 2.5 UI estática (/crm/admin/...) — servida ANTES do authMiddleware
 //     porque o frontend faz fetch relativo para /api/... e o navegador
 //     precisa carregar o HTML/JS/CSS sem exigir Authorization.
-app.use('/crm', express.static(path.resolve(__dirname, '..')));
-
+app.use('/crm', express.static(process.env.FRONTEND_DIR || path.join(__dirname, 'public')));
 // 3. Auth Middleware (Sprint 0 — JWT real, substitui leitura de headers)
 //    Modos: AUTH_MODE=dual (transição), jwt (padrão prod), legacy (dev only)
 //    Rotas públicas (/health, /api/auth/login, /api/auth/refresh) passam direto.

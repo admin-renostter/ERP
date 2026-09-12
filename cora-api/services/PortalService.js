@@ -303,6 +303,52 @@ async function getTickets(portalUserId, { status = null, limit = 50 } = {}) {
 }
 
 /**
+ * Retorna a última localização do técnico designado a um chamado do cliente —
+ * só enquanto o chamado está "Em Andamento" e o último ping é recente (<=30 min).
+ * Não expõe telemetria completa (speed/heading/bateria): só o necessário para
+ * mostrar "o técnico está a caminho" no portal.
+ *
+ * (Fase 1.2 do plano de ativação — dado já coletado pelo MobileService/app do
+ * técnico via tecnico_localizacao; isto só expõe uma leitura filtrada dele.)
+ */
+async function getTicketTechnicianLocation(portalUserId, ticketId) {
+    const user = await dbGet('SELECT cliente_id FROM portal_users WHERE id = ?', [portalUserId]);
+    if (!user) throw new Error('Usuário não encontrado');
+
+    const ticket = await dbGet(
+        `SELECT id, status, tecnico_id FROM chamados WHERE id = ? AND cliente_id = ?`,
+        [ticketId, user.cliente_id]
+    );
+    if (!ticket) return { available: false, reason: 'NOT_FOUND' };
+    if (!ticket.tecnico_id) return { available: false, reason: 'NO_TECHNICIAN' };
+    if (ticket.status !== 'Em Andamento') {
+        return { available: false, reason: 'NOT_IN_PROGRESS', status: ticket.status };
+    }
+
+    const loc = await dbGet(
+        `SELECT latitude, longitude, precisao, recorded_at
+         FROM tecnico_localizacao
+         WHERE tecnico_id = ?
+         ORDER BY recorded_at DESC LIMIT 1`,
+        [ticket.tecnico_id]
+    );
+    if (!loc) return { available: false, reason: 'NO_LOCATION_YET' };
+
+    const ageMinutes = (Date.now() - new Date(loc.recorded_at).getTime()) / 60000;
+    if (ageMinutes > 30) {
+        return { available: false, reason: 'STALE', last_seen: loc.recorded_at };
+    }
+
+    return {
+        available: true,
+        latitude: loc.latitude,
+        longitude: loc.longitude,
+        precisao: loc.precisao,
+        recorded_at: loc.recorded_at,
+    };
+}
+
+/**
  * Retorna os equipamentos (HVAC) do cliente.
  */
 async function getEquipment(portalUserId) {
@@ -488,6 +534,7 @@ module.exports = {
     getContracts,
     getBills,
     getTickets,
+    getTicketTechnicianLocation,
     getEquipment,
     getNotifications,
     markNotificationRead,
