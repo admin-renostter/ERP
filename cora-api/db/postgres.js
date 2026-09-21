@@ -40,16 +40,50 @@ function getPool() {
         throw new Error('[Postgres] DATABASE_URL não definido. Configure no .env do cora-api.');
     }
     _pool = new Pool({
-        connectionString,
-        ssl: process.env.PGSSLMODE === 'disable' ? false : { rejectUnauthorized: false },
-        max: parseInt(process.env.PG_POOL_MAX) || 10,
-        idleTimeoutMillis: 30_000,
-        connectionTimeoutMillis: 10_000
+    connectionString,
+    ssl: process.env.PGSSLMODE === 'disable' ? false : { rejectUnauthorized: false },
+    max: parseInt(process.env.PG_POOL_MAX) || 10,
+    idleTimeoutMillis: 30_000,
+    connectionTimeoutMillis: 10_000,
+    keepAlive: true,
+    keepAliveInitialDelayMillis: 10_000
+  });
+  _pool.on('error', (err) => {
+    console.error('[Postgres] Erro inesperado no pool:', err.message);
+  });
+  startPoolWatchdog();
+  return _pool;
+}
+
+// Watchdog: a cada 20s, testa se o pool responde. Se travar (conexoes
+// "zumbis" presas depois de uma queda de rede abrupta), derruba o pool
+// e deixa o proximo getPool() recriar um novo do zero, sem precisar
+// reiniciar o container inteiro.
+let _watchdogStarted = false;
+function startPoolWatchdog() {
+  if (_watchdogStarted) return;
+  _watchdogStarted = true;
+  setInterval(() => {
+    if (!_pool) return;
+    const poolRef = _pool;
+    const timeout = setTimeout(() => {
+      console.error('[Postgres] Watchdog: pool nao respondeu em 5s, recriando...');
+      if (_pool === poolRef) {
+        _pool = null;
+        poolRef.end().catch(() => {});
+      }
+    }, 5_000);
+    poolRef.query('SELECT 1').then(() => {
+      clearTimeout(timeout);
+    }).catch((err) => {
+      clearTimeout(timeout);
+      console.error('[Postgres] Watchdog: erro no ping:', err.message);
+      if (_pool === poolRef) {
+        _pool = null;
+        poolRef.end().catch(() => {});
+      }
     });
-    _pool.on('error', (err) => {
-        console.error('[Postgres] Erro inesperado no pool:', err.message);
-    });
-    return _pool;
+  }, 20_000);
 }
 
 // Proxy "pool" lazy — só tenta conectar quando alguém usar
