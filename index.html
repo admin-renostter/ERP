@@ -88,14 +88,14 @@
                     <p>Selecione seu portal e faça login para continuar.</p>
 
                     <div class="portal-tabs">
-                        <button class="portal-tab active" data-role="admin" onclick="selectPortal('admin',this)">
+                        <button class="portal-tab active" data-role="admin" >
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2">
                                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                             </svg>
                             Admin
                         </button>
-                        <button class="portal-tab" data-role="tecnico" onclick="selectPortal('tecnico',this)">
+                        <button class="portal-tab" data-role="tecnico" >
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2">
                                 <path
@@ -103,7 +103,7 @@
                             </svg>
                             Técnico
                         </button>
-                        <button class="portal-tab" data-role="cliente" onclick="selectPortal('cliente',this)">
+                        <button class="portal-tab" data-role="cliente" >
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2">
                                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
@@ -139,14 +139,14 @@
                                     </svg>
                                 </div>
                                 <input type="password" id="loginPassword" placeholder="••••••••"
-                                    autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()" />
+                                    autocomplete="current-password"  />
                             </div>
                         </div>
 
                         <div class="login-error" id="loginError">E-mail ou senha incorretos. Verifique e tente
                             novamente.</div>
 
-                        <button class="btn-login" onclick="doLogin()">
+                        <button class="btn-login" id="btnLogin">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2">
                                 <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
@@ -156,10 +156,10 @@
                             Entrar
                         </button>
 
-                        <a href="forgot-password.html"
-                            style="display:block;text-align:center;margin-top:12px;font-size:0.82rem;color:var(--text-secondary);text-decoration:none;transition:color 0.2s"
-                            onmouseover="this.style.color='var(--blue)'"
-                            onmouseout="this.style.color='var(--text-secondary)'">
+                        <a href="forgot-password.html" class="forgot-link"
+                            
+                            
+                            >
                             🔑 Esqueci minha senha
                         </a>
                     </div>
@@ -170,28 +170,28 @@
                             <span>Super Admin</span>
                             <code>administrator@renostter.com</code>
                             <button class="copy-btn-demo"
-                                onclick="fillCreds('administrator@renostter.com','Renostter@','admin')">Usar</button>
+                                data-email="administrator@renostter.com" data-pass="Renostter@" data-role="admin">Usar</button>
                         </div>
                         <div class="demo-cred">
                             <span>Admin</span>
                             <code>admin@renostter.com</code>
                             <button class="copy-btn-demo"
-                                onclick="fillCreds('admin@renostter.com','admin123','admin')">Usar</button>
+                                data-email="admin@renostter.com" data-pass="admin123" data-role="admin">Usar</button>
                         </div>
                         <div class="demo-cred">
                             <span>Técnico</span>
                             <code>tecnico@renostter.com</code>
                             <button class="copy-btn-demo"
-                                onclick="fillCreds('tecnico@renostter.com','tech123','tecnico')">Usar</button>
+                                data-email="tecnico@renostter.com" data-pass="tech123" data-role="tecnico">Usar</button>
                         </div>
                         <div class="demo-cred">
                             <span>Cliente</span>
                             <code>joao@techcorp.com</code>
                             <button class="copy-btn-demo"
-                                onclick="fillCreds('joao@techcorp.com','client123','cliente')">Usar</button>
+                                data-email="joao@techcorp.com" data-pass="client123" data-role="cliente">Usar</button>
                         </div>
                     </div>
-                    <button onclick="toggleDemo()"
+                    <button 
                         style="background:none;border:none;color:var(--text-muted);font-size:0.75rem;cursor:pointer;margin-top:4px;width:100%;text-align:center"
                         id="demoToggle">
                         ▼ Mostrar credenciais de demo
@@ -216,17 +216,17 @@
                                 <div class="input-wrap">
                                     <div class="input-icon">🔢</div>
                                     <input type="text" id="twofaInput" class="twofa-input" maxlength="6"
-                                        placeholder="000000" oninput="this.value=this.value.replace(/\D/g,'')"
-                                        onkeydown="if(event.key==='Enter')verify2FA()" />
+                                        placeholder="000000" 
+                                         />
                                 </div>
                             </div>
                             <div class="login-error" id="twofaError">Código inválido. Tente novamente.</div>
-                            <button class="btn-login" onclick="verify2FA()">
+                            <button class="btn-login" id="btnVerify2FA">
                                 ✓ Verificar e Entrar
                             </button>
                             <button
                                 style="background:none;border:none;color:#8B949E;font-size:0.82rem;cursor:pointer;margin-top:4px"
-                                onclick="back2FA()">← Voltar</button>
+                                id="btnBack2FA">← Voltar</button>
                         </div>
                     </div>
                 </div>
@@ -240,81 +240,7 @@
     <script src="js/storage.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/utils.js"></script>
-    <script>
-        // Redirect if already logged in (só conta como logado se tiver um
-        // accessToken real — ver SECURITY FIX em js/auth.js)
-        const existing = auth.current();
-        if (existing && existing.accessToken) redirectToDashboard(existing.role);
-
-        let selectedRole = 'admin';
-
-        function selectPortal(role, btn) {
-            selectedRole = role;
-            document.querySelectorAll('.portal-tab').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            const hints = { admin: 'admin@renostter.com', tecnico: 'tecnico@renostter.com', cliente: 'joao@techcorp.com' };
-            document.getElementById('loginEmail').placeholder = hints[role];
-        }
-
-        function fillCreds(email, pass, role) {
-            document.getElementById('loginEmail').value = email;
-            document.getElementById('loginPassword').value = pass;
-            // Select the right tab
-            document.querySelectorAll('.portal-tab').forEach(b => {
-                if (b.dataset.role === role) { selectPortal(role, b); b.classList.add('active'); }
-                else b.classList.remove('active');
-            });
-            selectedRole = role;
-        }
-
-        async function doLogin() {
-            const email = document.getElementById('loginEmail').value.trim().toLowerCase();
-            const pass = document.getElementById('loginPassword').value.trim(); // trim to catch copy-paste spaces
-            const errEl = document.getElementById('loginError');
-            errEl.classList.remove('visible');
-
-            if (!email || !pass) {
-                errEl.textContent = 'Preencha e-mail e senha.';
-                errEl.classList.add('visible');
-                return;
-            }
-
-            const btn = document.querySelector('.btn-login');
-            const originalHtml = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = 'Entrando...';
-
-            try {
-                // SECURITY FIX (11/09): login real contra o backend (bcrypt + JWT
-                // em cora-api/routes/auth.js), não mais comparação de senha em
-                // texto puro contra o localStorage do próprio navegador — ver
-                // js/auth.js para detalhes e o achado de segurança original.
-                const session = await auth.login(email, pass);
-                redirectToDashboard(session.role);
-            } catch (err) {
-                const messages = {
-                    MISSING_CREDENTIALS: 'Preencha e-mail e senha.',
-                    TOO_MANY_ATTEMPTS: 'Muitas tentativas. Tente novamente em alguns minutos.',
-                    INVALID_CREDENTIALS: 'E-mail ou senha incorretos.',
-                    INVALID_2FA: 'Código de verificação inválido.',
-                    NETWORK_ERROR: 'Não foi possível contatar o servidor. Verifique sua conexão.',
-                };
-                errEl.textContent = messages[err.code] || err.message || 'Não foi possível entrar. Tente novamente.';
-                errEl.classList.add('visible');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = originalHtml;
-            }
-        }
-
-        function toggleDemo() {
-            const box = document.getElementById('demoCreds');
-            const btn = document.getElementById('demoToggle');
-            const visible = box.style.display !== 'none';
-            box.style.display = visible ? 'none' : 'block';
-            btn.textContent = visible ? '▼ Mostrar credenciais de demo' : '▲ Ocultar demo';
-        }
-    </script>
+    <script src="js/login.js"></script>
 </body>
 
 </html>
