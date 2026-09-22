@@ -67,6 +67,8 @@
             display: inline-block
         }
     </style>
+<script src="../js/api-auth.js"></script>
+<script src="../js/csp-events.js"></script>
 </head>
 
 <body>
@@ -89,7 +91,7 @@
                     </svg><span>Consultar Estoque</span></a>
             </nav>
             <div class="sidebar-footer">
-                <div class="user-card" onclick="auth.logout()">
+                <div class="user-card" data-on-click="auth.logout()">
                     <div class="user-avatar" id="sidebarAvatar">T</div>
                     <div class="user-info">
                         <div class="user-name" id="sidebarName">Técnico</div>
@@ -127,9 +129,9 @@
                             <line x1="21" y1="21" x2="16.65" y2="16.65" />
                         </svg>
                         <input type="text" id="searchInput" placeholder="Buscar por SKU, nome ou categoria..."
-                            oninput="renderCards()" autofocus />
+                            data-on-input="renderCards()" autofocus />
                     </div>
-                    <select class="filter-select" id="fCat" onchange="renderCards()">
+                    <select class="filter-select" id="fCat" data-on-change="renderCards()">
                         <option value="">Todas as categorias</option>
                         <option value="eletrica">⚡ Elétrica</option>
                         <option value="eletronica">🔌 Eletrônica</option>
@@ -137,7 +139,7 @@
                         <option value="consumivel">🧴 Consumível</option>
                         <option value="outros">📦 Outros</option>
                     </select>
-                    <select class="filter-select" id="fAvail" onchange="renderCards()">
+                    <select class="filter-select" id="fAvail" data-on-change="renderCards()">
                         <option value="">Todos</option>
                         <option value="available">Disponível</option>
                         <option value="zero">Sem estoque</option>
@@ -153,44 +155,7 @@
     <script src="../js/storage.js"></script>
     <script src="../js/auth.js"></script>
     <script src="../js/utils.js"></script>
-    <script>
-        const session = auth.protect(['tecnico']);
-        const CAT_LABELS = { eletrica: '⚡ Elétrica', eletronica: '🔌 Eletrônica', mecanica: '⚙️ Mecânica', consumivel: '🧴 Consumível', outros: '📦 Outros' };
-
-        function stockColor(p) { if (p.currentStock <= 0) return '#8B949E'; if (p.currentStock <= p.minStock) return '#DA3633'; if (p.currentStock <= p.safetyStock) return '#D29922'; return '#2EA043'; }
-        function stockLabel(p) { if (p.currentStock <= 0) return 'Sem estoque'; if (p.currentStock <= p.minStock) return '⚠️ Estoque低'; return 'Disponível'; }
-
-        function renderCards() {
-            const q = (document.getElementById('searchInput').value || '').toLowerCase();
-            const cat = document.getElementById('fCat').value;
-            const avail = document.getElementById('fAvail').value;
-            let items = db.get('inventory').filter(p => p.status === 'ativo');
-            if (q) items = items.filter(p => p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q) || (p.category || '').includes(q) || (p.description || '').toLowerCase().includes(q));
-            if (cat) items = items.filter(p => p.category === cat);
-            if (avail === 'available') items = items.filter(p => p.currentStock > 0);
-            if (avail === 'zero') items = items.filter(p => p.currentStock <= 0);
-            document.getElementById('resultCount').textContent = `${items.length} produto(s) encontrado(s)`;
-            document.getElementById('partsGrid').innerHTML = items.map(p => `
-    <div class="part-card">
-      <div class="part-img">${p.imageBase64 ? `<img src="${p.imageBase64}">` : '📦'}</div>
-      <div>
-        <div style="font-weight:600;font-size:.95rem;margin-bottom:2px">${esc(p.name)}</div>
-        <div style="font-size:.75rem;color:var(--text-secondary)">SKU: ${esc(p.sku)} · ${CAT_LABELS[p.category] || p.category || '—'}</div>
-      </div>
-      <div style="display:flex;align-items:baseline;gap:6px">
-        <span class="stock-num" style="color:${stockColor(p)}">${p.currentStock}</span>
-        <span style="font-size:.8rem;color:var(--text-secondary)">${p.unit} disponível${p.currentStock !== 1 ? 'is' : ''}</span>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:4px">
-        ${p.location ? `<span class="loc-badge">📍 ${esc(p.location)}</span>` : ''}
-        <span style="font-size:.72rem;color:${stockColor(p)}">${stockLabel(p)}</span>
-      </div>
-      ${p.description ? `<div style="font-size:.75rem;color:var(--text-muted);border-top:1px solid var(--border);padding-top:8px">${esc(p.description.slice(0, 100))}${p.description.length > 100 ? '…' : ''}</div>` : ''}
-    </div>`).join('') || '<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--text-secondary)"><div style="font-size:3rem;margin-bottom:10px">🔍</div><div>Nenhum produto encontrado</div></div>';
-        }
-
-        renderCards(); initSidebar();
-    </script>
+    <script src="../js/pages/tech__inventory.js"></script>
 </body>
 
 </html>

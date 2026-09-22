@@ -13,8 +13,7 @@
  */
 
 // Resolve a Base URL dinamicamente para evitar erro CORS ou "Failed to fetch" fora de localhost
-const API_HOST = '127.0.0.1';
-const CORA_API_URL = `http://${API_HOST}:3000`;
+const CORA_API_URL = ''; // mesma origem (/api/...)
 
 const CoraIntegration = {
 

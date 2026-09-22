@@ -43,7 +43,7 @@
     function getApiBase() {
         if (typeof CORA_API_URL === 'string' && CORA_API_URL) return CORA_API_URL;
         const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
-        return isLocal ? 'http://localhost:3000' : '';
+        return ''; // mesma origem (/api/...)
     }
 
     function getSession() {

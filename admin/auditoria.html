@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
@@ -78,6 +78,8 @@
             color: var(--text-primary);
         }
     </style>
+<script src="../js/api-auth.js"></script>
+<script src="../js/csp-events.js"></script>
 </head>
 
 <body>
@@ -110,7 +112,7 @@
                 <a class="nav-item" href="tickets.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><span>Chamados</span></a>
             </nav>
             <div class="sidebar-footer">
-                <div class="user-card" onclick="auth.logout()">
+                <div class="user-card" data-on-click="auth.logout()">
                     <div class="user-avatar" id="sidebarAvatar">A</div>
                     <div class="user-info"><strong id="sidebarUserName">Admin</strong><span id="sidebarUserRole">Administrador Master</span></div>
                 </div>
@@ -126,7 +128,7 @@
                     <span class="page-title">Relatórios &amp; Analytics — Auditoria</span>
                 </div>
                 <div class="topbar-right">
-                    <button class="btn btn-primary btn-sm" onclick="exportAudit()">📥 Exportar CSV</button>
+                    <button class="btn btn-primary btn-sm" data-on-click="exportAudit()">📥 Exportar CSV</button>
                 </div>
             </div>
 
@@ -143,7 +145,7 @@
                     <div class="doc-filters">
                         <div>
                             <label style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:6px">Ação</label>
-                            <select class="filter-select" id="auditAction" onchange="renderAudit()" style="min-width:160px;height:36px">
+                            <select class="filter-select" id="auditAction" data-on-change="renderAudit()" style="min-width:160px;height:36px">
                                 <option value="">Todas as ações</option>
                                 <option value="login">Login</option>
                                 <option value="logout">Logout</option>
@@ -160,23 +162,23 @@
                         </div>
                         <div>
                             <label style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:6px">Usuário</label>
-                            <select class="filter-select" id="auditUser" onchange="renderAudit()" style="min-width:160px;height:36px">
+                            <select class="filter-select" id="auditUser" data-on-change="renderAudit()" style="min-width:160px;height:36px">
                                 <option value="">Todos os usuários</option>
                             </select>
                         </div>
                         <div style="flex:1;min-width:200px">
                             <label style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:6px">Busca (Nome, Ação, Detalhes)</label>
-                            <input type="text" class="form-input" id="auditSearch" placeholder="Digite para buscar..." onkeyup="renderAudit()" style="width:100%;height:36px">
+                            <input type="text" class="form-input" id="auditSearch" placeholder="Digite para buscar..." data-on-keyup="renderAudit()" style="width:100%;height:36px">
                         </div>
                         <div>
                             <label style="font-size:0.75rem;color:var(--text-muted);display:block;margin-bottom:6px">Período (Início - Fim)</label>
                             <div style="display:flex;gap:6px">
-                                <input type="date" class="form-input" id="auditStart" onchange="renderAudit()" style="height:36px">
-                                <input type="date" class="form-input" id="auditEnd" onchange="renderAudit()" style="height:36px">
+                                <input type="date" class="form-input" id="auditStart" data-on-change="renderAudit()" style="height:36px">
+                                <input type="date" class="form-input" id="auditEnd" data-on-change="renderAudit()" style="height:36px">
                             </div>
                         </div>
                         <div>
-                            <button class="btn btn-ghost btn-sm" onclick="renderAudit()" style="height:36px" title="Atualizar">🔄</button>
+                            <button class="btn btn-ghost btn-sm" data-on-click="renderAudit()" style="height:36px" title="Atualizar">🔄</button>
                         </div>
                     </div>
 
@@ -193,140 +195,7 @@
     <script src="../js/auth.js"></script>
     <script src="../js/approval-banner.js"></script>
     <script src="../js/utils.js"></script>
-    <script>
-        // ─── Auth + gate superadmin ───
-        const session = auth.protect(['superadmin']);
-        if (session.role === 'superadmin') {
-            const navItem = document.getElementById('auditNavItem');
-            if (navItem) navItem.style.display = '';
-        }
-        initSidebar();
-
-        // ─── Audit constants ───
-        let auditCurrentPage = 1;
-        const AUDIT_ITEMS_PER_PAGE = 50;
-
-        function getAuditIcon(action) {
-            const icons = {
-                'login': '🟢', 'logout': '🔴', 'transfer': '🔄', 'password_change': '🔑',
-                'create_ticket': '🎫', 'doc_upload': '📎', 'doc_replace': '📝', 'doc_delete': '🗑ï¸',
-                'ticket_resolved': '✅', 'ticket_status_change': '📈',
-                'inventory_move': '📦'
-            };
-            return icons[action] || '⚙ï¸';
-        }
-
-        function populateAuditUsers() {
-            const users = db.get('users');
-            const sel = document.getElementById('auditUser');
-            if (!sel) return;
-            sel.innerHTML = '<option value="">Todos os usuários</option>' +
-                users.map(u => `<option value="${esc(u.id)}">${esc(u.name)}</option>`).join('');
-        }
-
-        function renderAudit(page = 1) {
-            auditCurrentPage = page;
-            const action = document.getElementById('auditAction').value;
-            const userId = document.getElementById('auditUser').value;
-            const search = (document.getElementById('auditSearch').value || '').toLowerCase();
-            const sDate = document.getElementById('auditStart').value;
-            const eDate = document.getElementById('auditEnd').value;
-
-            let logs = [...db.get('auditlog')].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
-            if (action) logs = logs.filter(l => l.action === action);
-            if (userId) logs = logs.filter(l => l.userId === userId);
-            if (search) {
-                logs = logs.filter(l =>
-                    (l.userName || '').toLowerCase().includes(search) ||
-                    (l.details || '').toLowerCase().includes(search) ||
-                    (l.action || '').toLowerCase().includes(search)
-                );
-            }
-            if (sDate) {
-                const sTime = new Date(sDate + 'T00:00:00').getTime();
-                logs = logs.filter(l => new Date(l.createdAt).getTime() >= sTime);
-            }
-            if (eDate) {
-                const eTime = new Date(eDate + 'T23:59:59').getTime();
-                logs = logs.filter(l => new Date(l.createdAt).getTime() <= eTime);
-            }
-
-            document.getElementById('auditCount').textContent =
-                `(${logs.length} registro${logs.length === 1 ? '' : 's'} encontrado${logs.length === 1 ? '' : 's'})`;
-
-            const totalPages = Math.ceil(logs.length / AUDIT_ITEMS_PER_PAGE);
-            const startIdx = (auditCurrentPage - 1) * AUDIT_ITEMS_PER_PAGE;
-            const paginatedLogs = logs.slice(startIdx, startIdx + AUDIT_ITEMS_PER_PAGE);
-
-            document.getElementById('auditList').innerHTML = paginatedLogs.length ? paginatedLogs.map(l => {
-                const dt = new Date(l.createdAt);
-                const dateStr = isNaN(dt.getTime()) ? '—' : fmt.date(l.createdAt);
-                const hourStr = isNaN(dt.getTime()) ? '' : dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-                return `
-    <div class="audit-card">
-      <div class="audit-icon">${getAuditIcon(l.action)}</div>
-      <div class="audit-detail">
-        <div><strong>${esc(l.userName)}</strong>
-          <span class="role-badge">${l.userRole === 'superadmin' ? 'Administrador Master' : esc(l.userRole)}</span>
-        </div>
-        <div class="audit-desc">${esc(l.details || `Ação: ${l.action}`)}</div>
-      </div>
-      <div class="audit-when">
-        <div class="audit-date">${dateStr}</div>
-        <div>${hourStr}</div>
-      </div>
-    </div>`;
-            }).join('') : `<div style="text-align:center;padding:48px 24px;color:var(--text-secondary);background:var(--bg-surface);border-radius:8px">Nenhum log encontrado para os filtros selecionados.</div>`;
-
-            const pagEl = document.getElementById('auditPagination');
-            if (totalPages > 1) {
-                let html = `<button class="btn btn-ghost btn-sm" onclick="renderAudit(${Math.max(1, auditCurrentPage - 1)})" ${auditCurrentPage === 1 ? 'disabled' : ''}>Anterior</button>`;
-                html += `<span style="display:flex;align-items:center;padding:0 12px;font-size:0.8rem;color:var(--text-muted)">Página ${auditCurrentPage} de ${totalPages}</span>`;
-                html += `<button class="btn btn-ghost btn-sm" onclick="renderAudit(${Math.min(totalPages, auditCurrentPage + 1)})" ${auditCurrentPage === totalPages ? 'disabled' : ''}>Próxima</button>`;
-                pagEl.innerHTML = html;
-            } else {
-                pagEl.innerHTML = '';
-            }
-        }
-
-        function exportAudit() {
-            const action = document.getElementById('auditAction').value;
-            const userId = document.getElementById('auditUser').value;
-            const search = (document.getElementById('auditSearch').value || '').toLowerCase();
-            const sDate = document.getElementById('auditStart').value;
-            const eDate = document.getElementById('auditEnd').value;
-
-            let logs = [...db.get('auditlog')].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-            if (action) logs = logs.filter(l => l.action === action);
-            if (userId) logs = logs.filter(l => l.userId === userId);
-            if (search) logs = logs.filter(l =>
-                (l.userName || '').toLowerCase().includes(search) ||
-                (l.details || '').toLowerCase().includes(search) ||
-                (l.action || '').toLowerCase().includes(search));
-            if (sDate) logs = logs.filter(l => new Date(l.createdAt).getTime() >= new Date(sDate + 'T00:00:00').getTime());
-            if (eDate) logs = logs.filter(l => new Date(l.createdAt).getTime() <= new Date(eDate + 'T23:59:59').getTime());
-
-            exportCSV(
-                logs.map(l => ({
-                    acao: l.action,
-                    usuario: l.userName,
-                    papel: l.userRole,
-                    detalhes: l.details,
-                    data: fmt.datetime(l.createdAt)
-                })),
-                'audit-log-filtrado.csv'
-            );
-            toast('Auditoria exportada', 'Exportando apenas dados filtrados.', 'success');
-        }
-
-        // ─── Init ───
-        document.addEventListener('DOMContentLoaded', () => {
-            try { initSidebar(); } catch (e) { /* already initialized */ }
-            populateAuditUsers();
-            renderAudit();
-        });
-    </script>
+    <script src="../js/pages/admin__auditoria.js"></script>
 </body>
 
 </html>

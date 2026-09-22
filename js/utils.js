@@ -371,9 +371,12 @@ async function baixarRelatorioPmoc(cId, btnEl) {
           <div class="footer">
             <strong>Declaração de Conformidade:</strong> O presente relatório atesta que as manutenções preventivas descritas foram executadas conforme o Plano de Manutenção, Operação e Controle (PMOC) previsto na norma <strong>ABNT NBR 16020</strong>. O responsável técnico declara, sob as penas da lei, que as informações aqui contidas são verídicas e correspondem à realidade dos equipamentos instalados.
           </div>
-          <br><button class="no-print" onclick="window.print()" style="padding:10px 20px;background:#00AEEF;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700">🖨️ Imprimir / Salvar PDF</button>
+          <br><button class="no-print" id="btnPrintPmoc" style="padding:10px 20px;background:#00AEEF;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700">🖨️ Imprimir / Salvar PDF</button>
         </body></html>`);
         win.document.close();
+        // A janela nova herda a CSP da pagina, entao data-on-click="" nao funcionaria nela.
+        const btnPrint = win.document.getElementById('btnPrintPmoc');
+        if (btnPrint) btnPrint.addEventListener('click', () => win.print());
         toast('Pronto!', 'Relatório aberto em nova janela. Use Ctrl+P para salvar como PDF.', 'success');
     } catch(e) {
         toast('Erro', e.message, 'error');

@@ -78,6 +78,8 @@
             .boleto-top { flex-direction: column; gap: 8px; text-align: center; }
         }
     </style>
+<script src="../js/api-auth.js"></script>
+<script src="../js/csp-events.js"></script>
 </head>
 <body>
     <div class="container">
@@ -178,7 +180,7 @@
                 <!-- Actions -->
                 <div class="actions">
                     <a href="https://storage.googleapis.com/download/storage/v1/b/cora_stage_exporter_bankslip_storage/o/boleto-e04692bd-1766-4755-b85c-d3b7fe26d0b8.pdf?generation=1774315108950869&alt=media" target="_blank" class="btn btn-primary">📄 Baixar PDF do Boleto</a>
-                    <button class="btn btn-ghost" onclick="navigator.clipboard.writeText('40390000074880866200000201366010114170000025000');this.textContent='✅ Copiado!'">📋 Copiar Linha Digitável</button>
+                    <button class="btn btn-ghost" data-on-click="navigator.clipboard.writeText('40390000074880866200000201366010114170000025000');this.textContent='✅ Copiado!'">📋 Copiar Linha Digitável</button>
                 </div>
             </div>
         </div>
@@ -203,28 +205,7 @@
         </div>
     </div>
 
-    <script>
-        // Gerar representação visual do código de barras
-        const barcode = '40391141700000250000000048808662000020136601';
-        const container = document.getElementById('barcodeVisual');
-        for (let i = 0; i < barcode.length; i++) {
-            const digit = parseInt(barcode[i]);
-            // Simular barras baseadas nos dígitos
-            const w = (digit % 3 === 0) ? 3 : (digit % 2 === 0) ? 2 : 1;
-            const isBar = i % 2 === 0;
-            const el = document.createElement('div');
-            el.className = isBar ? 'bar' : 'space';
-            el.style.width = w + 'px';
-            container.appendChild(el);
-            // Adicionar barras finas entre
-            if (i < barcode.length - 1) {
-                const thin = document.createElement('div');
-                thin.className = isBar ? 'space' : 'bar';
-                thin.style.width = '1px';
-                container.appendChild(thin);
-            }
-        }
-    </script>
+    <script src="../js/pages/admin__boleto-qa-test.js"></script>
 <script src="../js/approval-banner.js"></script>
     </body>
 </html>

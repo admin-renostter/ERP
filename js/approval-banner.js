@@ -21,7 +21,7 @@
 (function () {
     'use strict';
 
-    const API = (typeof CORA_API_URL === 'string') ? CORA_API_URL : 'http://localhost:3000';
+    const API = (typeof CORA_API_URL === 'string') ? CORA_API_URL : '';
 
     function getSession() {
         if (typeof auth === 'undefined' || !auth.current) return null;
@@ -33,8 +33,7 @@
         // escopo global (cora_integration.js), usa; senão infere da origem.
         try {
             if (typeof CORA_API_URL === 'string' && CORA_API_URL) return new URL(path, CORA_API_URL).toString();
-            const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
-            return `${isLocal ? 'http' : 'https'}://${window.location.hostname}:${isLocal ? '3000' : ''}${path}`;
+            return new URL(path, window.location.origin).toString(); // mesma origem
         } catch {
             return `/api${path}`;
         }

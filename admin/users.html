@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
@@ -125,6 +125,8 @@
             text-align: center;
         }
     </style>
+<script src="../js/api-auth.js"></script>
+<script src="../js/csp-events.js"></script>
 </head>
 
 <body>
@@ -195,7 +197,7 @@
                 </a>
             </nav>
             <div class="sidebar-footer">
-                <div class="user-card" onclick="auth.logout()">
+                <div class="user-card" data-on-click="auth.logout()">
                     <div class="user-avatar" id="sidebarAvatar">A</div>
                     <div class="user-info">
                         <strong id="sidebarUserName">–</strong>
@@ -213,7 +215,7 @@
                     <span class="page-title">👥 Gestão de Usuários</span>
                 </div>
                 <div class="topbar-right">
-                    <button class="btn btn-primary btn-sm" onclick="openModal('modalNewUser')">
+                    <button class="btn btn-primary btn-sm" data-on-click="openModal('modalNewUser')">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2">
                             <line x1="12" y1="5" x2="12" y2="19" />
@@ -245,21 +247,21 @@
                             <line x1="21" y1="21" x2="16.65" y2="16.65" />
                         </svg>
                         <input type="text" id="searchInput" placeholder="Buscar por nome ou e-mail…"
-                            oninput="renderTable()" />
+                            data-on-input="renderTable()" />
                     </div>
-                    <select class="filter-select" id="filterRole" onchange="renderTable()">
+                    <select class="filter-select" id="filterRole" data-on-change="renderTable()">
                         <option value="">Todos os Perfis</option>
                         <option value="superadmin">Super Admin</option>
                         <option value="admin">Admin</option>
                         <option value="tecnico">Técnico</option>
                         <option value="cliente">Cliente</option>
                     </select>
-                    <select class="filter-select" id="filterStatus" onchange="renderTable()">
+                    <select class="filter-select" id="filterStatus" data-on-change="renderTable()">
                         <option value="">Todos os Status</option>
                         <option value="ativo">Ativo</option>
                         <option value="inativo">Inativo</option>
                     </select>
-                    <button class="btn btn-ghost btn-sm" onclick="exportUsers()">
+                    <button class="btn btn-ghost btn-sm" data-on-click="exportUsers()">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -304,7 +306,7 @@
         <div class="modal modal-sm">
             <div class="modal-header">
                 <h3 class="modal-title">➕ Novo Usuário</h3>
-                <button class="modal-close" onclick="closeModal('modalNewUser')">✕</button>
+                <button class="modal-close" data-on-click="closeModal('modalNewUser')">✕</button>
             </div>
             <div class="modal-body">
                 <!-- Profile Photo -->
@@ -313,12 +315,12 @@
                         <img id="newPhotoPreview" class="photo-preview" src="../assets/avatar-default.png"
                             alt="Preview">
                         <button class="photo-remove-btn" id="btnRemoveNewPhoto" style="display:none"
-                            onclick="removePhoto('new')">✕</button>
+                            data-on-click="removePhoto('new')">✕</button>
                     </div>
                     <input type="file" id="newPhotoInput" accept="image/*" style="display:none"
-                        onchange="handlePhotoSelect(event, 'new')">
+                        data-on-change="handlePhotoSelect(event, 'new')">
                     <button class="btn btn-ghost btn-sm"
-                        onclick="document.getElementById('newPhotoInput').click()">Escolher Foto</button>
+                        data-on-click="document.getElementById('newPhotoInput').click()">Escolher Foto</button>
                     <div class="upload-hint">Formatos: JPG, PNG, WebP. Máx: 2MB.</div>
                 </div>
 
@@ -337,7 +339,7 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Perfil *</label>
-                        <select class="form-input" id="newRole" onchange="toggleClientField()">
+                        <select class="form-input" id="newRole" data-on-change="toggleClientField()">
                             <option value="admin">Admin</option>
                             <option value="tecnico">Técnico</option>
                             <option value="cliente">Cliente</option>
@@ -359,8 +361,8 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-ghost" onclick="closeModal('modalNewUser')">Cancelar</button>
-                <button class="btn btn-primary" onclick="createUser()">Criar Usuário</button>
+                <button class="btn btn-ghost" data-on-click="closeModal('modalNewUser')">Cancelar</button>
+                <button class="btn btn-primary" data-on-click="createUser()">Criar Usuário</button>
             </div>
         </div>
     </div>
@@ -369,8 +371,8 @@
     <div class="modal-overlay" id="modalEditUser">
         <div class="modal modal-sm">
             <div class="modal-header">
-                <h3 class="modal-title">✏ï¸ Editar Usuário</h3>
-                <button class="modal-close" onclick="closeModal('modalEditUser')">✕</button>
+                <h3 class="modal-title">✏️ Editar Usuário</h3>
+                <button class="modal-close" data-on-click="closeModal('modalEditUser')">✕</button>
             </div>
             <div class="modal-body">
                 <input type="hidden" id="editUserId" />
@@ -381,12 +383,12 @@
                         <img id="editPhotoPreview" class="photo-preview" src="../assets/avatar-default.png"
                             alt="Preview">
                         <button class="photo-remove-btn" id="btnRemoveEditPhoto" style="display:none"
-                            onclick="removePhoto('edit')">✕</button>
+                            data-on-click="removePhoto('edit')">✕</button>
                     </div>
                     <input type="file" id="editPhotoInput" accept="image/*" style="display:none"
-                        onchange="handlePhotoSelect(event, 'edit')">
+                        data-on-change="handlePhotoSelect(event, 'edit')">
                     <button class="btn btn-ghost btn-sm"
-                        onclick="document.getElementById('editPhotoInput').click()">Alterar Foto</button>
+                        data-on-click="document.getElementById('editPhotoInput').click()">Alterar Foto</button>
                     <div class="upload-hint">Formatos: JPG, PNG, WebP. Máx: 2MB.</div>
                 </div>
 
@@ -404,12 +406,12 @@
                                 style="color:var(--text-muted);font-weight:400">(deixe em branco para
                                 manter)</span></label>
                         <input class="form-input" id="editPassword" type="password" placeholder="Mínimo 8 caracteres"
-                            oninput="checkEditPwdMatch()" />
+                            data-on-input="checkEditPwdMatch()" />
                     </div>
                     <div class="form-group" id="editConfirmGroup" style="display:none">
                         <label class="form-label">Confirmar nova senha</label>
                         <input class="form-input" id="editPasswordConfirm" type="password" placeholder="Repita a senha"
-                            oninput="checkEditPwdMatch()" />
+                            data-on-input="checkEditPwdMatch()" />
                         <div id="editPwdMatchMsg" style="font-size:0.78rem;margin-top:4px"></div>
                     </div>
                     <div class="form-group">
@@ -430,8 +432,8 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-ghost" onclick="closeModal('modalEditUser')">Cancelar</button>
-                <button class="btn btn-primary" onclick="saveEditUser()">Salvar</button>
+                <button class="btn btn-ghost" data-on-click="closeModal('modalEditUser')">Cancelar</button>
+                <button class="btn btn-primary" data-on-click="saveEditUser()">Salvar</button>
             </div>
         </div>
     </div>
@@ -440,8 +442,8 @@
     <div class="modal-overlay" id="modalConfirmDelete">
         <div class="modal modal-sm">
             <div class="modal-header">
-                <h3 class="modal-title">⚠ï¸ Desativar Usuário</h3>
-                <button class="modal-close" onclick="closeModal('modalConfirmDelete')">✕</button>
+                <h3 class="modal-title">⚠️ Desativar Usuário</h3>
+                <button class="modal-close" data-on-click="closeModal('modalConfirmDelete')">✕</button>
             </div>
             <div class="modal-body">
                 <div class="confirm-dialog">
@@ -451,8 +453,8 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-ghost" onclick="closeModal('modalConfirmDelete')">Cancelar</button>
-                <button class="btn btn-danger" onclick="confirmDeactivate()">Desativar</button>
+                <button class="btn btn-ghost" data-on-click="closeModal('modalConfirmDelete')">Cancelar</button>
+                <button class="btn btn-danger" data-on-click="confirmDeactivate()">Desativar</button>
             </div>
         </div>
     </div>
@@ -462,7 +464,7 @@
         <div class="modal modal-sm">
             <div class="modal-header">
                 <h3 class="modal-title">🔑 Definir Senha</h3>
-                <button class="modal-close" onclick="closeModal('modalSetPassword')">✕</button>
+                <button class="modal-close" data-on-click="closeModal('modalSetPassword')">✕</button>
             </div>
             <div class="modal-body">
                 <input type="hidden" id="setPwdUserId" />
@@ -471,19 +473,19 @@
                     <div class="form-group">
                         <label class="form-label">Nova senha *</label>
                         <input class="form-input" id="setPwdNew" type="password" placeholder="Mínimo 8 caracteres"
-                            oninput="checkSetPwdMatch()" />
+                            data-on-input="checkSetPwdMatch()" />
                     </div>
                     <div class="form-group">
                         <label class="form-label">Confirmar senha *</label>
                         <input class="form-input" id="setPwdConfirm" type="password" placeholder="Repita a senha"
-                            oninput="checkSetPwdMatch()" />
+                            data-on-input="checkSetPwdMatch()" />
                         <div id="setPwdMatchMsg" style="font-size:0.78rem;margin-top:4px"></div>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-ghost" onclick="closeModal('modalSetPassword')">Cancelar</button>
-                <button class="btn btn-primary" id="setPwdBtn" onclick="confirmSetPassword()">💾 Salvar Senha</button>
+                <button class="btn btn-ghost" data-on-click="closeModal('modalSetPassword')">Cancelar</button>
+                <button class="btn btn-primary" id="setPwdBtn" data-on-click="confirmSetPassword()">💾 Salvar Senha</button>
             </div>
         </div>
     </div>
@@ -494,335 +496,7 @@
     <script src="../js/auth.js"></script>
     <script src="../js/approval-banner.js"></script>
     <script src="../js/utils.js"></script>
-    <script>
-        const session = auth.protect(['admin', 'superadmin']);
-        if (!session) throw new Error('Access denied');
-
-        document.addEventListener('DOMContentLoaded', () => {
-            if (session.role !== 'superadmin') {
-                const superBar = document.querySelector('.superadmin-bar');
-                if (superBar) superBar.style.display = 'none';
-
-                document.querySelectorAll('#newRole option[value="superadmin"], #editRole option[value="superadmin"], #filterRole option[value="superadmin"]').forEach(opt => opt.remove());
-            }
-        });
-
-        initSidebar();
-
-        let deactivatingId = null;
-
-        /* ─── Role badge HTML ─── */
-        function badgeRole(role) {
-            const map = {
-                superadmin: '<span class="badge role-badge-superadmin">👑 Super Admin</span>',
-                admin: '<span class="badge badge-blue">Admin</span>',
-                tecnico: '<span class="badge badge-orange">Técnico</span>',
-                cliente: '<span class="badge badge-green">Cliente</span>',
-            };
-            return map[role] || `<span class="badge badge-gray">${role}</span>`;
-        }
-
-        /* ─── Photo Handling ─── */
-        let currentPhotos = { new: null, edit: null };
-
-        function handlePhotoSelect(event, type) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            if (!file.type.startsWith('image/')) {
-                toast('Erro de arquivo', 'Por favor, selecione uma imagem.', 'error');
-                return;
-            }
-
-            if (file.size > 2 * 1024 * 1024) {
-                toast('Arquivo muito grande', 'A imagem deve ter no máximo 2MB.', 'warning');
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const base64 = e.target.result;
-                currentPhotos[type] = base64;
-                document.getElementById(`${type}PhotoPreview`).src = base64;
-                document.getElementById(`btnRemove${type.charAt(0).toUpperCase() + type.slice(1)}Photo`).style.display = 'flex';
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function removePhoto(type) {
-            currentPhotos[type] = null;
-            document.getElementById(`${type}PhotoPreview`).src = '../assets/avatar-default.png';
-            document.getElementById(`btnRemove${type.charAt(0).toUpperCase() + type.slice(1)}Photo`).style.display = 'none';
-            document.getElementById(`${type}PhotoInput`).value = '';
-        }
-
-        /* ─── Render table ─── */
-        function renderTable() {
-            const search = document.getElementById('searchInput').value.toLowerCase();
-            const roleF = document.getElementById('filterRole').value;
-            const statusF = document.getElementById('filterStatus').value;
-
-            let users = db.get('users').filter(u => {
-                const matchSearch = !search || u.name.toLowerCase().includes(search) || u.email.toLowerCase().includes(search);
-                const matchRole = !roleF || u.role === roleF;
-                const matchStatus = !statusF || (statusF === 'ativo' ? !u.deactivated : u.deactivated);
-                return matchSearch && matchRole && matchStatus;
-            });
-
-            // Sort: superadmin first, then admin, tecnico, cliente
-            const order = { superadmin: 0, admin: 1, tecnico: 2, cliente: 3 };
-            users.sort((a, b) => (order[a.role] ?? 9) - (order[b.role] ?? 9));
-
-            const tbody = document.getElementById('usersBody');
-            if (!users.length) {
-                tbody.innerHTML = '<tr><td colspan="7" class="td-muted" style="text-align:center;padding:32px">Nenhum usuário encontrado.</td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = users.map(u => {
-                const isSelf = u.id === session.userId;
-                const statusBadge = u.deactivated
-                    ? '<span class="badge badge-gray"><span class="status-dot" style="background:#484F58"></span>Inativo</span>'
-                    : '<span class="badge badge-green"><span class="status-dot" style="background:#2EA043"></span>Ativo</span>';
-
-                // Photo or Initial
-                const avatarThumb = u.photo
-                    ? `<img src="${u.photo}" class="avatar-sm" style="object-fit:cover">`
-                    : `<div class="avatar-sm">${u.name.charAt(0).toUpperCase()}</div>`;
-
-                const isTargetSuperAdmin = u.role === 'superadmin';
-                const canEdit = session.role === 'superadmin' || !isTargetSuperAdmin;
-
-                let actionsHtml = '';
-                if (isSelf) {
-                    actionsHtml = '<span class="lock-icon" title="Conta própria — use as configurações de perfil">🔒</span>';
-                } else if (!canEdit) {
-                    actionsHtml = '<span class="lock-icon" title="Apenas o Super Admin pode gerenciar este usuário">🔒</span>';
-                } else {
-                    actionsHtml = `<button class="btn btn-ghost btn-sm btn-icon" title="Editar dados" onclick="openEdit('${u.id}')">✏ï¸</button>
-                       <button class="btn btn-ghost btn-sm btn-icon" title="Definir senha" onclick="openSetPassword('${u.id}')">🔑</button>
-                       ${!u.deactivated
-                            ? `<button class="btn btn-danger btn-sm" title="Desativar" onclick="promptDeactivate('${u.id}','${u.name.replace(/'/g, "\\'")}')">Desativar</button>`
-                            : `<button class="btn btn-success btn-sm" title="Reativar" onclick="reactivate('${u.id}')">Reativar</button>`
-                        }`;
-                }
-
-                return `<tr class="${u.deactivated ? 'opacity:0.5' : ''}">
-                    <td>
-                        <div class="user-row-info">
-                            ${avatarThumb}
-                            <div>
-                                <div style="font-weight:600;font-size:0.875rem">${esc(u.name)} ${isSelf ? '<span style="font-size:0.7rem;color:var(--text-muted)">(você)</span>' : ''}</div>
-                                <div class="td-muted">${u.clientId ? 'ID: ' + esc(u.clientId) : ''}</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td>${badgeRole(u.role)}</td>
-                    <td class="td-muted">${esc(u.email)}</td>
-                    <td style="text-align:center">${u.twofa ? '<span title="2FA ativo">🔐</span>' : '<span title="Sem 2FA" style="color:var(--text-muted)">—</span>'}</td>
-                    <td>${statusBadge}</td>
-                    <td class="td-muted">${fmt.date(u.createdAt)}</td>
-                    <td>
-                        <div class="td-actions">
-                            ${actionsHtml}
-                        </div>
-                    </td>
-                </tr>`;
-            }).join('');
-        }
-
-        /* ─── Create User ─── */
-        function toggleClientField() {
-            const role = document.getElementById('newRole').value;
-            const group = document.getElementById('clientFieldGroup');
-            group.style.display = role === 'cliente' ? 'block' : 'none';
-            if (role === 'cliente') {
-                const sel = document.getElementById('newClientId');
-                sel.innerHTML = '<option value="">— Selecione —</option>' +
-                    db.get('clients').map(c => `<option value="${c.id}">${c.fantasia}</option>`).join('');
-            }
-        }
-
-        function createUser() {
-            const name = document.getElementById('newName').value.trim();
-            const email = document.getElementById('newEmail').value.trim().toLowerCase();
-            const pass = document.getElementById('newPassword').value;
-            const role = document.getElementById('newRole').value;
-            const twofa = document.getElementById('new2FA').checked;
-            const clientId = document.getElementById('newClientId').value || null;
-            const photo = currentPhotos.new;
-
-            if (role === 'superadmin' && session.role !== 'superadmin') {
-                return toast('Permissão Negada', 'Você não tem permissão para criar usuários do tipo superadmin', 'error');
-            }
-            if (!name || !email || !pass) return toast('Campo obrigatório', 'Preencha nome, e-mail e senha.', 'warning');
-            if (!validateEmail(email)) return toast('E-mail inválido', '', 'warning');
-            if (pass.length < 8) return toast('Senha fraca', 'Use ao menos 8 caracteres.', 'warning');
-            if (db.get('users').find(u => u.email === email)) return toast('E-mail já cadastrado', email, 'error');
-
-            db.insert('users', { name, email, password: pass, role, twofa, clientId, deactivated: false, photo });
-            toast('Usuário criado!', name, 'success');
-            closeModal('modalNewUser');
-
-            // Reset fields
-            document.getElementById('newName').value = '';
-            document.getElementById('newEmail').value = '';
-            document.getElementById('newPassword').value = '';
-            removePhoto('new');
-
-            renderTable();
-        }
-
-        /* ─── Edit User ─── */
-        function openEdit(id) {
-            const u = db.find('users', id);
-            if (!u) return;
-            document.getElementById('editUserId').value = id;
-            document.getElementById('editName').value = u.name;
-            document.getElementById('editEmail').value = u.email;
-            document.getElementById('editPassword').value = '';
-            document.getElementById('editRole').value = u.role;
-            document.getElementById('edit2FA').checked = !!u.twofa;
-
-            // Photo
-            currentPhotos.edit = u.photo || null;
-            document.getElementById('editPhotoPreview').src = u.photo || '../assets/avatar-default.png';
-            document.getElementById('btnRemoveEditPhoto').style.display = u.photo ? 'flex' : 'none';
-
-            openModal('modalEditUser');
-        }
-
-        function saveEditUser() {
-            const id = document.getElementById('editUserId').value;
-            const name = document.getElementById('editName').value.trim();
-            const email = document.getElementById('editEmail').value.trim().toLowerCase();
-            const pass = document.getElementById('editPassword').value;
-            const passConfirm = document.getElementById('editPasswordConfirm').value;
-            const role = document.getElementById('editRole').value;
-            const twofa = document.getElementById('edit2FA').checked;
-            const photo = currentPhotos.edit;
-
-            if (role === 'superadmin' && session.role !== 'superadmin') {
-                return toast('Permissão Negada', 'Você não tem permissão para conceder permissões de superadmin.', 'error');
-            }
-            const existingU = db.find('users', id);
-            if (existingU && existingU.role === 'superadmin' && session.role !== 'superadmin') {
-                return toast('Permissão Negada', 'Você não pode editar um Super Admin.', 'error');
-            }
-
-            if (!name || !email) return toast('Nome e e-mail são obrigatórios.', '', 'warning');
-            if (!validateEmail(email)) return toast('E-mail inválido', '', 'warning');
-
-            // Check email uniqueness (excluding self)
-            const conflict = db.get('users').find(u => u.email === email && u.id !== id);
-            if (conflict) return toast('E-mail já em uso', email, 'error');
-
-            const updates = { name, email, role, twofa, photo };
-            if (pass) {
-                if (pass.length < 8) return toast('Senha muito curta', 'Mínimo 8 caracteres.', 'warning');
-                if (pass !== passConfirm) return toast('Senhas não coincidem', 'Confirme a nova senha.', 'error');
-                updates.password = pass;
-            }
-
-            db.update('users', id, updates);
-            toast('Usuário atualizado!', name, 'success');
-            closeModal('modalEditUser');
-            renderTable();
-        }
-
-        /* ─── Quick Set Password ─── */
-        function openSetPassword(id) {
-            const u = db.find('users', id);
-            if (!u) return;
-            document.getElementById('setPwdUserId').value = id;
-            document.getElementById('setPwdUserLabel').textContent = `Definindo nova senha para: ${u.name} (${u.email})`;
-            document.getElementById('setPwdNew').value = '';
-            document.getElementById('setPwdConfirm').value = '';
-            document.getElementById('setPwdMatchMsg').textContent = '';
-            document.getElementById('setPwdBtn').disabled = false;
-            openModal('modalSetPassword');
-        }
-
-        function checkSetPwdMatch() {
-            const p1 = document.getElementById('setPwdNew').value;
-            const p2 = document.getElementById('setPwdConfirm').value;
-            const msg = document.getElementById('setPwdMatchMsg');
-            const btn = document.getElementById('setPwdBtn');
-            if (!p2) { msg.textContent = ''; btn.disabled = false; return; }
-            const ok = p1 === p2;
-            msg.textContent = ok ? '✅ Senhas coincidem' : '❌ Senhas não coincidem';
-            msg.style.color = ok ? '#2EA043' : '#DA3633';
-            btn.disabled = !ok;
-        }
-
-        function checkEditPwdMatch() {
-            const p1 = document.getElementById('editPassword').value;
-            const group = document.getElementById('editConfirmGroup');
-            group.style.display = p1 ? 'block' : 'none';
-            if (!p1) return;
-            const p2 = document.getElementById('editPasswordConfirm').value;
-            const msg = document.getElementById('editPwdMatchMsg');
-            if (!p2) { msg.textContent = ''; return; }
-            const ok = p1 === p2;
-            msg.textContent = ok ? '✅ Senhas coincidem' : '❌ Senhas não coincidem';
-            msg.style.color = ok ? '#2EA043' : '#DA3633';
-        }
-
-        function confirmSetPassword() {
-            const id = document.getElementById('setPwdUserId').value;
-            const pass = document.getElementById('setPwdNew').value;
-            const passConfirm = document.getElementById('setPwdConfirm').value;
-
-            if (!pass) return toast('Informe a nova senha.', '', 'warning');
-            if (pass.length < 8) return toast('Senha muito curta', 'Mínimo 8 caracteres.', 'warning');
-            if (pass !== passConfirm) return toast('Senhas não coincidem', 'Confirme a nova senha.', 'error');
-
-            const u = db.find('users', id);
-            if (!u) return;
-            db.update('users', id, { password: pass });
-            toast('Senha atualizada!', u.name, 'success');
-            closeModal('modalSetPassword');
-            renderTable();
-        }
-
-        /* ─── Deactivate / Reactivate ─── */
-        function promptDeactivate(id, name) {
-            deactivatingId = id;
-            document.getElementById('confirmDeleteText').textContent = `Desativar "${name}"? O usuário não poderá mais fazer login.`;
-            openModal('modalConfirmDelete');
-        }
-
-        function confirmDeactivate() {
-            if (!deactivatingId) return;
-            db.update('users', deactivatingId, { deactivated: true });
-            toast('Usuário desativado', '', 'warning');
-            closeModal('modalConfirmDelete');
-            deactivatingId = null;
-            renderTable();
-        }
-
-        function reactivate(id) {
-            db.update('users', id, { deactivated: false });
-            toast('Usuário reativado!', '', 'success');
-            renderTable();
-        }
-
-        /* ─── Export ─── */
-        function exportUsers() {
-            const rows = db.get('users').map(u => ({
-                Nome: u.name,
-                Email: u.email,
-                Perfil: u.role,
-                '2FA': u.twofa ? 'Sim' : 'Não',
-                Status: u.deactivated ? 'Inativo' : 'Ativo',
-                Criado: fmt.date(u.createdAt),
-            }));
-            exportCSV(rows, 'usuarios-renostter.csv');
-        }
-
-        /* Init */
-        renderTable();
-    </script>
+    <script src="../js/pages/admin__users.js"></script>
 </body>
 
 </html>

@@ -130,8 +130,8 @@ const Proposals = {
                         <p style="font-size:0.8rem; color:var(--orange)">Prazo limite: ${fmt.date(new Date(t.proposalExpiresAt))}</p>
                     </div>
                     <div class="modal-footer">
-                        <button class="btn btn-ghost" onclick="document.body.removeChild(this.closest('.modal-overlay'))">Depois</button>
-                        <button class="btn btn-primary" onclick="location.href='tickets.html?id=${t.id}'">Visualizar Agora</button>
+                        <button class="btn btn-ghost" data-on-click="document.body.removeChild(this.closest('.modal-overlay'))">Depois</button>
+                        <button class="btn btn-primary" data-on-click="location.href='tickets.html?id=${t.id}'">Visualizar Agora</button>
                     </div>
                 </div>`;
                 document.body.appendChild(modal);
