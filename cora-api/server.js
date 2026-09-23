@@ -382,6 +382,8 @@ app.use(requestTiming({ slowThresholdMs: 500, logAll: false }));
 app.use('/api/approvals', approvalsRouter);
 // Clientes, chamados e comentarios das telas do CRM (antes so no navegador)
 app.use('/api/crm', require('./routes/crm'));
+// Consultas de CPF (CPFHub), CNPJ e CEP (BrasilAPI) feitas pelo servidor
+app.use('/api/consulta', require('./routes/consulta'));
 
 // ── Router: Auth (Sprint 0 — login, refresh, me, logout) ──
 app.use('/api/auth', authRouter);

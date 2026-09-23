@@ -249,6 +249,13 @@
             }
         }
 
+        /* Consulta de CNPJ/CPF */
+        .doc-status { font-size: 0.78rem; margin-top: 6px; min-height: 1em; color: var(--text-secondary); }
+        .doc-status.ok { color: var(--green, #3FB950); }
+        .doc-status.erro { color: var(--red, #F85149); }
+        .doc-consent { display: flex; gap: 8px; align-items: flex-start; font-size: 0.78rem; color: var(--text-secondary); margin-top: 6px; line-height: 1.35; cursor: pointer; }
+        .doc-consent input { margin-top: 2px; }
+        .form-group[hidden], .doc-consent[hidden] { display: none !important; }
         .field-highlight {
             animation: field-flash 2s ease;
         }
@@ -445,9 +452,14 @@
                                 placeholder="Empresa LTDA ou Nome Completo" /></div>
                         <div class="form-group"><label class="form-label">Nome Fantasia</label><input class="form-input"
                                 id="fFantasia" placeholder="Nome comercial" /></div>
-                        <div class="form-group"><label class="form-label">CNPJ / CPF <span
+                        <div class="form-group"><label class="form-label" for="fCnpj">CNPJ / CPF <span
                                     class="form-required">*</span></label><input class="form-input" id="fCnpj"
-                                placeholder="00.000.000/0001-00" /></div>
+                                inputmode="numeric" autocomplete="off" maxlength="18" aria-describedby="docStatus"
+                                placeholder="CNPJ ou CPF — preenche os dados sozinho" />
+                            <div id="docStatus" class="doc-status" role="status" aria-live="polite"></div>
+                            <label class="doc-consent" id="docConsentWrap" hidden><input type="checkbox" id="fDocConsent" />
+                                O titular autorizou buscar seus dados pelo CPF (consulta em base pública — CPFHub.io, LGPD).</label>
+                        </div>
                         <div class="form-group"><label class="form-label">E-mail <span
                                     class="form-required">*</span></label><input class="form-input" type="email"
                                 id="fEmail" placeholder="email@empresa.com" /></div>
@@ -463,6 +475,11 @@
                         <div class="form-group"><label class="form-label">Situação Cadastral</label><input
                                 class="form-input" id="fSituacao" placeholder="Consultado via CNPJ" readonly
                                 style="background:var(--bg-secondary);opacity:0.8" /></div>
+                        <div class="form-group pf-only" hidden><label class="form-label" for="fNascimento">Data de nascimento</label>
+                            <input class="form-input" type="date" id="fNascimento" /></div>
+                        <div class="form-group pf-only" hidden><label class="form-label" for="fGenero">Gênero</label>
+                            <select class="form-select" id="fGenero"><option value="">Não informado</option>
+                                <option value="M">Masculino</option><option value="F">Feminino</option></select></div>
                         <div class="form-group"><label class="form-label">Status</label>
                             <select class="form-select" id="fStatus">
                                 <option value="ativo">Ativo</option>

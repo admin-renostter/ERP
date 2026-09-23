@@ -147,7 +147,10 @@
 
         /* ─── Reset Form ─── */
         function resetForm() {
-            ['fRazao', 'fFantasia', 'fCnpj', 'fEmail', 'fTelefone', 'fCelular', 'fContato', 'fCargo', 'fSituacao', 'fCep', 'fLogradouro', 'fNumero', 'fCompl', 'fBairro', 'fCidade', 'fObs'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+            ['fRazao', 'fFantasia', 'fCnpj', 'fEmail', 'fTelefone', 'fCelular', 'fContato', 'fCargo', 'fSituacao', 'fCep', 'fLogradouro', 'fNumero', 'fCompl', 'fBairro', 'fCidade', 'fObs', 'fNascimento', 'fGenero'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+            docUltimoConsultado = ''; docAutoPreenchido = {};
+            const consent = document.getElementById('fDocConsent'); if (consent) consent.checked = false;
+            atualizarTipoDoc('');
             document.getElementById('fStatus').value = 'ativo';
             document.getElementById('fUf').value = 'SP';
             document.querySelectorAll('.svc-check').forEach(cb => cb.checked = false);
@@ -163,10 +166,15 @@
             pendingDocs = [];
             const c = db.find('clients', id); if (!c) return;
             document.getElementById('modalClientTitle').textContent = 'Editar Cliente';
-            const map = { fRazao: 'razaoSocial', fFantasia: 'fantasia', fCnpj: 'cnpj', fEmail: 'email', fTelefone: 'telefone', fCelular: 'celular', fContato: 'contato', fCargo: 'cargo', fSituacao: 'situacaoCadastral', fCep: 'cep', fLogradouro: 'logradouro', fNumero: 'numero', fCompl: 'complemento', fBairro: 'bairro', fCidade: 'cidade', fObs: 'observacoes' };
+            const map = { fRazao: 'razaoSocial', fFantasia: 'fantasia', fCnpj: 'cnpj', fEmail: 'email', fTelefone: 'telefone', fCelular: 'celular', fContato: 'contato', fCargo: 'cargo', fSituacao: 'situacaoCadastral', fCep: 'cep', fLogradouro: 'logradouro', fNumero: 'numero', fCompl: 'complemento', fBairro: 'bairro', fCidade: 'cidade', fObs: 'observacoes', fNascimento: 'nascimento', fGenero: 'genero' };
             Object.entries(map).forEach(([id, field]) => { const el = document.getElementById(id); if (el) el.value = c[field] || ''; });
             document.getElementById('fStatus').value = c.status || 'ativo';
             document.getElementById('fUf').value = c.uf || 'SP';
+            // Documento ja salvo nao e consultado de novo ao abrir a edicao.
+            docUltimoConsultado = String(c.cnpj || '').replace(/\D/g, '');
+            document.getElementById('fDocConsent').checked = false; docAutoPreenchido = {};
+            docStatus('');
+            atualizarTipoDoc(c.cnpj);
             document.querySelectorAll('.svc-check').forEach(cb => { cb.checked = (c.servicos || []).includes(cb.value); });
             // Load saved docs
             renderSavedDocsInModal(id);
@@ -272,7 +280,9 @@
                 logradouro: document.getElementById('fLogradouro').value.trim(), numero: document.getElementById('fNumero').value.trim(),
                 complemento: document.getElementById('fCompl').value.trim(), bairro: document.getElementById('fBairro').value.trim(),
                 cidade: document.getElementById('fCidade').value.trim(), uf: document.getElementById('fUf').value,
-                observacoes: document.getElementById('fObs').value.trim(), servicos
+                observacoes: document.getElementById('fObs').value.trim(), servicos,
+                nascimento: cnpj.replace(/\D/g, '').length === 11 ? (document.getElementById('fNascimento').value || null) : null,
+                genero: cnpj.replace(/\D/g, '').length === 11 ? (document.getElementById('fGenero').value || null) : null
             };
 
             let clientId;
@@ -579,61 +589,161 @@
             document.getElementById(panelId)?.classList.add('active');
         }
 
+        /* ─── Consulta de CNPJ / CPF para preencher o cadastro ───
+           CNPJ: BrasilAPI (dados publicos da Receita). CPF: CPFHub.io, so com a
+           autorizacao do titular marcada (LGPD). As duas passam pelo servidor
+           (/api/consulta), que guarda a chave do CPFHub e o cache. */
+        let docUltimoConsultado = '';
+        let docConsultando = false;
+
+        function docStatus(msg, tipo) {
+            const el = document.getElementById('docStatus');
+            if (!el) return;
+            el.textContent = msg || '';
+            el.className = 'doc-status' + (tipo ? ' ' + tipo : '');
+        }
+
+        // Mostra/esconde o que so vale para pessoa fisica (CPF).
+        function atualizarTipoDoc(valor) {
+            const n = String(valor || '').replace(/\D/g, '').length;
+            const pf = n > 0 && n <= 11;
+            const consentWrap = document.getElementById('docConsentWrap');
+            if (consentWrap) consentWrap.hidden = !pf;
+            document.querySelectorAll('.pf-only').forEach(el => { el.hidden = !pf; });
+            const sit = document.getElementById('fSituacao');
+            if (sit) sit.placeholder = pf ? 'Não se aplica a CPF' : 'Consultado via CNPJ';
+            if (!n) docStatus('');
+        }
+
+        function destacar(ids) {
+            ids.forEach(id => {
+                const el = document.getElementById(id); if (!el) return;
+                el.classList.add('field-highlight');
+                setTimeout(() => el.classList.remove('field-highlight'), 2000);
+            });
+        }
+        // Guarda o que a ultima consulta preencheu. Se o usuario trocar o documento,
+        // limpa esses campos (desde que ele nao os tenha editado) antes de preencher de novo.
+        let docAutoPreenchido = {};
+        function limparAutoPreenchido() {
+            Object.entries(docAutoPreenchido).forEach(([id, valor]) => {
+                const el = document.getElementById(id);
+                if (el && el.value === valor) el.value = id === 'fUf' ? 'SP' : '';
+            });
+            docAutoPreenchido = {};
+        }
+        function preencher(id, valor, soSeVazio) {
+            const el = document.getElementById(id);
+            if (!el || valor === undefined || valor === null || valor === '') return false;
+            if (soSeVazio && el.value.trim()) return false;
+            el.value = valor;
+            docAutoPreenchido[id] = el.value;
+            return true;
+        }
+
+        const MSG_ERRO_DOC = {
+            NAO_ENCONTRADO: ['info', 'Não encontrado na base consultada. Preencha manualmente.'],
+            LIMITE: ['erro', 'Limite de consultas atingido. Tente de novo em instantes ou preencha manualmente.'],
+            NAO_CONFIGURADO: ['info', 'Consulta de CPF ainda não configurada no servidor. Preencha manualmente.'],
+            CHAVE_INVALIDA: ['erro', 'O serviço de consulta recusou a chave do servidor. Avise o administrador.'],
+            TEMPO_ESGOTADO: ['erro', 'O serviço de consulta demorou demais. Tente de novo.'],
+            FALHA_REDE: ['erro', 'Sem conexão com o serviço de consulta. Tente de novo.'],
+            SERVICO_INDISPONIVEL: ['erro', 'O serviço de consulta está fora do ar. Preencha manualmente.'],
+        };
+
+        async function consultarDocumento(forcar) {
+            const input = document.getElementById('fCnpj');
+            if (!input || docConsultando) return;
+            const val = input.value.replace(/\D/g, '');
+            const ehCpf = val.length === 11, ehCnpj = val.length === 14;
+            if (!ehCpf && !ehCnpj) {
+                if (forcar && val.length) docStatus('Digite 11 números (CPF) ou 14 (CNPJ).', 'info');
+                return;
+            }
+            if (ehCpf ? !api.cpfValido(val) : !api.cnpjValido(val)) {
+                docStatus((ehCpf ? 'CPF' : 'CNPJ') + ' inválido. Confira os números.', 'erro');
+                return;
+            }
+            if (val === docUltimoConsultado) return;
+
+            const existente = db.get('clients').find(c => String(c.cnpj || '').replace(/\D/g, '') === val && c.id !== editingId);
+            if (existente) {
+                docStatus('Já cadastrado: ' + (existente.fantasia || existente.razaoSocial), 'erro');
+                toast((ehCpf ? 'CPF' : 'CNPJ') + ' já cadastrado', `O cliente "${existente.fantasia || existente.razaoSocial}" já usa este número.`, 'warning');
+                return;
+            }
+            if (ehCpf && !document.getElementById('fDocConsent').checked) {
+                docStatus('Para buscar o nome pelo CPF, marque a autorização do titular abaixo.', 'info');
+                return;
+            }
+
+            docConsultando = true;
+            input.parentElement.classList.add('api-loading');
+            docStatus('Consultando ' + (ehCpf ? 'CPF' : 'CNPJ') + '…', 'info');
+            const r = await api.consultar(ehCpf ? 'cpf' : 'cnpj', val, { consentimento: ehCpf });
+            input.parentElement.classList.remove('api-loading');
+            docConsultando = false;
+            // O usuario mudou o numero enquanto consultava? Ignora esta resposta.
+            if (input.value.replace(/\D/g, '') !== val) return;
+
+            if (!r.ok) {
+                const [tipo, msg] = MSG_ERRO_DOC[r.code] || ['erro', r.error || 'Não foi possível consultar.'];
+                docStatus(msg, tipo);
+                if (r.code === 'NAO_ENCONTRADO') docUltimoConsultado = val;
+                return;
+            }
+            docUltimoConsultado = val;
+            limparAutoPreenchido();
+            const d = r.data;
+            if (ehCpf) {
+                preencher('fRazao', d.nome);
+                preencher('fContato', d.nome, true);
+                preencher('fNascimento', d.nascimento);
+                preencher('fGenero', d.genero);
+                destacar(['fRazao', 'fNascimento', 'fGenero']);
+                docStatus('Nome encontrado. Confira antes de salvar.', 'ok');
+                logAudit('api_lookup', 'Consulta CPF ' + val.slice(3, 6) + '.***');
+            } else {
+                preencher('fRazao', d.razaoSocial);
+                preencher('fFantasia', d.fantasia);
+                preencher('fEmail', d.email, true);
+                preencher('fTelefone', d.telefone, true);
+                preencher('fSituacao', d.situacao);
+                preencher('fCep', d.cep);
+                preencher('fLogradouro', d.logradouro);
+                preencher('fNumero', d.numero);
+                preencher('fCompl', d.complemento);
+                preencher('fBairro', d.bairro);
+                preencher('fCidade', d.cidade);
+                preencher('fUf', d.uf);
+                destacar(['fRazao', 'fFantasia', 'fLogradouro', 'fCidade']);
+                logAudit('api_lookup', `Consulta CNPJ: ${val} (${d.razaoSocial})`);
+                if (d.situacao && d.situacao !== 'ATIVA') {
+                    docStatus('Empresa encontrada, mas a situação na Receita é ' + d.situacao + '.', 'erro');
+                    toast('Atenção: situação ' + d.situacao, 'Esta empresa não está ATIVA na Receita Federal.', 'warning');
+                } else {
+                    docStatus('Empresa encontrada na Receita Federal. Endereço preenchido na aba Endereço.', 'ok');
+                }
+            }
+        }
+
         /* ─── BrasilAPI Listeners ─── */
         function initApiLookups() {
             const cnpjInput = document.getElementById('fCnpj');
             const cepInput = document.getElementById('fCep');
 
             if (cnpjInput) {
-                cnpjInput.addEventListener('input', debounce(async (e) => {
-                    const val = e.target.value.replace(/\D/g, '');
-                    if (val.length === 14) {
-                        // Check duplication
-                        const existing = db.get('clients').find(c => c.cnpj?.replace(/\D/g, '') === val && c.id !== editingId);
-                        if (existing) {
-                            toast('CNPJ já cadastrado', `O cliente "${existing.fantasia || existing.razaoSocial}" já possui este CNPJ.`, 'warning');
-                            return;
-                        }
-
-                        cnpjInput.parentElement.classList.add('api-loading');
-                        const data = await api.getCNPJ(val);
-                        cnpjInput.parentElement.classList.remove('api-loading');
-
-                        if (data) {
-                            // Address from CNPJ
-                            const fallback = "";
-                            document.getElementById('fRazao').value = data.razao_social || fallback;
-                            document.getElementById('fFantasia').value = data.nome_fantasia || fallback;
-                            document.getElementById('fEmail').value = data.email || document.getElementById('fEmail').value || fallback;
-                            document.getElementById('fTelefone').value = data.ddd_telefone_1 ? `(${data.ddd_telefone_1.substring(0, 2)}) ${data.ddd_telefone_1.substring(2)}` : (document.getElementById('fTelefone').value || fallback);
-                            document.getElementById('fSituacao').value = data.descricao_situacao_cadastral || fallback;
-
-                            document.getElementById('fCep').value = fmt.cep(data.cep);
-                            document.getElementById('fLogradouro').value = data.logradouro || fallback;
-                            document.getElementById('fNumero').value = data.numero || fallback;
-                            document.getElementById('fCompl').value = data.complemento || fallback;
-                            document.getElementById('fBairro').value = data.bairro || fallback;
-                            document.getElementById('fCidade').value = data.municipio || fallback;
-                            document.getElementById('fUf').value = data.uf || 'SP';
-
-                            toast('Dados importados', 'Informações da empresa carregadas via BrasilAPI.', 'success');
-                            logAudit('api_lookup', `Consulta CNPJ: ${val} (${data.razao_social})`);
-
-                            // Highlight fields
-                            ['fRazao', 'fFantasia', 'fLogradouro', 'fCidade'].forEach(id => {
-                                document.getElementById(id).classList.add('field-highlight');
-                                setTimeout(() => document.getElementById(id).classList.remove('field-highlight'), 2000);
-                            });
-
-                            if (data.descricao_situacao_cadastral !== 'ATIVA') {
-                                toast('Atenção: Situação ' + data.descricao_situacao_cadastral, 'Esta empresa não está com situação ATIVA na Receita.', 'warning');
-                                logAudit('api_warning', `CNPJ ${val} com situação: ${data.descricao_situacao_cadastral}`);
-                            }
-                        } else {
-                            toast('CNPJ não encontrado', 'Verifique o número ou preencha manualmente.', 'info');
-                        }
-                    }
-                }, 600));
+                // Mascara enquanto digita + consulta 600 ms depois de parar, ou ao sair do campo.
+                cnpjInput.addEventListener('input', () => {
+                    const pos = cnpjInput.selectionStart, antes = cnpjInput.value.length;
+                    cnpjInput.value = api.mascararDoc(cnpjInput.value);
+                    try { const d = cnpjInput.value.length - antes; cnpjInput.setSelectionRange(pos + d, pos + d); } catch (e) { /* campo sem cursor */ }
+                    atualizarTipoDoc(cnpjInput.value);
+                });
+                cnpjInput.addEventListener('input', debounce(() => consultarDocumento(false), 600));
+                cnpjInput.addEventListener('blur', () => consultarDocumento(true));
+                const consent = document.getElementById('fDocConsent');
+                if (consent) consent.addEventListener('change', () => { if (consent.checked) consultarDocumento(true); });
             }
 
             if (cepInput) {
