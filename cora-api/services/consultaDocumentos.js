@@ -123,17 +123,17 @@ async function comCache(tipo, doc, ttl, buscar) {
 // ─────────────────────────── HTTP ───────────────────────────
 async function httpJson(url, headers, fonte) {
     let r;
-    try 
-    const requestHeaders = Object.assign({
-    'Accept': 'application/json',
-    'Accept-Encoding': 'gzip, deflate, br',
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-}, headers || {});
-r = await fetch(url, { 
-    headers: requestHeaders,
-    signal: AbortSignal.timeout(CFG.timeoutMs)
-});
-    catch (e) {
+    try {                  // ✅ CORRETO
+        const requestHeaders = Object.assign({
+            'Accept': 'application/json',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        }, headers || {});
+        r = await fetch(url, { 
+            headers: requestHeaders,
+            signal: AbortSignal.timeout(CFG.timeoutMs)
+        });
+    } catch (e) {
         if (e && (e.name === 'TimeoutError' || e.name === 'AbortError')) {
             throw new ConsultaError('TEMPO_ESGOTADO', `O serviço ${fonte} demorou demais para responder.`);
         }
@@ -143,7 +143,6 @@ r = await fetch(url, {
     try { corpo = await r.json(); } catch (_) { /* resposta sem JSON */ }
     return { status: r.status, corpo, retryAfter: r.headers.get('retry-after') };
 }
-
 /** Traduz o status HTTP da API externa para um erro nosso. */
 function erroPorStatus(status, fonte, retryAfter) {
     if (status === 404) return new ConsultaError('NAO_ENCONTRADO', 'Documento não encontrado na base consultada.');
