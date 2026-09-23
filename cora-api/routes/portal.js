@@ -266,8 +266,16 @@ router.put('/profile', portalAuthMiddleware, validate(schemas.portalProfile), as
 
 router.post('/admin/users', requireRole('admin', 'superadmin'), asyncHandler(async (req, res) => {
     const { clienteId, email, nome, telefone, password } = req.body || {};
-    const result = await PortalService.createPortalUser({ clienteId, email, nome, telefone, password });
-    return res.status(201).json({ success: true, data: result });
+    try {
+        const result = await PortalService.createPortalUser({ clienteId, email, nome, telefone, password });
+        return res.status(201).json({ success: true, data: result });
+    } catch (e) {
+        // Erros de validacao do PortalService viram mensagem clara (antes: 500).
+        const msg = String(e && e.message || '');
+        if (/já existe/i.test(msg)) return res.status(409).json({ success: false, error: 'Este e-mail já tem acesso ao portal.' });
+        if (/obrigatório|não encontrado/i.test(msg)) return res.status(400).json({ success: false, error: msg });
+        throw e;
+    }
 }));
 
 router.get('/admin/users', requireRole('admin', 'superadmin'), asyncHandler(async (req, res) => {

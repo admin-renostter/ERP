@@ -119,7 +119,7 @@ async function portalAuthMiddleware(req, res, next) {
     }
 
     const cliente = await dbGet(
-        'SELECT id, nome, email, telefone, cpf_cnpj, endereco, cidade, estado, cep FROM clientes WHERE id = ?',
+        'SELECT id, nome, email, telefone, COALESCE(cnpj_cpf, cnpj) AS cpf_cnpj, endereco, cidade, estado, cep FROM clientes WHERE id = ?',
         [user.cliente_id]
     );
 

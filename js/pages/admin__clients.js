@@ -5,6 +5,7 @@
   function def(n, g, st) { Object.defineProperty(s, n, { configurable: true, enumerable: true, get: g, set: st }); }
   def('$', function () { return typeof $ !== 'undefined' ? $ : undefined; }, function (v) { $ = v; });
   def('auth', function () { return typeof auth !== 'undefined' ? auth : undefined; }, function (v) { auth = v; });
+  def('criarAcessoPortal', function () { return typeof criarAcessoPortal !== 'undefined' ? criarAcessoPortal : undefined; }, function (v) { criarAcessoPortal = v; });
   def('closeModal', function () { return typeof closeModal !== 'undefined' ? closeModal : undefined; }, function (v) { closeModal = v; });
   def('currentPage', function () { return typeof currentPage !== 'undefined' ? currentPage : undefined; }, function (v) { currentPage = v; });
   def('deleteClient', function () { return typeof deleteClient !== 'undefined' ? deleteClient : undefined; }, function (v) { deleteClient = v; });
@@ -371,6 +372,38 @@
         }
 
         /* ─── View Client Detail ─── */
+        // Acesso do cliente ao portal (/crm/portal/): o cliente acompanha ali os
+        // chamados abertos pela equipe e abre novos. A senha temporaria e gerada
+        // pelo servidor e mostrada uma unica vez para o admin repassar.
+        async function carregarAcessoPortal(id) {
+            const box = document.getElementById('paResult'); if (!box) return;
+            try {
+                const r = await fetch('/api/portal/admin/users');
+                const j = await r.json();
+                if (!r.ok || !j.success) throw new Error(j.error || ('Erro ' + r.status));
+                const ativos = (j.data || []).filter(u => u.cliente_id === id);
+                box.textContent = ativos.length
+                    ? 'Já tem acesso: ' + ativos.map(u => u.email + (u.ativo ? '' : ' (desativado)')).join(', ')
+                    : 'Este cliente ainda não tem acesso ao portal.';
+            } catch (e) { box.textContent = 'Não foi possível verificar o acesso ao portal: ' + e.message; }
+        }
+        async function criarAcessoPortal(id) {
+            const email = (document.getElementById('paEmail').value || '').trim();
+            const box = document.getElementById('paResult');
+            const btn = document.getElementById('paBtn');
+            if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { toast('E-mail inválido', 'Informe o e-mail que o cliente vai usar para entrar.', 'error'); return; }
+            btn.disabled = true;
+            try {
+                const r = await fetch('/api/portal/admin/users', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ clienteId: id, email }) });
+                const j = await r.json().catch(() => ({}));
+                if (!r.ok || !j.success) throw new Error(j.error || ('Erro ' + r.status));
+                box.innerHTML = 'Acesso criado para <b>' + esc(email) + '</b>. Senha temporária: <code style="user-select:all">' + esc(j.data.tempPassword) + '</code><br>Envie ao cliente junto com o endereço ' + esc(location.origin + '/crm/portal/') + ' e peça para trocar a senha no primeiro acesso. Ela não será mostrada de novo.';
+                toast('Acesso criado', 'O cliente já pode entrar no portal.', 'success');
+            } catch (e) {
+                toast('Não foi possível criar o acesso', e.message, 'error');
+                box.textContent = 'Erro: ' + e.message;
+            } finally { btn.disabled = false; }
+        }
         function viewDetail(id) {
             const c = db.find('clients', id); if (!c) return;
             const contracts = db.findBy('contracts', 'clientId', id);
@@ -394,6 +427,14 @@
       <div style="display:flex;gap:8px;margin-top:16px">
         <button class="btn btn-ghost btn-sm" data-on-click="closeModal('modalDetail');editClient('${id}')">✏️ Editar</button>
         <button class="btn btn-ghost btn-sm" data-on-click="closeModal('modalDetail');toggleStatus('${id}','${c.status}')">${c.status === 'ativo' ? '⏸ Inativar' : '▶️ Reativar'}</button>
+      </div>
+      <div style="margin-top:20px;padding-top:14px;border-top:1px solid var(--border)">
+        <label class="form-label" for="paEmail">Acesso ao Portal do Cliente</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <input class="form-input" id="paEmail" type="email" style="flex:1;min-width:200px" value="${esc(c.email || '')}" placeholder="email do cliente" />
+          <button class="btn btn-primary btn-sm" id="paBtn" data-on-click="criarAcessoPortal('${id}')">Criar acesso</button>
+        </div>
+        <div id="paResult" style="font-size:0.8rem;margin-top:8px;color:var(--text-secondary)">Verificando acesso…</div>
       </div>
     </div>
     <div class="tab-panel" id="dtContratos">
@@ -476,6 +517,7 @@
       </div>` : '<div class="doc-empty"><div class="doc-empty-icon">📂</div><p>Nenhum documento anexado.</p><p style="font-size:0.78rem;color:var(--text-muted);margin-top:4px">Clique em "+ Adicionar Documento" para salvar o contrato digitalizado.</p></div>'}
     </div>`;
             openModal('modalDetail');
+            carregarAcessoPortal(id);
         }
 
         /* ─── Toggle Status ─── */

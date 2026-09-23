@@ -265,7 +265,11 @@ function authMiddleware(req, res, next) {
 
     // 2. Rotas com auth customizada (webhook, etc.) passam — elas têm
     //    sua própria verificação (HMAC). Mas sempre exigem IP para log.
-    if (CUSTOM_AUTH_PATHS.some(p => req.path === p || req.path.startsWith(p + '/'))) {
+    //    Excecao: /api/portal/admin/* e usado pela EQUIPE (admin cria o acesso
+    //    do cliente ao portal), entao exige o token normal da equipe — sem isso
+    //    o requireRole dessas rotas via papel 'pending' e sempre negava.
+    const isPortalAdmin = req.path === '/api/portal/admin' || req.path.startsWith('/api/portal/admin/');
+    if (!isPortalAdmin && CUSTOM_AUTH_PATHS.some(p => req.path === p || req.path.startsWith(p + '/'))) {
         req.auditInfo = req.auditInfo || {};
         req.auditInfo.ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
         return next();
@@ -341,6 +345,12 @@ function requireRole(...allowedRoles) {
         // superadmin sempre passa
         if (role === 'superadmin') return next();
         if (allowedRoles.length === 0 || allowedRoles.includes(role)) {
+            return next();
+        }
+        // O papel do tecnico no banco/login e 'tecnico', mas muitas rotas foram
+        // escritas com 'tech'. Os dois nomes valem para o mesmo papel.
+        if ((role === 'tecnico' && allowedRoles.includes('tech')) ||
+            (role === 'tech' && allowedRoles.includes('tecnico'))) {
             return next();
         }
         return res.status(403).json({

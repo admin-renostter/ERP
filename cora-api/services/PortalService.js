@@ -290,7 +290,7 @@ async function getTickets(portalUserId, { status = null, limit = 50 } = {}) {
                     THEN CAST(julianday(data_garantia_fim) - julianday('now') AS INTEGER)
                     ELSE NULL END as dias_garantia
         FROM chamados
-        WHERE cliente_id = ?
+        WHERE cliente_id = ? AND COALESCE(deleted, 0) = 0
     `;
     const params = [user.cliente_id];
     if (status) {
@@ -316,7 +316,7 @@ async function getTicketTechnicianLocation(portalUserId, ticketId) {
     if (!user) throw new Error('Usuário não encontrado');
 
     const ticket = await dbGet(
-        `SELECT id, status, tecnico_id FROM chamados WHERE id = ? AND cliente_id = ?`,
+        `SELECT id, status, tecnico_id FROM chamados WHERE id = ? AND cliente_id = ? AND COALESCE(deleted, 0) = 0`,
         [ticketId, user.cliente_id]
     );
     if (!ticket) return { available: false, reason: 'NOT_FOUND' };

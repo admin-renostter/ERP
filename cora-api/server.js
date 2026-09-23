@@ -380,6 +380,8 @@ app.use(requestTiming({ slowThresholdMs: 500, logAll: false }));
 
 // ── Router: Approvals (fluxo de aprovação financeira) ──
 app.use('/api/approvals', approvalsRouter);
+// Clientes, chamados e comentarios das telas do CRM (antes so no navegador)
+app.use('/api/crm', require('./routes/crm'));
 
 // ── Router: Auth (Sprint 0 — login, refresh, me, logout) ──
 app.use('/api/auth', authRouter);
@@ -2599,4 +2601,10 @@ app.listen(PORT, () => {
     console.log(`║  Porta: ${String(PORT).padEnd(33)}║`);
     console.log(`║  Ambiente: ${(process.env.CORA_ENV || 'stage').padEnd(30)}║`);
     console.log(`╚══════════════════════════════════════════╝\n`);
+    // Postgres: o database.js nao cria/ajusta tabelas; aplica os ajustes
+    // idempotentes que as telas de Clientes e Chamados precisam.
+    if ((process.env.DB_DRIVER || 'sqlite').toLowerCase() === 'postgres') {
+        require('./db/ensureSchema').ensureSchema(dbRun)
+            .catch(e => console.error('[ensureSchema] erro:', e.message));
+    }
 });

@@ -417,10 +417,14 @@
 
             const reader = new FileReader();
             reader.onload = (e) => {
-                pendingAttachment = e.target.result;
-                const info = document.getElementById('attachInfo');
-                info.innerHTML = `📎 ${file.name} <button class="btn btn-ghost btn-sm btn-icon" style="color:var(--danger);padding:0 4px" data-on-click="clearAttachment(event)">✕</button>`;
-                info.style.display = 'block';
+                // Foto reduzida (max 1280px, JPEG) antes de ir para o banco.
+                const reduzir = (window.dbRemote && dbRemote.reduzirImagem) || ((u, cb) => cb(u));
+                reduzir(e.target.result, (url) => {
+                    pendingAttachment = url;
+                    const info = document.getElementById('attachInfo');
+                    info.innerHTML = `📎 ${file.name} <button class="btn btn-ghost btn-sm btn-icon" style="color:var(--danger);padding:0 4px" data-on-click="clearAttachment(event)">✕</button>`;
+                    info.style.display = 'block';
+                });
             };
             reader.readAsDataURL(file);
         }
