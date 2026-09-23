@@ -28,6 +28,10 @@ const { encrypt, decrypt } = require('../crypto');
 const { requireRole } = require('../middleware/authJWT');
 const router = express.Router();
 
+// Valores aceitos pelos enums approval_status / approval_tier do Postgres.
+const APPROVAL_STATUS = ['PENDING', 'ESCALATED', 'APPROVED', 'REJECTED', 'EXPIRED'];
+const APPROVAL_TIERS = ['admin', 'superadmin', 'compliance'];
+
 const TIER_ORDER = { admin: 1, superadmin: 2, compliance: 3 };
 const ADMIN_LIMIT = 1000; // até R$ 1k → admin; R$ 1k-5k → super; >R$ 5k → compliance
 
@@ -110,11 +114,26 @@ router.get('/', authorizeReader, async (req, res) => {
         const { status, tier, clientId, limit = 50, offset = 0 } = req.query;
         let sql = `SELECT * FROM pending_approvals WHERE 1=1`;
         const params = [];
-        if (status) { sql += ' AND status = ?'; params.push(status); }
-        if (tier) { sql += ' AND tier = ?'; params.push(tier); }
+        // A tela usa status=active para "Pendente + Escalada". No Postgres a coluna
+        // e um enum: um valor fora da lista derrubava a consulta (erro 500
+        // "invalid input value for enum approval_status").
+        if (status === 'active') {
+            sql += ` AND status IN ('PENDING', 'ESCALATED')`;
+        } else if (status) {
+            if (!APPROVAL_STATUS.includes(status)) {
+                return res.status(400).json({ success: false, error: 'status inválido' });
+            }
+            sql += ' AND status = ?'; params.push(status);
+        }
+        if (tier) {
+            if (!APPROVAL_TIERS.includes(tier)) {
+                return res.status(400).json({ success: false, error: 'tier inválido' });
+            }
+            sql += ' AND tier = ?'; params.push(tier);
+        }
         if (clientId) { sql += ' AND client_id = ?'; params.push(clientId); }
         sql += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
-        params.push(parseInt(limit), parseInt(offset));
+        params.push(Math.min(Math.max(parseInt(limit, 10) || 50, 1), 500), Math.max(parseInt(offset, 10) || 0, 0));
         const data = await dbAllTenant(sql, params);
         res.json({ success: true, data });
     } catch (e) {
