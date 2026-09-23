@@ -123,9 +123,17 @@ async function comCache(tipo, doc, ttl, buscar) {
 // ─────────────────────────── HTTP ───────────────────────────
 async function httpJson(url, headers, fonte) {
     let r;
-    try {
-        r = await fetch(url, { headers: Object.assign({ Accept: 'application/json' }, headers || {}), signal: AbortSignal.timeout(CFG.timeoutMs) });
-    } catch (e) {
+    try 
+    const requestHeaders = Object.assign({
+    'Accept': 'application/json',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+}, headers || {});
+r = await fetch(url, { 
+    headers: requestHeaders,
+    signal: AbortSignal.timeout(CFG.timeoutMs)
+});
+    catch (e) {
         if (e && (e.name === 'TimeoutError' || e.name === 'AbortError')) {
             throw new ConsultaError('TEMPO_ESGOTADO', `O serviço ${fonte} demorou demais para responder.`);
         }
