@@ -9,11 +9,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      
       - name: Deploy to VPS
         uses: appleboy/ssh-action@master
         with:
@@ -23,20 +19,6 @@ jobs:
           port: 22
           script: |
             cd /opt/renostter-erp
-            echo "📂 Sincronizando repositório..."
             git pull origin main
-            
-            echo "🔁 Reiniciando nginx..."
             docker-compose restart nginx
-            
-            echo "✅ Deploy concluído!"
             docker-compose ps
-      
-      - name: Notify on success
-        if: success()
-        run: echo "✅ Deploy realizado com sucesso!"
-      
-      - name: Notify on failure
-        if: failure()
-        run: echo "❌ Deploy falhou!"
-
