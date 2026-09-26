@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  webhook-deploy:
+    build:
+      context: .
+      dockerfile: Dockerfile.webhook
+    container_name: webhook-deploy
+    ports:
+      - "5000:5000"
+    environment:
+      - WEBHOOK_TOKEN=${WEBHOOK_TOKEN}
+      - FLASK_ENV=production
+    volumes:
+      - /opt/renostter-erp:/opt/renostter-erp:ro
+      - /var/log/webhook-deploy:/var/log/webhook-deploy
+    networks:
+      - erp-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  erp-network:
+    external: true

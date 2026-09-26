@@ -1,0 +1,50 @@
+name: Deploy to VPS (Webhook Method)
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger VPS Webhook
+        run: |
+          # Enviar requisição HTTP POST para o VPS via webhook
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.WEBHOOK_TOKEN }}" \
+            -d '{
+              "action": "deploy",
+              "repository": "ERP",
+              "branch": "main",
+              "timestamp": "'$(date -u +'%Y-%m-%dT%H:%M:%SZ')'",
+              "commit": "'${{ github.sha }}'"
+            }' \
+            https://${{ secrets.VPS_HOST }}/webhook/deploy \
+            --insecure \
+            --max-time 30
+          
+          # Verificar o resultado
+          if [ $? -eq 0 ]; then
+            echo "✅ Webhook chamado com sucesso"
+            exit 0
+          else
+            echo "❌ Erro ao chamar webhook"
+            exit 1
+          fi
+
+      - name: Notify Deployment Status
+        if: success()
+        run: |
+          echo "✅ Deploy iniciado no VPS via webhook"
+          echo "Commit: ${{ github.sha }}"
+          echo "Branch: ${{ github.ref }}"
+          
+      - name: Notify Failure
+        if: failure()
+        run: |
+          echo "❌ Falha ao disparar webhook de deployment"
+          exit 1
